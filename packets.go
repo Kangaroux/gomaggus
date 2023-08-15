@@ -1,19 +1,19 @@
 package main
 
 type LoginChallengePacket struct {
-	Opcode       byte
-	Err          byte
-	Size         uint16
-	GameName     [4]byte
-	Version      [3]byte
-	Build        uint16
-	OSArch       [4]byte
-	OS           [4]byte
-	Locale       [4]byte
-	TimezoneBias uint32
-	Ip           uint32
-	ILen         uint8
-	I            byte
+	Opcode                 byte
+	_                      byte // unused (Error)
+	Size                   uint16
+	GameName               [4]byte
+	Version                [3]byte
+	Build                  uint16
+	OSArch                 [4]byte
+	OS                     [4]byte
+	Locale                 [4]byte
+	TimezoneBias           uint32
+	IP                     [4]byte
+	AccountNameLength      uint8
+	AccountNameFirstLetter byte
 }
 
 func reverseBytes(data []byte, n int) {

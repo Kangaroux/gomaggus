@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/netip"
 )
 
 func main() {
@@ -33,23 +34,26 @@ func main() {
 func handleLoginChallenge(c *Client, data []byte, n int) error {
 	c.log.Print("start login challenge")
 
-	packet := LoginChallengePacket{}
-	err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &packet)
+	p := LoginChallengePacket{}
+	err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &p)
 
 	if err != nil {
 		return err
 	}
 
 	// WoW client sends these strings reversed (uint32 converted to little endian?)
-	reverseBytes(packet.OSArch[:], 4)
-	reverseBytes(packet.OS[:], 4)
-	reverseBytes(packet.Locale[:], 4)
+	reverseBytes(p.OSArch[:], 4)
+	reverseBytes(p.OS[:], 4)
+	reverseBytes(p.Locale[:], 4)
 
-	c.log.Printf("GameName: %s", string(packet.GameName[:4]))
-	c.log.Printf("Version: v%d.%d.%d.%d", packet.Version[0], packet.Version[1], packet.Version[2], packet.Build)
-	c.log.Printf("OSArch: %s", string(packet.OSArch[:4]))
-	c.log.Printf("OS: %s", string(packet.OS[:4]))
-	c.log.Printf("Locale: %s", string(packet.Locale[:4]))
+	c.log.Printf("GameName: %s", string(p.GameName[:4]))
+	c.log.Printf("Version: v%d.%d.%d.%d", p.Version[0], p.Version[1], p.Version[2], p.Build)
+	c.log.Printf("OSArch: %s", string(p.OSArch[:4]))
+	c.log.Printf("OS: %s", string(p.OS[:4]))
+	c.log.Printf("Locale: %s", string(p.Locale[:4]))
+	c.log.Printf("AccountNameFirstLetter: %v", string(p.AccountNameFirstLetter))
+	c.log.Printf("AccountNameLength: %v", p.AccountNameLength)
+	c.log.Printf("IP4: %v", netip.AddrFrom4(p.IP))
 
 	return nil
 }
