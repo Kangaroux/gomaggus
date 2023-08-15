@@ -23,16 +23,16 @@ func main() {
 			log.Fatal(err)
 		}
 
-		go handleConnection(conn)
+		go handleConnection(NewClient(conn))
 	}
 }
 
-func handleConnection(conn net.Conn) {
-	log.Printf("Client connected: %v", conn.RemoteAddr())
+func handleConnection(client Client) {
+	log.Printf("Client #%d connected: %v", client.id, client.conn.RemoteAddr())
 	log.Print("Disconnecting client in 5 seconds...")
 
 	time.Sleep(5 * time.Second)
-	conn.Close()
+	client.conn.Close()
 
 	log.Print("Client disconnected")
 }
