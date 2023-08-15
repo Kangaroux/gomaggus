@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"log"
@@ -28,12 +30,34 @@ func main() {
 	}
 }
 
-func handleLoginChallenge(c *Client, data []byte, n int) {
+func handleLoginChallenge(c *Client, data []byte, n int) error {
 	c.log.Print("start login challenge")
+
+	packet := LoginChallengePacket{}
+	err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &packet)
+
+	if err != nil {
+		return err
+	}
+
+	// WoW client sends these strings reversed (uint32 converted to little endian?)
+	reverseBytes(packet.OSArch[:], 4)
+	reverseBytes(packet.OS[:], 4)
+	reverseBytes(packet.Locale[:], 4)
+
+	c.log.Printf("GameName: %s", string(packet.GameName[:4]))
+	c.log.Printf("Version: v%d.%d.%d.%d", packet.Version[0], packet.Version[1], packet.Version[2], packet.Build)
+	c.log.Printf("OSArch: %s", string(packet.OSArch[:4]))
+	c.log.Printf("OS: %s", string(packet.OS[:4]))
+	c.log.Printf("Locale: %s", string(packet.Locale[:4]))
+
+	return nil
 }
 
-func handleLoginProof(c *Client, data []byte, n int) {
+func handleLoginProof(c *Client, data []byte, n int) error {
 	c.log.Print("start login proof")
+
+	return nil
 }
 
 func handlePacket(c *Client, data []byte, n int) error {
@@ -50,9 +74,9 @@ func handlePacket(c *Client, data []byte, n int) error {
 
 	switch opcode {
 	case 0:
-		handleLoginChallenge(c, data, n)
+		return handleLoginChallenge(c, data, n)
 	case 1:
-		handleLoginProof(c, data, n)
+		return handleLoginProof(c, data, n)
 	default:
 		return fmt.Errorf("unknown opcode: 0x%x", opcode)
 	}
