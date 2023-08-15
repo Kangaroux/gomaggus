@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net"
 )
@@ -26,6 +27,17 @@ func main() {
 	}
 }
 
+func handlePacket(c Client, data []byte, n int) {
+	if n == 0 {
+		return
+	}
+
+	log.Printf("Client %d read %d bytes", c.id, n)
+	log.Printf("%v", data)
+	opcode := data[0]
+	log.Printf("Client %d opcode: 0x%x", c.id, opcode)
+}
+
 func handleConnection(c Client) {
 	defer func() {
 		c.conn.Close()
@@ -38,23 +50,16 @@ func handleConnection(c Client) {
 	for {
 		n, err := c.conn.Read(buf)
 
-		if err != nil {
+		if err != nil && err != io.EOF {
 			log.Printf("Client %d read failed: %v", c.id, err)
 			return
-		} else if n == 0 {
-			log.Printf("Client %d closed connection", c.id)
-			return
 		}
 
-		log.Printf("Client %d read %d bytes", c.id, n)
-		log.Printf("%v", buf[:n])
-		opcode := buf[0]
+		handlePacket(c, buf[:n], n)
 
-		if err != nil {
-			log.Printf("Client %d failed to get opcode: %v", c.id, err)
+		if err == io.EOF {
+			log.Printf("Client %d closed connection (EOF)", c.id)
 			return
 		}
-
-		log.Printf("Client %d opcode: 0x%x", c.id, opcode)
 	}
 }
