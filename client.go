@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net"
 	"time"
 )
@@ -11,15 +13,17 @@ type Client struct {
 	conn        net.Conn
 	id          int64
 	connectedAt time.Time
+	log         log.Logger
 }
 
-func NewClient(conn net.Conn) Client {
+func NewClient(conn net.Conn) *Client {
 	id := nextId
 	nextId++
 
-	return Client{
+	return &Client{
 		conn:        conn,
 		id:          id,
 		connectedAt: time.Now(),
+		log:         *log.New(log.Writer(), fmt.Sprintf("Client %d: ", id), log.Flags()|log.Lmsgprefix),
 	}
 }
