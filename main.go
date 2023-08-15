@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"net"
-	"time"
 )
 
 func main() {
@@ -27,12 +27,36 @@ func main() {
 	}
 }
 
-func handleConnection(client Client) {
-	log.Printf("Client #%d connected: %v", client.id, client.conn.RemoteAddr())
-	log.Print("Disconnecting client in 5 seconds...")
+func handleConnection(c Client) {
+	defer func() {
+		c.conn.Close()
+		log.Printf("Client %d disconnected", c.id)
+	}()
 
-	time.Sleep(5 * time.Second)
-	client.conn.Close()
+	log.Printf("Client %d connected from %v", c.id, c.conn.RemoteAddr())
+	buf := bytes.Buffer{}
 
-	log.Print("Client disconnected")
+	for {
+		n, err := buf.ReadFrom(c.conn)
+		if err != nil {
+			log.Printf("Client %d read failed: %v", c.id, err)
+			return
+		} else if n == 0 {
+			log.Printf("Client %d closed connection", c.id)
+			return
+		}
+
+		log.Printf("Client %d read %d bytes", c.id, n)
+		log.Printf("%v", buf.Bytes())
+		opcode, err := buf.ReadByte()
+
+		if err != nil {
+			log.Printf("Client %d failed to get opcode: %v", c.id, err)
+			return
+		}
+
+		log.Printf("Client %d opcode: 0x%x", c.id, opcode)
+
+		buf.Reset()
+	}
 }
