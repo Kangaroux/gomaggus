@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"log"
 	"net"
 )
@@ -34,10 +33,11 @@ func handleConnection(c Client) {
 	}()
 
 	log.Printf("Client %d connected from %v", c.id, c.conn.RemoteAddr())
-	buf := bytes.Buffer{}
+	buf := make([]byte, 4096)
 
 	for {
-		n, err := buf.ReadFrom(c.conn)
+		n, err := c.conn.Read(buf)
+
 		if err != nil {
 			log.Printf("Client %d read failed: %v", c.id, err)
 			return
@@ -47,8 +47,8 @@ func handleConnection(c Client) {
 		}
 
 		log.Printf("Client %d read %d bytes", c.id, n)
-		log.Printf("%v", buf.Bytes())
-		opcode, err := buf.ReadByte()
+		log.Printf("%v", buf[:n])
+		opcode := buf[0]
 
 		if err != nil {
 			log.Printf("Client %d failed to get opcode: %v", c.id, err)
@@ -56,7 +56,5 @@ func handleConnection(c Client) {
 		}
 
 		log.Printf("Client %d opcode: 0x%x", c.id, opcode)
-
-		buf.Reset()
 	}
 }
