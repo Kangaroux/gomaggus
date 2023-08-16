@@ -31,13 +31,20 @@ func main() {
 	}
 }
 
-func handleLoginChallenge(c *Client, data []byte, n int) error {
+func handleLoginChallenge(c *Client, data []byte, dataLen int) error {
 	c.log.Print("start login challenge")
 
 	p := LoginChallengePacket{}
-	err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &p)
+	reader := bytes.NewReader(data)
+	err := binary.Read(reader, binary.LittleEndian, &p)
 
 	if err != nil {
+		return err
+	}
+
+	accountName := make([]byte, p.AccountNameLength)
+
+	if _, err := reader.Read(accountName); err != nil {
 		return err
 	}
 
@@ -51,25 +58,25 @@ func handleLoginChallenge(c *Client, data []byte, n int) error {
 	c.log.Printf("OSArch: %s", string(p.OSArch[:4]))
 	c.log.Printf("OS: %s", string(p.OS[:4]))
 	c.log.Printf("Locale: %s", string(p.Locale[:4]))
-	c.log.Printf("AccountNameFirstLetter: %v", string(p.AccountNameFirstLetter))
+	// c.log.Printf("AccountNameFirstLetter: %v", string(p.AccountNameFirstLetter))
 	c.log.Printf("AccountNameLength: %v", p.AccountNameLength)
 	c.log.Printf("IP4: %v", netip.AddrFrom4(p.IP))
 
 	return nil
 }
 
-func handleLoginProof(c *Client, data []byte, n int) error {
+func handleLoginProof(c *Client, data []byte, dataLen int) error {
 	c.log.Print("start login proof")
 
 	return nil
 }
 
-func handlePacket(c *Client, data []byte, n int) error {
-	if n == 0 {
+func handlePacket(c *Client, data []byte, dataLen int) error {
+	if dataLen == 0 {
 		return nil
 	}
 
-	c.log.Printf("read %d bytes", n)
+	c.log.Printf("read %d bytes", dataLen)
 	c.log.Printf("%v", data)
 
 	opcode := data[0]
@@ -78,14 +85,12 @@ func handlePacket(c *Client, data []byte, n int) error {
 
 	switch opcode {
 	case 0:
-		return handleLoginChallenge(c, data, n)
+		return handleLoginChallenge(c, data, dataLen)
 	case 1:
-		return handleLoginProof(c, data, n)
+		return handleLoginProof(c, data, dataLen)
 	default:
 		return fmt.Errorf("unknown opcode: 0x%x", opcode)
 	}
-
-	return nil
 }
 
 func handleConnection(c *Client) {
