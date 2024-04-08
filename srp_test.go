@@ -203,3 +203,21 @@ func Test_calcU(t *testing.T) {
 		assert.Equal(t, expected, calcU(clientPublicKey, serverPublicKey))
 	}
 }
+
+func Test_splitSKey(t *testing.T) {
+	type testCase struct {
+		S        []byte
+		expected []byte
+	}
+
+	testCases := []testCase{
+		{[]byte{0, 1}, []byte{}},
+		{[]byte{0, 1, 2, 3}, []byte{2, 3}},
+		{[]byte{1, 0, 0, 0}, []byte{1, 0, 0, 0}},
+		{[]byte{0, 0, 0, 0}, []byte{}},
+	}
+
+	for _, tc := range testCases {
+		assert.Equal(t, tc.expected, splitSKey(tc.S))
+	}
+}

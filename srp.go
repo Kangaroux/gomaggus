@@ -119,3 +119,10 @@ func calcU(clientPublicKey []byte, serverPublicKey []byte) []byte {
 
 	return u.Sum(nil)
 }
+
+func splitSKey(S []byte) []byte {
+	for len(S) > 0 && S[0] == 0x0 {
+		S = S[2:]
+	}
+	return S
+}
