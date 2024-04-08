@@ -21,16 +21,19 @@ var (
 	bigK = big.NewInt(3)
 )
 
-func passVerify(username string, password string, salt []byte) []byte {
-	x := EndianBytes{}
-	x.SetBytes(calcX(username, password, salt), true)
-	x.ToLittleEndian()
-	bigX := big.NewInt(0).SetBytes(x.Bytes())
+func ReverseBytes(data []byte) []byte {
+	n := len(data)
+	for i := 0; i < n/2; i++ {
+		data[i], data[n-i-1] = data[n-i-1], data[i]
+	}
+	return data
+}
 
-	v := EndianBytes{}
-	v.SetBytes(big.NewInt(0).Exp(bigG, bigX, bigN).Bytes(), true)
-	v.ToLittleEndian()
-	return v.Bytes()
+func passVerify(username string, password string, salt []byte) []byte {
+	x := calcX(username, password, salt)
+	bigX := big.NewInt(0).SetBytes(ReverseBytes(x))
+	v := big.NewInt(0).Exp(bigG, bigX, bigN).Bytes()
+	return ReverseBytes(v)
 }
 
 func calcX(username string, password string, salt []byte) []byte {

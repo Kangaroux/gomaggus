@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,19 +31,19 @@ func Test_passVerify(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		salt, err := BytesFromHex(tc.salt, true)
+		salt, err := hex.DecodeString(tc.salt)
 		if err != nil {
 			panic(err)
 		}
-		salt.ToLittleEndian()
+		ReverseBytes(salt)
 
-		expected, err := BytesFromHex(tc.expected, true)
+		expected, err := hex.DecodeString(tc.expected)
 		if err != nil {
 			panic(err)
 		}
-		expected.ToLittleEndian()
+		ReverseBytes(expected)
 
-		assert.Equal(t, expected.Bytes(), passVerify(tc.username, tc.password, salt.Bytes()))
+		assert.Equal(t, expected, passVerify(tc.username, tc.password, salt))
 	}
 }
 
@@ -71,18 +72,18 @@ func Test_calcX(t *testing.T) {
 	password := "PASSWORD123"
 
 	for _, tc := range testCases {
-		salt, err := BytesFromHex(tc.salt, true)
+		salt, err := hex.DecodeString(tc.salt)
 		if err != nil {
 			panic(err)
 		}
-		salt.ToLittleEndian()
+		ReverseBytes(salt)
 
-		expected, err := BytesFromHex(tc.expected, true)
+		expected, err := hex.DecodeString(tc.expected)
 		if err != nil {
 			panic(err)
 		}
-		expected.ToLittleEndian()
+		ReverseBytes(expected)
 
-		assert.Equal(t, expected.Bytes(), calcX(username, password, salt.Bytes()))
+		assert.Equal(t, expected, calcX(username, password, salt))
 	}
 }

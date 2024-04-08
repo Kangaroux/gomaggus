@@ -85,9 +85,9 @@ func handleLoginChallenge(c *Client, data []byte) error {
 	accountName := string(accountNameBytes)
 
 	// WoW client sends these strings reversed (uint32 converted to little endian?)
-	reverseBytes(p.OSArch[:], 4)
-	reverseBytes(p.OS[:], 4)
-	reverseBytes(p.Locale[:], 4)
+	ReverseBytes(p.OSArch[:])
+	ReverseBytes(p.OS[:])
+	ReverseBytes(p.Locale[:])
 
 	c.log.Printf("GameName: %s", string(p.GameName[:4]))
 	c.log.Printf("Version: %d.%d.%d.%d", p.Version[0], p.Version[1], p.Version[2], p.Build)
