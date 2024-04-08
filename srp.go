@@ -11,15 +11,33 @@ import (
 )
 
 var (
-	bigN = big.NewInt(0).SetBytes([]byte{
+	_bigN = bytesToBig([]byte{
 		0x89, 0x4b, 0x64, 0x5e, 0x89, 0xe1, 0x53, 0x5b,
 		0xbd, 0xad, 0x5b, 0x8b, 0x29, 0x06, 0x50, 0x53,
 		0x08, 0x01, 0xb1, 0x8e, 0xbf, 0xbf, 0x5e, 0x8f,
 		0xab, 0x3c, 0x82, 0x87, 0x2a, 0x3e, 0x9b, 0xb7,
 	})
-	bigG = big.NewInt(7)
-	bigK = big.NewInt(3)
 )
+
+func bigN() *big.Int {
+	return cloneBig(_bigN)
+}
+
+func bigG() *big.Int {
+	return big.NewInt(7)
+}
+
+func bigK() *big.Int {
+	return big.NewInt(3)
+}
+
+func cloneBig(v *big.Int) *big.Int {
+	return big.NewInt(0).Set(v)
+}
+
+func bytesToBig(data []byte) *big.Int {
+	return big.NewInt(0).SetBytes(data)
+}
 
 func ReverseBytes(data []byte) []byte {
 	n := len(data)
@@ -30,9 +48,8 @@ func ReverseBytes(data []byte) []byte {
 }
 
 func passVerify(username string, password string, salt []byte) []byte {
-	x := calcX(username, password, salt)
-	bigX := big.NewInt(0).SetBytes(ReverseBytes(x))
-	v := big.NewInt(0).Exp(bigG, bigX, bigN).Bytes()
+	x := bytesToBig(calcX(username, password, salt))
+	v := big.NewInt(0).Exp(bigG(), x, bigN()).Bytes()
 	return ReverseBytes(v)
 }
 
@@ -48,4 +65,11 @@ func calcX(username string, password string, salt []byte) []byte {
 	h2.Write(h1.Sum(nil))
 
 	return h2.Sum(nil)
+}
+
+func calcServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
+	result := big.NewInt(0)
+	result.Mul(bigK(), bytesToBig(verifier))
+	result.Add(result, big.NewInt(0).Exp(bigG(), bytesToBig(serverPrivateKey), bigN()))
+	return result.Mod(result, bigG()).Bytes()
 }
