@@ -50,7 +50,10 @@ func ReverseBytes(data []byte) []byte {
 // Returns little endian
 func passVerify(username string, password string, salt []byte) []byte {
 	x := bytesToBig(ReverseBytes(calcX(username, password, salt)))
+
+	// g^x % N
 	verifier := big.NewInt(0).Exp(bigG(), x, bigN())
+
 	return ReverseBytes(verifier.Bytes())
 }
 
@@ -71,8 +74,33 @@ func calcX(username string, password string, salt []byte) []byte {
 // Big endian args + return
 func calcServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	result := big.NewInt(0)
+
+	// k * v
 	result.Mul(bigK(), bytesToBig(verifier))
+	// k * v + (g^b % N)
 	result.Add(result, big.NewInt(0).Exp(bigG(), bytesToBig(serverPrivateKey), bigN()))
+	// (k * v + (g^b % N)) % N
 	result.Mod(result, bigN())
+
 	return result.Bytes()
+}
+
+func calcClientSKey(clientPrivateKey []byte, serverPublicKey []byte, x []byte, u []byte) []byte {
+	bigX := bytesToBig(x)
+
+	// u * x
+	exponent := big.NewInt(0).Mul(bytesToBig(u), bigX)
+	// a + u * x
+	exponent.Add(exponent, bytesToBig(clientPrivateKey))
+
+	// g^x % N
+	S := big.NewInt(0).Exp(bigG(), bigX, bigN())
+	// k * (g^x % N)
+	S.Mul(S, bigK())
+	// B - (k * (g^x % N))
+	S.Sub(bytesToBig(serverPublicKey), S)
+	// (B - (k * (g^x % N)))^(a + u * x) % N
+	S.Exp(S, exponent, bigN())
+
+	return S.Bytes()
 }
