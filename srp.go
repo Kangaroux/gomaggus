@@ -48,7 +48,7 @@ func ReverseBytes(data []byte) []byte {
 }
 
 func passVerify(username string, password string, salt []byte) []byte {
-	x := bytesToBig(calcX(username, password, salt))
+	x := bytesToBig(ReverseBytes(calcX(username, password, salt)))
 	v := big.NewInt(0).Exp(bigG(), x, bigN()).Bytes()
 	return ReverseBytes(v)
 }
