@@ -47,10 +47,11 @@ func ReverseBytes(data []byte) []byte {
 	return data
 }
 
+// Returns little endian
 func passVerify(username string, password string, salt []byte) []byte {
 	x := bytesToBig(ReverseBytes(calcX(username, password, salt)))
-	v := big.NewInt(0).Exp(bigG(), x, bigN()).Bytes()
-	return ReverseBytes(v)
+	verifier := big.NewInt(0).Exp(bigG(), x, bigN())
+	return ReverseBytes(verifier.Bytes())
 }
 
 func calcX(username string, password string, salt []byte) []byte {
@@ -67,10 +68,11 @@ func calcX(username string, password string, salt []byte) []byte {
 	return h2.Sum(nil)
 }
 
+// Big endian args + return
 func calcServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	result := big.NewInt(0)
 	result.Mul(bigK(), bytesToBig(verifier))
 	result.Add(result, big.NewInt(0).Exp(bigG(), bytesToBig(serverPrivateKey), bigN()))
-	result.Mod(result, bigG())
-	return ReverseBytes(result.Bytes())
+	result.Mod(result, bigN())
+	return result.Bytes()
 }

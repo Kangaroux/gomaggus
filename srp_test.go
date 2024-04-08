@@ -115,19 +115,22 @@ func Test_calcServerPublicKey(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		ReverseBytes(verifier)
+		// BIG ENDIAN
+		// ReverseBytes(verifier)
 
 		serverPrivateKey, err := hex.DecodeString(tc.serverPrivateKey)
 		if err != nil {
 			panic(err)
 		}
-		ReverseBytes(serverPrivateKey)
+		// BIG ENDIAN
+		// ReverseBytes(serverPrivateKey)
 
 		expected, err := hex.DecodeString(tc.expected)
 		if err != nil {
 			panic(err)
 		}
-		ReverseBytes(expected)
+		// BIG ENDIAN
+		// ReverseBytes(expected)
 
 		assert.Equal(t, expected, calcServerPublicKey(verifier, serverPrivateKey))
 	}
