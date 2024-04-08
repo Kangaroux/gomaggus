@@ -85,6 +85,7 @@ func calcServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	return result.Bytes()
 }
 
+// Big endian args + return
 func calcClientSKey(clientPrivateKey []byte, serverPublicKey []byte, x []byte, u []byte) []byte {
 	bigX := bytesToBig(x)
 
