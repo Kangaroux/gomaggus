@@ -116,3 +116,11 @@ func calcServerSKey(clientPublicKey []byte, verifier []byte, u []byte, serverPri
 	S.Exp(S, bytesToBig(serverPrivateKey), bigN())
 	return S.Bytes()
 }
+
+// Little endian args + return
+func calcU(clientPublicKey []byte, serverPublicKey []byte) []byte {
+	u := sha1.New()
+	u.Write(clientPublicKey)
+	u.Write(serverPublicKey)
+	return u.Sum(nil)
+}
