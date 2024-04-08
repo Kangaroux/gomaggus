@@ -105,3 +105,14 @@ func calcClientSKey(clientPrivateKey []byte, serverPublicKey []byte, x []byte, u
 
 	return S.Bytes()
 }
+
+// Big endian args + return
+func calcServerSKey(clientPublicKey []byte, verifier []byte, u []byte, serverPrivateKey []byte) []byte {
+	// v^u % N
+	S := big.NewInt(0).Exp(bytesToBig(verifier), bytesToBig(u), bigN())
+	// A * (v^u % N)
+	S.Mul(S, bytesToBig(clientPublicKey))
+	// (A * (v^u % N))^b % N
+	S.Exp(S, bytesToBig(serverPrivateKey), bigN())
+	return S.Bytes()
+}
