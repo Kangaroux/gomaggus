@@ -126,3 +126,25 @@ func splitSKey(S []byte) []byte {
 	}
 	return S
 }
+
+func calcInterleave(S []byte) []byte {
+	S = splitSKey(S)
+	halfSLen := len(S) / 2
+	even := make([]byte, halfSLen)
+	odd := make([]byte, halfSLen)
+
+	for i := 0; i < halfSLen; i++ {
+		even[i] = S[i*2]
+		odd[i] = S[i*2+1]
+	}
+
+	hEven := sha1.Sum(even)
+	hOdd := sha1.Sum(odd)
+
+	result := make([]byte, 40)
+	for i := 0; i < 20; i += 2 {
+		result[i*2] = hEven[i]
+		result[i*2+1] = hOdd[i]
+	}
+	return result
+}
