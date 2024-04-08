@@ -17,9 +17,3 @@ type LoginChallengePacket struct {
 	// The account name is a variable size and needs to be read manually
 	// AccountName    []byte
 }
-
-func reverseBytes(data []byte, n int) {
-	for i := 0; i < n/2; i++ {
-		data[i], data[n-i-1] = data[n-i-1], data[i]
-	}
-}
