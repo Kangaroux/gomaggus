@@ -71,5 +71,6 @@ func calcServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	result := big.NewInt(0)
 	result.Mul(bigK(), bytesToBig(verifier))
 	result.Add(result, big.NewInt(0).Exp(bigG(), bytesToBig(serverPrivateKey), bigN()))
-	return result.Mod(result, bigG()).Bytes()
+	result.Mod(result, bigG())
+	return ReverseBytes(result.Bytes())
 }
