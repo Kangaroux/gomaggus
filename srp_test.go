@@ -15,12 +15,16 @@ func mustDecodeHex(s string) []byte {
 	return data
 }
 
+func hexToByteArray(s string, bigEndian bool) *ByteArray {
+	return NewByteArray(mustDecodeHex(s), bigEndian)
+}
+
 func Test_passVerify(t *testing.T) {
 	type testCase struct {
-		username string
-		password string
-		salt     string
-		expected string
+		username string // plaintext string
+		password string // plaintext string
+		salt     string // Big endian hex
+		expected string // Big endian hex
 	}
 
 	// First 10 testCases from:
@@ -39,16 +43,16 @@ func Test_passVerify(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		salt := ReverseBytes(mustDecodeHex(tc.salt))
-		expected := ReverseBytes(mustDecodeHex(tc.expected))
+		salt := hexToByteArray(tc.salt, true)
+		expected := hexToByteArray(tc.expected, true).LittleEndian()
 		assert.Equal(t, expected, passVerify(tc.username, tc.password, salt))
 	}
 }
 
 func Test_calcX(t *testing.T) {
 	type testCase struct {
-		salt     string
-		expected string
+		salt     string // Big endian hex
+		expected string // Little endian hex
 	}
 
 	// First 10 testCases from:
@@ -70,8 +74,8 @@ func Test_calcX(t *testing.T) {
 	password := "PASSWORD123"
 
 	for _, tc := range testCases {
-		salt := ReverseBytes(mustDecodeHex(tc.salt))
-		expected := ReverseBytes(mustDecodeHex(tc.expected))
+		salt := hexToByteArray(tc.salt, true)
+		expected := hexToByteArray(tc.expected, false)
 		assert.Equal(t, expected, calcX(username, password, salt))
 	}
 }

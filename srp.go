@@ -40,28 +40,29 @@ func ReverseBytes(data []byte) []byte {
 	return result
 }
 
-// Returns little endian
-func passVerify(username string, password string, salt []byte) []byte {
-	x := bytesToBig(ReverseBytes(calcX(username, password, salt)))
+// Password verifier. Returns a little endian byte array.
+func passVerify(username string, password string, salt *ByteArray) *ByteArray {
+	x := calcX(username, password, salt).BigInt()
 
 	// g^x % N
 	verifier := big.NewInt(0).Exp(bigG(), x, bigN())
 
-	return ReverseBytes(verifier.Bytes())
+	return NewByteArray(verifier.Bytes(), true).LittleEndian()
 }
 
-func calcX(username string, password string, salt []byte) []byte {
+// Calculates x, a hash used by the password verifier. Returns a little endian byte array.
+func calcX(username string, password string, salt *ByteArray) *ByteArray {
 	h1 := sha1.New()
 	h2 := sha1.New()
 
-	// sha1(username | ":" | password)
+	// SHA1(username | ":" | password)
 	io.WriteString(h1, username+":"+password)
 
-	// sha1(salt | sha1(username | ":" | password))
-	h2.Write(salt)
+	// SHA1(salt | SHA1(username | ":" | password))
+	h2.Write(salt.LittleEndian().Bytes())
 	h2.Write(h1.Sum(nil))
 
-	return h2.Sum(nil)
+	return NewByteArray(h2.Sum(nil), true).LittleEndian()
 }
 
 // Big endian args + return
@@ -114,7 +115,7 @@ func calcServerSKey(clientPublicKey []byte, verifier []byte, u []byte, serverPri
 func calcU(clientPublicKey []byte, serverPublicKey []byte) []byte {
 	u := sha1.New()
 
-	// sha1(clientPublicKey | serverPublicKey)
+	// SHA1(clientPublicKey | serverPublicKey)
 	u.Write(clientPublicKey)
 	u.Write(serverPublicKey)
 

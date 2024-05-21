@@ -1,6 +1,9 @@
 package main
 
-import "bytes"
+import (
+	"bytes"
+	"math/big"
+)
 
 type ByteArray struct {
 	bigEndian bool
@@ -22,18 +25,24 @@ func (ba *ByteArray) Clone() *ByteArray {
 	}
 }
 
-func (ba *ByteArray) AsBigEndian() *ByteArray {
+func (ba *ByteArray) BigEndian() *ByteArray {
 	if !ba.bigEndian {
+		ba = ba.Clone()
 		ba.swapEndian()
 	}
 	return ba
 }
 
-func (ba *ByteArray) AsLittleEndian() *ByteArray {
+func (ba *ByteArray) LittleEndian() *ByteArray {
 	if ba.bigEndian {
+		ba = ba.Clone()
 		ba.swapEndian()
 	}
 	return ba
+}
+
+func (ba *ByteArray) BigInt() *big.Int {
+	return big.NewInt(0).SetBytes(ba.data)
 }
 
 func (ba *ByteArray) swapEndian() {
