@@ -180,9 +180,9 @@ func Test_calcServerSKey(t *testing.T) {
 
 func Test_calcU(t *testing.T) {
 	type testCase struct {
-		clientPublicKey string
-		serverPublicKey string
-		expected        string
+		clientPublicKey string // Big endian hex
+		serverPublicKey string // Big endian hex
+		expected        string // Little endian hex
 	}
 
 	// First 10 testCases from:
@@ -201,9 +201,9 @@ func Test_calcU(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		clientPublicKey := ReverseBytes(mustDecodeHex(tc.clientPublicKey))
-		serverPublicKey := ReverseBytes(mustDecodeHex(tc.serverPublicKey))
-		expected := ReverseBytes(mustDecodeHex(tc.expected))
+		clientPublicKey := hexToByteArray(tc.clientPublicKey, true)
+		serverPublicKey := hexToByteArray(tc.serverPublicKey, true)
+		expected := hexToByteArray(tc.expected, false)
 		assert.Equal(t, expected, calcU(clientPublicKey, serverPublicKey))
 	}
 }
