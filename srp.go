@@ -70,34 +70,35 @@ func calcServerPublicKey(verifier *ByteArray, serverPrivateKey *ByteArray) *Byte
 	result := big.NewInt(0)
 
 	// k * v
-	result.Mul(bigK(), verifier.LittleEndian().BigInt())
+	result.Mul(bigK(), verifier.BigInt())
 	// k * v + (g^b % N)
-	result.Add(result, big.NewInt(0).Exp(bigG(), serverPrivateKey.LittleEndian().BigInt(), bigN()))
+	result.Add(result, big.NewInt(0).Exp(bigG(), serverPrivateKey.BigInt(), bigN()))
 	// (k * v + (g^b % N)) % N
 	result.Mod(result, bigN())
 
 	return NewByteArray(result.Bytes(), true).LittleEndian()
 }
 
-// Big endian args + return
-func calcClientSKey(clientPrivateKey []byte, serverPublicKey []byte, x []byte, u []byte) []byte {
-	bigX := bytesToBig(x)
+// Calculates the client's S key, a value that is used to generate the client's session key. Returns
+// a little endian byte array.
+func calcClientSKey(clientPrivateKey *ByteArray, serverPublicKey *ByteArray, x *ByteArray, u *ByteArray) *ByteArray {
+	bigX := x.LittleEndian().BigInt()
 
 	// u * x
-	exponent := big.NewInt(0).Mul(bytesToBig(u), bigX)
+	exponent := big.NewInt(0).Mul(u.LittleEndian().BigInt(), bigX)
 	// a + u * x
-	exponent.Add(exponent, bytesToBig(clientPrivateKey))
+	exponent.Add(exponent, clientPrivateKey.LittleEndian().BigInt())
 
 	// g^x % N
 	S := big.NewInt(0).Exp(bigG(), bigX, bigN())
 	// k * (g^x % N)
 	S.Mul(S, bigK())
 	// B - (k * (g^x % N))
-	S.Sub(bytesToBig(serverPublicKey), S)
+	S.Sub(serverPublicKey.LittleEndian().BigInt(), S)
 	// (B - (k * (g^x % N)))^(a + u * x) % N
 	S.Exp(S, exponent, bigN())
 
-	return S.Bytes()
+	return NewByteArray(S.Bytes(), true).LittleEndian()
 }
 
 // Big endian args + return
