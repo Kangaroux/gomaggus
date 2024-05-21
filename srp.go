@@ -6,6 +6,7 @@ package main
 
 import (
 	"crypto/sha1"
+	"fmt"
 	"io"
 	"math/big"
 )
@@ -128,7 +129,7 @@ func splitSKey(S []byte) []byte {
 	return S
 }
 
-// Big endian args + return
+// Little endian args + return
 func calcInterleave(S []byte) []byte {
 	S = splitSKey(S)
 	halfSLen := len(S) / 2
@@ -149,4 +150,16 @@ func calcInterleave(S []byte) []byte {
 		result[i*2+1] = hOdd[i]
 	}
 	return result
+}
+
+// Little endian args + return
+func calcServerSessionKey(clientPublicKey []byte, serverPublicKey []byte, verifier []byte, serverPrivateKey []byte) []byte {
+	u := calcU(clientPublicKey, serverPublicKey)
+	fmt.Printf("A: %x\n", clientPublicKey)
+	fmt.Printf("v: %x\n", verifier)
+	fmt.Printf("u: %x\n", u)
+	fmt.Printf("b: %x\n", serverPrivateKey)
+	S := calcServerSKey(ReverseBytes(clientPublicKey), ReverseBytes(verifier), u, ReverseBytes(serverPrivateKey))
+	fmt.Printf("S: %x\n", S)
+	return calcInterleave(S)
 }
