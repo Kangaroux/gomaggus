@@ -6,7 +6,6 @@ package main
 
 import (
 	"crypto/sha1"
-	"fmt"
 	"io"
 	"math/big"
 )
@@ -154,12 +153,7 @@ func calcInterleave(S []byte) []byte {
 
 // Little endian args + return
 func calcServerSessionKey(clientPublicKey []byte, serverPublicKey []byte, verifier []byte, serverPrivateKey []byte) []byte {
-	u := calcU(clientPublicKey, serverPublicKey)
-	fmt.Printf("A: %x\n", clientPublicKey)
-	fmt.Printf("v: %x\n", verifier)
-	fmt.Printf("u: %x\n", u)
-	fmt.Printf("b: %x\n", serverPrivateKey)
-	S := calcServerSKey(ReverseBytes(clientPublicKey), ReverseBytes(verifier), u, ReverseBytes(serverPrivateKey))
-	fmt.Printf("S: %x\n", S)
+	u := calcU(ReverseBytes(clientPublicKey), ReverseBytes(serverPublicKey))
+	S := ReverseBytes(calcServerSKey(clientPublicKey, verifier, ReverseBytes(u), serverPrivateKey))
 	return calcInterleave(S)
 }
