@@ -146,11 +146,11 @@ func Test_calcClientSKey(t *testing.T) {
 
 func Test_calcServerSKey(t *testing.T) {
 	type testCase struct {
-		clientPublicKey  string
-		verifier         string
-		u                string
-		serverPrivateKey string
-		expected         string
+		clientPublicKey  string // Little endian hex
+		verifier         string // Little endian hex
+		u                string // Little endian hex
+		serverPrivateKey string // Little endian hex
+		expected         string // Big endian hex
 	}
 
 	// First 10 testCases from:
@@ -169,11 +169,11 @@ func Test_calcServerSKey(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		clientPublicKey := mustDecodeHex(tc.clientPublicKey)
-		verifier := mustDecodeHex(tc.verifier)
-		u := mustDecodeHex(tc.u)
-		serverPrivateKey := mustDecodeHex(tc.serverPrivateKey)
-		expected := mustDecodeHex(tc.expected)
+		clientPublicKey := hexToByteArray(tc.clientPublicKey, false)
+		verifier := hexToByteArray(tc.verifier, false)
+		u := hexToByteArray(tc.u, false)
+		serverPrivateKey := hexToByteArray(tc.serverPrivateKey, false)
+		expected := hexToByteArray(tc.expected, true).LittleEndian()
 		assert.Equal(t, expected, calcServerSKey(clientPublicKey, verifier, u, serverPrivateKey))
 	}
 }

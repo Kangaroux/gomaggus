@@ -101,15 +101,17 @@ func calcClientSKey(clientPrivateKey *ByteArray, serverPublicKey *ByteArray, x *
 	return NewByteArray(S.Bytes(), true).LittleEndian()
 }
 
-// Big endian args + return
-func calcServerSKey(clientPublicKey []byte, verifier []byte, u []byte, serverPrivateKey []byte) []byte {
+// Calculates the server's S key, a value that is used to generate the server's session key. Returns
+// a little endian byte array.
+func calcServerSKey(clientPublicKey *ByteArray, verifier *ByteArray, u *ByteArray, serverPrivateKey *ByteArray) *ByteArray {
 	// v^u % N
-	S := big.NewInt(0).Exp(bytesToBig(verifier), bytesToBig(u), bigN())
+	S := big.NewInt(0).Exp(verifier.LittleEndian().BigInt(), u.LittleEndian().BigInt(), bigN())
 	// A * (v^u % N)
-	S.Mul(S, bytesToBig(clientPublicKey))
+	S.Mul(S, clientPublicKey.LittleEndian().BigInt())
 	// (A * (v^u % N))^b % N
-	S.Exp(S, bytesToBig(serverPrivateKey), bigN())
-	return S.Bytes()
+	S.Exp(S, serverPrivateKey.LittleEndian().BigInt(), bigN())
+
+	return NewByteArray(S.Bytes(), true).LittleEndian()
 }
 
 // Little endian args + return
@@ -154,8 +156,8 @@ func calcInterleave(S []byte) []byte {
 }
 
 // Little endian args + return
-func calcServerSessionKey(clientPublicKey []byte, serverPublicKey []byte, verifier []byte, serverPrivateKey []byte) []byte {
-	u := calcU(ReverseBytes(clientPublicKey), ReverseBytes(serverPublicKey))
-	S := ReverseBytes(calcServerSKey(clientPublicKey, verifier, ReverseBytes(u), serverPrivateKey))
-	return calcInterleave(S)
-}
+// func calcServerSessionKey(clientPublicKey []byte, serverPublicKey []byte, verifier []byte, serverPrivateKey []byte) []byte {
+// 	u := calcU(ReverseBytes(clientPublicKey), ReverseBytes(serverPublicKey))
+// 	S := ReverseBytes(calcServerSKey(clientPublicKey, verifier, ReverseBytes(u), serverPrivateKey))
+// 	return calcInterleave(S)
+// }
