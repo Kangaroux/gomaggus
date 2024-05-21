@@ -65,18 +65,18 @@ func calcX(username string, password string, salt *ByteArray) *ByteArray {
 	return NewByteArray(h2.Sum(nil), true).LittleEndian()
 }
 
-// Big endian args + return
-func calcServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
+// Calculates the server's public key. Returns a little endian byte array.
+func calcServerPublicKey(verifier *ByteArray, serverPrivateKey *ByteArray) *ByteArray {
 	result := big.NewInt(0)
 
 	// k * v
-	result.Mul(bigK(), bytesToBig(verifier))
+	result.Mul(bigK(), verifier.LittleEndian().BigInt())
 	// k * v + (g^b % N)
-	result.Add(result, big.NewInt(0).Exp(bigG(), bytesToBig(serverPrivateKey), bigN()))
+	result.Add(result, big.NewInt(0).Exp(bigG(), serverPrivateKey.LittleEndian().BigInt(), bigN()))
 	// (k * v + (g^b % N)) % N
 	result.Mod(result, bigN())
 
-	return result.Bytes()
+	return NewByteArray(result.Bytes(), true).LittleEndian()
 }
 
 // Big endian args + return
