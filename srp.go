@@ -33,10 +33,11 @@ func bytesToBig(data []byte) *big.Int {
 
 func ReverseBytes(data []byte) []byte {
 	n := len(data)
+	result := make([]byte, n)
 	for i := 0; i < n/2; i++ {
-		data[i], data[n-i-1] = data[n-i-1], data[i]
+		result[i], result[n-i-1] = data[n-i-1], data[i]
 	}
-	return data
+	return result
 }
 
 // Returns little endian
