@@ -244,8 +244,8 @@ func Test_calcInterleave(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		S := ReverseBytes(mustDecodeHex(tc.S))
-		expected := ReverseBytes(mustDecodeHex(tc.expected))
+		S := mustDecodeHex(tc.S)
+		expected := mustDecodeHex(tc.expected)
 		assert.Equal(t, expected, calcInterleave(S))
 	}
 }

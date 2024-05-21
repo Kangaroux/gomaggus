@@ -127,6 +127,7 @@ func splitSKey(S []byte) []byte {
 	return S
 }
 
+// Big endian args + return
 func calcInterleave(S []byte) []byte {
 	S = splitSKey(S)
 	halfSLen := len(S) / 2
@@ -142,7 +143,7 @@ func calcInterleave(S []byte) []byte {
 	hOdd := sha1.Sum(odd)
 
 	result := make([]byte, 40)
-	for i := 0; i < 20; i += 2 {
+	for i := 0; i < 20; i++ {
 		result[i*2] = hEven[i]
 		result[i*2+1] = hOdd[i]
 	}
