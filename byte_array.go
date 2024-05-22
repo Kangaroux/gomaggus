@@ -41,7 +41,7 @@ func (ba *ByteArray) LittleEndian() *ByteArray {
 	return ba
 }
 
-func (ba *ByteArray) BigInt() *big.Int {
+func (ba *ByteArray) BigInt() BigInteger {
 	return big.NewInt(0).SetBytes(ba.data)
 }
 
