@@ -162,9 +162,23 @@ func calcInterleave(S *ByteArray) *ByteArray {
 	return NewByteArray(result, false)
 }
 
-// Little endian args + return
+// Calculates the server's session key. Returns a little endian byte array.
 func calcServerSessionKey(clientPublicKey BigInteger, serverPublicKey BigInteger, verifier BigInteger, serverPrivateKey BigInteger) *ByteArray {
 	u := calcU(clientPublicKey, serverPublicKey)
 	S := calcServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
+	return calcInterleave(S)
+}
+
+func calcClientSessionKey(
+	username string,
+	password string,
+	serverPublicKey BigInteger,
+	clientPrivateKey BigInteger,
+	clientPublicKey BigInteger,
+	salt *ByteArray,
+) *ByteArray {
+	x := calcX(username, password, salt)
+	u := calcU(clientPublicKey, serverPublicKey)
+	S := calcClientSKey(clientPrivateKey, serverPublicKey, x, u)
 	return calcInterleave(S)
 }
