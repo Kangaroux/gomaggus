@@ -203,7 +203,7 @@ func Test_calcU(t *testing.T) {
 	for _, tc := range testCases {
 		clientPublicKey := hexToByteArray(tc.clientPublicKey, true)
 		serverPublicKey := hexToByteArray(tc.serverPublicKey, true)
-		expected := hexToByteArray(tc.expected, false)
+		expected := hexToByteArray(tc.expected, false).BigEndian()
 		assert.Equal(t, expected, calcU(clientPublicKey, serverPublicKey))
 	}
 }

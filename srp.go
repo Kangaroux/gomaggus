@@ -114,7 +114,7 @@ func calcServerSKey(clientPublicKey *ByteArray, verifier *ByteArray, u *ByteArra
 	return NewByteArray(S.Bytes(), true).LittleEndian()
 }
 
-// Calculates U, a hash used for generating session keys. Returns a little endian byte array.
+// Calculates U, a hash used for generating session keys. Returns a BIG endian byte array.
 func calcU(clientPublicKey *ByteArray, serverPublicKey *ByteArray) *ByteArray {
 	u := sha1.New()
 
@@ -122,7 +122,7 @@ func calcU(clientPublicKey *ByteArray, serverPublicKey *ByteArray) *ByteArray {
 	u.Write(clientPublicKey.LittleEndian().Bytes())
 	u.Write(serverPublicKey.LittleEndian().Bytes())
 
-	return NewByteArray(u.Sum(nil), true).LittleEndian()
+	return NewByteArray(u.Sum(nil), true)
 }
 
 // Prepares the S key to be interleaved. Returns a raw little endian byte array.
