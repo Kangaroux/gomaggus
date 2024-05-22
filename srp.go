@@ -125,23 +125,28 @@ func calcU(clientPublicKey *ByteArray, serverPublicKey *ByteArray) *ByteArray {
 	return NewByteArray(u.Sum(nil), true).LittleEndian()
 }
 
-func splitSKey(S []byte) []byte {
-	for len(S) > 0 && S[0] == 0x0 {
-		S = S[2:]
+// Prepares the S key to be interleaved. Returns a raw little endian byte array.
+func prepareInterleave(S *ByteArray) []byte {
+	result := S.LittleEndian().Bytes()
+
+	// Trim the two LSB while the LSB is zero
+	for len(result) > 0 && result[0] == 0x0 {
+		result = result[2:]
 	}
-	return S
+
+	return result
 }
 
-// Little endian args + return
-func calcInterleave(S []byte) []byte {
-	S = splitSKey(S)
-	halfSLen := len(S) / 2
+// Interleaves the S
+func calcInterleave(S *ByteArray) *ByteArray {
+	preparedS := prepareInterleave(S)
+	halfSLen := len(preparedS) / 2
 	even := make([]byte, halfSLen)
 	odd := make([]byte, halfSLen)
 
 	for i := 0; i < halfSLen; i++ {
-		even[i] = S[i*2]
-		odd[i] = S[i*2+1]
+		even[i] = preparedS[i*2]
+		odd[i] = preparedS[i*2+1]
 	}
 
 	hEven := sha1.Sum(even)
@@ -152,7 +157,8 @@ func calcInterleave(S []byte) []byte {
 		result[i*2] = hEven[i]
 		result[i*2+1] = hOdd[i]
 	}
-	return result
+
+	return NewByteArray(result, false)
 }
 
 // Little endian args + return

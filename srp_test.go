@@ -208,7 +208,7 @@ func Test_calcU(t *testing.T) {
 	}
 }
 
-func Test_splitSKey(t *testing.T) {
+func Test_prepareInterleave(t *testing.T) {
 	type testCase struct {
 		S        []byte
 		expected []byte
@@ -222,14 +222,15 @@ func Test_splitSKey(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		assert.Equal(t, tc.expected, splitSKey(tc.S))
+		S := NewByteArray(tc.S, false)
+		assert.Equal(t, tc.expected, prepareInterleave(S))
 	}
 }
 
 func Test_calcInterleave(t *testing.T) {
 	type testCase struct {
-		S        string
-		expected string
+		S        string // Little endian hex
+		expected string // Little endian hex
 	}
 
 	// First 10 testCases from:
@@ -248,8 +249,8 @@ func Test_calcInterleave(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		S := mustDecodeHex(tc.S)
-		expected := mustDecodeHex(tc.expected)
+		S := hexToByteArray(tc.S, false)
+		expected := hexToByteArray(tc.expected, false)
 		assert.Equal(t, expected, calcInterleave(S))
 	}
 }
