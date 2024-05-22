@@ -6,7 +6,6 @@ package main
 
 import (
 	"crypto/sha1"
-	"fmt"
 	"io"
 	"math/big"
 )
@@ -76,7 +75,7 @@ func calcServerPublicKey(verifier BigInteger, serverPrivateKey BigInteger) BigIn
 	// (k * v + (g^b % N)) % N
 	result.Mod(result, bigN())
 
-	return NewByteArray(result.Bytes(), true).LittleEndian().BigInt()
+	return NewByteArray(result.Bytes(), true).BigInt()
 }
 
 // Calculates the client's S key, a value that is used to generate the client's session key. Returns
@@ -122,7 +121,7 @@ func calcU(clientPublicKey BigInteger, serverPublicKey BigInteger) BigInteger {
 	u.Write(NewByteArray(clientPublicKey.Bytes(), true).LittleEndian().Bytes())
 	u.Write(NewByteArray(serverPublicKey.Bytes(), true).LittleEndian().Bytes())
 
-	return NewByteArray(u.Sum(nil), true).BigInt()
+	return NewByteArray(u.Sum(nil), true).LittleEndian().BigInt()
 }
 
 // Prepares the S key to be interleaved. Returns a raw little endian byte array.
@@ -166,8 +165,6 @@ func calcInterleave(S *ByteArray) *ByteArray {
 // Little endian args + return
 func calcServerSessionKey(clientPublicKey BigInteger, serverPublicKey BigInteger, verifier BigInteger, serverPrivateKey BigInteger) *ByteArray {
 	u := calcU(clientPublicKey, serverPublicKey)
-	fmt.Printf("u: %x\n", u.Bytes())
 	S := calcServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
-	fmt.Printf("S: %x\n", S.Bytes())
 	return calcInterleave(S)
 }
