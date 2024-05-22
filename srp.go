@@ -6,6 +6,7 @@ package main
 
 import (
 	"crypto/sha1"
+	"fmt"
 	"io"
 	"math/big"
 )
@@ -82,19 +83,19 @@ func calcServerPublicKey(verifier *ByteArray, serverPrivateKey *ByteArray) *Byte
 // Calculates the client's S key, a value that is used to generate the client's session key. Returns
 // a little endian byte array.
 func calcClientSKey(clientPrivateKey *ByteArray, serverPublicKey *ByteArray, x *ByteArray, u *ByteArray) *ByteArray {
-	bigX := x.LittleEndian().BigInt()
+	bigX := x.BigInt()
 
 	// u * x
-	exponent := big.NewInt(0).Mul(u.LittleEndian().BigInt(), bigX)
+	exponent := big.NewInt(0).Mul(u.BigInt(), bigX)
 	// a + u * x
-	exponent.Add(exponent, clientPrivateKey.LittleEndian().BigInt())
+	exponent.Add(exponent, clientPrivateKey.BigInt())
 
 	// g^x % N
 	S := big.NewInt(0).Exp(bigG(), bigX, bigN())
 	// k * (g^x % N)
 	S.Mul(S, bigK())
 	// B - (k * (g^x % N))
-	S.Sub(serverPublicKey.LittleEndian().BigInt(), S)
+	S.Sub(serverPublicKey.BigInt(), S)
 	// (B - (k * (g^x % N)))^(a + u * x) % N
 	S.Exp(S, exponent, bigN())
 
@@ -105,11 +106,11 @@ func calcClientSKey(clientPrivateKey *ByteArray, serverPublicKey *ByteArray, x *
 // a little endian byte array.
 func calcServerSKey(clientPublicKey *ByteArray, verifier *ByteArray, u *ByteArray, serverPrivateKey *ByteArray) *ByteArray {
 	// v^u % N
-	S := big.NewInt(0).Exp(verifier.LittleEndian().BigInt(), u.LittleEndian().BigInt(), bigN())
+	S := big.NewInt(0).Exp(verifier.BigInt(), u.BigInt(), bigN())
 	// A * (v^u % N)
-	S.Mul(S, clientPublicKey.LittleEndian().BigInt())
+	S.Mul(S, clientPublicKey.BigInt())
 	// (A * (v^u % N))^b % N
-	S.Exp(S, serverPrivateKey.LittleEndian().BigInt(), bigN())
+	S.Exp(S, serverPrivateKey.BigInt(), bigN())
 
 	return NewByteArray(S.Bytes(), true).LittleEndian()
 }
@@ -162,8 +163,10 @@ func calcInterleave(S *ByteArray) *ByteArray {
 }
 
 // Little endian args + return
-// func calcServerSessionKey(clientPublicKey []byte, serverPublicKey []byte, verifier []byte, serverPrivateKey []byte) []byte {
-// 	u := calcU(ReverseBytes(clientPublicKey), ReverseBytes(serverPublicKey))
-// 	S := ReverseBytes(calcServerSKey(clientPublicKey, verifier, ReverseBytes(u), serverPrivateKey))
-// 	return calcInterleave(S)
-// }
+func calcServerSessionKey(clientPublicKey *ByteArray, serverPublicKey *ByteArray, verifier *ByteArray, serverPrivateKey *ByteArray) *ByteArray {
+	u := calcU(clientPublicKey, serverPublicKey)
+	fmt.Printf("u: %x\n", u.Bytes())
+	S := calcServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
+	fmt.Printf("S: %x\n", S.Bytes())
+	return calcInterleave(S)
+}
