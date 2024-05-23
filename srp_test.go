@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,32 +23,23 @@ func hexToByteArray(s string, bigEndian bool) *ByteArray {
 }
 
 func Test_calcX(t *testing.T) {
-	type testCase struct {
-		salt     string // Big endian hex
-		expected string // Little endian hex
+	f, err := os.Open("test_data/calculate_x.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	rows, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		panic(err)
 	}
 
-	// First 10 testCases from:
-	// https://gtker.com/implementation-guide-for-the-world-of-warcraft-flavor-of-srp6/verification_values/calculate_x_salt_values.txt
-	testCases := []testCase{
-		{"CAC94AF32D817BA64B13F18FDEDEF92AD4ED7EF7AB0E19E9F2AE13C828AEAF57", "D927E98BE3E9AF84FDC99DE9034F8E70ED7E90D6"},
-		{"0CE6107EAC9DBBED6C7AD14EB0D4DDFBAAB82BE636F4EFF23B2A5E39EEC16A4B", "D30F36712DBB25FFAD213AE1F8E6A836FC9512DC"},
-		{"422E5E9DE1CD44BF81D64FCB8BAE78F23C66C3E323D3DBC0FEEFC991475CECFA", "FC4EC39D5AAD4875F3B706EB3D10DAE7C7742273"},
-		{"E0EDCFCA5AF8A23FFE02D505EB4BD34C0BAD4228DC3EC0975EADF18214F9C960", "0BF89E0845FC52040C8227D9F54C6D0E800B3C2B"},
-		{"E5E8E756C71E1674CFD385FBB1FCD9A9A19A6454D6CF6C0DEBF9B6DDCD46B2A3", "BFEF246D5F39B46B2CF1D789748EF6885EE1854B"},
-		{"B6DDDFBEBB9BBA928A3E76150BF1BFA306DA6BDAB2BD7043B87D0DEA3C45ADE6", "0CA7F727D8DBBCACB51E51E1E848C8EA12A53399"},
-		{"EF969E1EE76DCCEFCF05288F5EBB2DB13A429DD8B35BAE2EE2E603B2EB1F1F0F", "9D4D2352AD71BC4256225FF7C18902548F15B13E"},
-		{"96E1AA3F3DA9CB15AD05D304DB5E36703E2DEFCFD0FCC1E6452B6306C89F9DC6", "35FFFEEC0C5D4623D693B55B4C39A6648417A575"},
-		{"FFCDF9AED1A5EC3D56CB0BFE6026A5CFA6CCCDDCCEBFF6FC7AC0F5A71ACC54E8", "5840003306F80C70FDBD0E692F3866629E6CB92B"},
-		{"CADD8EEBE2FD8BCACDCDCEE3BEA0BF4F0928EC463E70E07CCAA05CD91A44DC1F", "73AB2AACD12BB1A5E1AF467CF2F46F0B76F5418C"},
-	}
+	for _, row := range rows {
+		username := row[0]
+		password := row[1]
+		salt := hexToByteArray(row[2], false)
+		expected := hexToByteArray(row[3], false).BigInt()
 
-	username := "USERNAME123"
-	password := "PASSWORD123"
-
-	for _, tc := range testCases {
-		salt := hexToByteArray(tc.salt, true)
-		expected := hexToByteArray(tc.expected, false).BigInt()
 		assert.Equal(t, expected, calcX(username, password, salt))
 	}
 }
