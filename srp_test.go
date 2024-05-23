@@ -37,29 +37,45 @@ func loadTestData(path string) [][]string {
 }
 
 func Test_calcX(t *testing.T) {
-	rows := loadTestData("test_data/calculate_x.csv")
+	t.Run("generated test data", func(t *testing.T) {
+		rows := loadTestData("test_data/calculate_x.csv")
 
-	for _, row := range rows {
-		username := row[0]
-		password := row[1]
-		salt := hexToByteArray(row[2], false)
-		expected := hexToByteArray(row[3], false).BigInt()
+		for _, row := range rows {
+			username := row[0]
+			password := row[1]
+			salt := hexToByteArray(row[2], false)
+			expected := hexToByteArray(row[3], false).BigInt()
 
-		assert.Equal(t, expected, calcX(username, password, salt))
-	}
+			assert.Equal(t, expected, calcX(username, password, salt))
+		}
+	})
+
+	t.Run("case insensitive username and password", func(t *testing.T) {
+		salt := hexToByteArray("F3DCABA1165E23534CDC7D709E87B409C505C28D26D3DC14247796BE29CC4D24", false)
+
+		assert.Equal(t, calcX("username", "password", salt), calcX("USERNAME", "PASSWORD", salt))
+	})
 }
 
 func Test_passVerify(t *testing.T) {
-	rows := loadTestData("test_data/calculate_verifier.csv")
+	t.Run("generated test data", func(t *testing.T) {
+		rows := loadTestData("test_data/calculate_verifier.csv")
 
-	for _, row := range rows {
-		username := row[0]
-		password := row[1]
-		salt := hexToByteArray(row[2], false)
-		expected := hexToByteArray(row[3], false).BigInt()
+		for _, row := range rows {
+			username := row[0]
+			password := row[1]
+			salt := hexToByteArray(row[2], false)
+			expected := hexToByteArray(row[3], false).BigInt()
 
-		assert.Equal(t, expected, passVerify(username, password, salt))
-	}
+			assert.Equal(t, expected, passVerify(username, password, salt))
+		}
+	})
+
+	t.Run("case insensitive username and password", func(t *testing.T) {
+		salt := hexToByteArray("F3DCABA1165E23534CDC7D709E87B409C505C28D26D3DC14247796BE29CC4D24", false)
+
+		assert.Equal(t, passVerify("username", "password", salt), passVerify("USERNAME", "PASSWORD", salt))
+	})
 }
 
 func Test_calcServerPublicKey(t *testing.T) {
@@ -140,7 +156,6 @@ func Test_calcInterleave(t *testing.T) {
 		S := hexToByteArray(row[0], false)
 		expected := hexToByteArray(row[1], false)
 
-		// fmt.Printf("%x\n", calcInterleave(S).Bytes())
 		assert.Equal(t, expected, calcInterleave(S))
 	}
 }
