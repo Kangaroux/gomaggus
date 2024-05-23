@@ -1,9 +1,11 @@
 import random
 import string
-from typing import Literal
 
-ascii = string.ascii_letters + string.digits
-hex = string.hexdigits
+ascii_chars = string.ascii_letters + string.digits
+hex_chars = "0123456789ABCDEF"
 
-def random_string(kind: Literal["ascii", "hex"], slen: int) -> str:
-    return "".join(random.choices(ascii if kind == "ascii" else hex, k=slen))
+def rand_hex(slen: int) -> str:
+    return "".join(random.choices(hex_chars, k=slen*2))
+
+def rand_ascii(slen: int) -> str:
+    return "".join(random.choices(ascii_chars, k=slen))
