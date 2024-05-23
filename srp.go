@@ -43,13 +43,6 @@ func ReverseBytes(data []byte) []byte {
 	return result
 }
 
-// Calculates the password verifier. Returns a big integer.
-func passVerify(username string, password string, salt *ByteArray) BigInteger {
-	// g^x % N
-	verifier := big.NewInt(0).Exp(bigG(), calcX(username, password, salt), bigN())
-	return NewByteArray(verifier.Bytes(), true).LittleEndian().BigInt()
-}
-
 // Calculates x, a hash used by the password verifier. Returns a big integer.
 func calcX(username string, password string, salt *ByteArray) BigInteger {
 	h1 := sha1.New()
@@ -65,7 +58,16 @@ func calcX(username string, password string, salt *ByteArray) BigInteger {
 	return NewByteArray(h2.Sum(nil), true).LittleEndian().BigInt()
 }
 
-// Calculates the server's public key. Returns a big integer.
+// Calculates the password verifier. Returns a big integer.
+func passVerify(username string, password string, salt *ByteArray) BigInteger {
+	// g^x % N
+	x := calcX(username, password, salt)
+	verifier := big.NewInt(0).Exp(bigG(), x, bigN())
+	return NewByteArray(verifier.Bytes(), true).LittleEndian().BigInt()
+}
+
+// Calculates the server's public key. The verifier and serverPrivateKey must be little endian.
+// Returns a big integer.
 func calcServerPublicKey(verifier BigInteger, serverPrivateKey BigInteger) BigInteger {
 	result := big.NewInt(0)
 
@@ -76,7 +78,7 @@ func calcServerPublicKey(verifier BigInteger, serverPrivateKey BigInteger) BigIn
 	// (k * v + (g^b % N)) % N
 	result.Mod(result, bigN())
 
-	return NewByteArray(result.Bytes(), true).BigInt()
+	return NewByteArray(result.Bytes(), true).LittleEndian().BigInt()
 }
 
 // Calculates the client's S key, a value that is used to generate the client's session key. Returns
