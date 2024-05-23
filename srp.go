@@ -6,7 +6,6 @@ package main
 
 import (
 	"crypto/sha1"
-	"fmt"
 	"io"
 	"math/big"
 	"strings"
@@ -171,9 +170,7 @@ func calcServerSessionKey(
 	serverPrivateKey BigInteger,
 ) *ByteArray {
 	u := calcU(clientPublicKey, serverPublicKey)
-	fmt.Printf("u: %x\n", u.Bytes())
 	S := calcServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
-	fmt.Printf("S: %x\n", S.Bytes())
 	return calcInterleave(S)
 }
 
