@@ -56,7 +56,7 @@ func calcX(username string, password string, salt *ByteArray) BigInteger {
 	h2.Write(salt.LittleEndian().Bytes())
 	h2.Write(h1.Sum(nil))
 
-	return NewByteArray(h2.Sum(nil), true).LittleEndian().BigInt()
+	return NewByteArray(h2.Sum(nil), 20, true).LittleEndian().BigInt()
 }
 
 // Calculates the password verifier. Returns a big integer.
@@ -64,7 +64,7 @@ func passVerify(username string, password string, salt *ByteArray) BigInteger {
 	// g^x % N
 	x := calcX(username, password, salt)
 	verifier := big.NewInt(0).Exp(bigG(), x, bigN())
-	return NewByteArray(verifier.Bytes(), true).LittleEndian().BigInt()
+	return NewByteArray(verifier.Bytes(), 32, true).LittleEndian().BigInt()
 }
 
 // Calculates the server's public key. The arguments must be little endian. Returns a big integer.
@@ -78,7 +78,7 @@ func calcServerPublicKey(verifier BigInteger, serverPrivateKey BigInteger) BigIn
 	// (k * v + (g^b % N)) % N
 	result.Mod(result, bigN())
 
-	return NewByteArray(result.Bytes(), true).LittleEndian().BigInt()
+	return NewByteArray(result.Bytes(), 32, true).LittleEndian().BigInt()
 }
 
 // Calculates the client's S key, a value that is used to generate the client's session key. The
@@ -98,7 +98,7 @@ func calcClientSKey(clientPrivateKey BigInteger, serverPublicKey BigInteger, x B
 	// (B - (k * (g^x % N)))^(a + u * x) % N
 	S.Exp(S, exponent, bigN())
 
-	return NewByteArray(S.Bytes(), true).LittleEndian()
+	return NewByteArray(S.Bytes(), 32, true).LittleEndian()
 }
 
 // Calculates the server's S key, a value that is used to generate the server's session key. The
@@ -111,7 +111,7 @@ func calcServerSKey(clientPublicKey BigInteger, verifier BigInteger, u BigIntege
 	// (A * (v^u % N))^b % N
 	S.Exp(S, serverPrivateKey, bigN())
 
-	return NewByteArray(S.Bytes(), true).LittleEndian()
+	return NewByteArray(S.Bytes(), 32, true).LittleEndian()
 }
 
 // Calculates U, a hash used for generating session keys. The arguments must be little endian.
@@ -123,7 +123,7 @@ func calcU(clientPublicKey BigInteger, serverPublicKey BigInteger) BigInteger {
 	u.Write(clientPublicKey.Bytes())
 	u.Write(serverPublicKey.Bytes())
 
-	return NewByteArray(u.Sum(nil), true).LittleEndian().BigInt()
+	return NewByteArray(u.Sum(nil), 20, true).LittleEndian().BigInt()
 }
 
 // Prepares the S key to be interleaved. Returns a raw little endian byte array.
@@ -159,7 +159,7 @@ func calcInterleave(S *ByteArray) *ByteArray {
 		result[i*2+1] = hOdd[i]
 	}
 
-	return NewByteArray(result, true)
+	return NewByteArray(result, 40, true)
 }
 
 // Calculates the server's session key. The arguments must be little endian. Returns a little endian

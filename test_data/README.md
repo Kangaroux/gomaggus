@@ -7,7 +7,5 @@ The expected value included in the CSVs had to be added manually. I start by ver
 For example, when generating the expected values for `calculate_x.csv`, I replaced the assertion with this:
 
 ```go
-fmt.Printf("%x\n", PadBytes(calcX(username, password, salt).Bytes(), 20))
+fmt.Printf("%x\n", calcX(username, password, salt).Bytes())
 ```
-
-Using `PadBytes` ensures that all of the hex strings are the same length. In some cases, the expected value may have leading zeroes, which causes the hex string to be trimmed.

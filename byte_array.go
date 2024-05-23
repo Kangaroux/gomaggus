@@ -10,8 +10,14 @@ type ByteArray struct {
 	data      []byte
 }
 
-func NewByteArray(data []byte, bigEndian bool) *ByteArray {
-	return &ByteArray{bigEndian: bigEndian, data: data}
+// NewByteArray creates an endian-aware byte array from `data`. If `size` is greater than zero,
+// the data will be left-padded with zeroes (see `LeftPad()`).
+func NewByteArray(data []byte, size int, bigEndian bool) *ByteArray {
+	ba := &ByteArray{bigEndian: bigEndian, data: data}
+	if size > 0 {
+		ba.LeftPad(size)
+	}
+	return ba
 }
 
 func (ba *ByteArray) Bytes() []byte {
@@ -45,6 +51,19 @@ func (ba *ByteArray) BigInt() BigInteger {
 	return big.NewInt(0).SetBytes(ba.data)
 }
 
+// LeftPad pads the left side of the byte array with zeroes if the byte array is smaller than `length`.
+func (ba *ByteArray) LeftPad(length int) *ByteArray {
+	dataLen := len(ba.data)
+
+	if dataLen < length {
+		padded := make([]byte, length)
+		copy(padded[length-dataLen:], ba.data)
+		ba.data = padded
+	}
+
+	return ba
+}
+
 func (ba *ByteArray) swapEndian() {
 	ba.bigEndian = !ba.bigEndian
 	reverseBytesNoCopy(ba.data)
@@ -60,7 +79,7 @@ func reverseBytesNoCopy(data []byte) {
 
 // PadBytes pads the left side of the `data` with zeroes if `len(data)` is less than `length`.
 // Returns a new byte array if padding was added, otherwise returns the original `data`.
-func PadBytes(data []byte, length int) []byte {
+func padBytes(data []byte, length int) []byte {
 	dataLen := len(data)
 
 	if dataLen >= length {
