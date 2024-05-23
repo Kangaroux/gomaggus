@@ -138,7 +138,7 @@ func prepareInterleave(S *ByteArray) []byte {
 	return result
 }
 
-// Interleaves the S key which generates the session key. Returns a BIG endian byte array.
+// Interleaves the S key which generates the session key. Returns a little endian byte array.
 func calcInterleave(S *ByteArray) *ByteArray {
 	preparedS := prepareInterleave(S)
 	halfSLen := len(preparedS) / 2
@@ -153,13 +153,13 @@ func calcInterleave(S *ByteArray) *ByteArray {
 	hEven := sha1.Sum(even)
 	hOdd := sha1.Sum(odd)
 
-	result := make([]byte, 40)
+	sessionKey := make([]byte, 40)
 	for i := 0; i < 20; i++ {
-		result[i*2] = hEven[i]
-		result[i*2+1] = hOdd[i]
+		sessionKey[i*2] = hEven[i]
+		sessionKey[i*2+1] = hOdd[i]
 	}
 
-	return NewByteArray(result, 40, true)
+	return NewByteArray(sessionKey, 40, false)
 }
 
 // Calculates the server's session key. The arguments must be little endian. Returns a little endian
