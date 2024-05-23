@@ -22,8 +22,8 @@ func hexToByteArray(s string, bigEndian bool) *ByteArray {
 	return NewByteArray(mustDecodeHex(s), bigEndian)
 }
 
-func Test_calcX(t *testing.T) {
-	f, err := os.Open("test_data/calculate_x.csv")
+func loadTestData(path string) [][]string {
+	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
@@ -33,6 +33,12 @@ func Test_calcX(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+
+	return rows
+}
+
+func Test_calcX(t *testing.T) {
+	rows := loadTestData("test_data/calculate_x.csv")
 
 	for _, row := range rows {
 		username := row[0]
