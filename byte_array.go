@@ -76,17 +76,3 @@ func reverseBytesNoCopy(data []byte) {
 		data[i], data[n-i-1] = data[n-i-1], data[i]
 	}
 }
-
-// PadBytes pads the left side of the `data` with zeroes if `len(data)` is less than `length`.
-// Returns a new byte array if padding was added, otherwise returns the original `data`.
-func padBytes(data []byte, length int) []byte {
-	dataLen := len(data)
-
-	if dataLen >= length {
-		return data
-	}
-
-	ret := make([]byte, length)
-	copy(ret[length-dataLen:], data)
-	return ret
-}
