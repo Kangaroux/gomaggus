@@ -8,6 +8,7 @@ import (
 	"crypto/sha1"
 	"io"
 	"math/big"
+	"strings"
 )
 
 type BigInteger = *big.Int
@@ -55,7 +56,7 @@ func calcX(username string, password string, salt *ByteArray) BigInteger {
 	h2 := sha1.New()
 
 	// SHA1(username | ":" | password)
-	io.WriteString(h1, username+":"+password)
+	io.WriteString(h1, strings.ToUpper(username)+":"+strings.ToUpper(password))
 
 	// SHA1(salt | SHA1(username | ":" | password))
 	h2.Write(salt.LittleEndian().Bytes())
