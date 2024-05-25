@@ -174,6 +174,8 @@ func calcServerSessionKey(
 	return calcInterleave(S)
 }
 
+// Calculates the server's session key. The arguments must be little endian (not including username
+// and password). Returns a little endian byte array.
 func calcClientSessionKey(
 	username string,
 	password string,
@@ -186,4 +188,12 @@ func calcClientSessionKey(
 	u := calcU(clientPublicKey, serverPublicKey)
 	S := calcClientSKey(clientPrivateKey, serverPublicKey, x, u)
 	return calcInterleave(S)
+}
+
+func calcServerProof(clientPublicKey BigInteger, clientProof *ByteArray, sessionKey *ByteArray) *ByteArray {
+	h := sha1.New()
+	h.Write(clientPublicKey.Bytes())
+	h.Write(clientProof.LittleEndian().Bytes())
+	h.Write(sessionKey.LittleEndian().Bytes())
+	return NewByteArray(h.Sum(nil), 20, false)
 }
