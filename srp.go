@@ -13,6 +13,13 @@ import (
 
 type BigInteger = *big.Int
 
+var (
+	xorHash = []byte{
+		0xDD, 0x7B, 0xB0, 0x3A, 0x38, 0xAC, 0x73, 0x11, 0x3, 0x98,
+		0x7C, 0x5A, 0x50, 0x6F, 0xCA, 0x96, 0x6C, 0x7B, 0xC2, 0xA7,
+	}
+)
+
 func bigN() BigInteger {
 	return bytesToBig([]byte{
 		0x89, 0x4b, 0x64, 0x5e, 0x89, 0xe1, 0x53, 0x5b,
@@ -190,10 +197,31 @@ func calcClientSessionKey(
 	return calcInterleave(S)
 }
 
+// Calculates the server proof. The arguments must be little endian. Returns a little endian byte array.
 func calcServerProof(clientPublicKey BigInteger, clientProof *ByteArray, sessionKey *ByteArray) *ByteArray {
 	h := sha1.New()
 	h.Write(clientPublicKey.Bytes())
 	h.Write(clientProof.LittleEndian().Bytes())
+	h.Write(sessionKey.LittleEndian().Bytes())
+	return NewByteArray(h.Sum(nil), 20, false)
+}
+
+// Calculates the client proof. The arguments must be little endian (not including username). Returns
+// a little endian byte array.
+func calcClientProof(
+	username string,
+	sessionKey *ByteArray,
+	clientPublicKey BigInteger,
+	serverPublicKey BigInteger,
+	salt *ByteArray,
+) *ByteArray {
+	hUsername := sha1.Sum([]byte(username))
+	h := sha1.New()
+	h.Write(xorHash)
+	h.Write(hUsername[:])
+	h.Write(salt.LittleEndian().Bytes())
+	h.Write(clientPublicKey.Bytes())
+	h.Write(serverPublicKey.Bytes())
 	h.Write(sessionKey.LittleEndian().Bytes())
 	return NewByteArray(h.Sum(nil), 20, false)
 }
