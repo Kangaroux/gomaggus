@@ -61,7 +61,7 @@ func Test_constants(t *testing.T) {
 
 func Test_calcX(t *testing.T) {
 	t.Run("generated test data", func(t *testing.T) {
-		rows := loadTestData("test_data/calculate_x.csv")
+		rows := loadTestData("test_data/srp/calculate_x.csv")
 
 		for _, row := range rows {
 			username := row[0]
@@ -82,7 +82,7 @@ func Test_calcX(t *testing.T) {
 
 func Test_passVerify(t *testing.T) {
 	t.Run("generated test data", func(t *testing.T) {
-		rows := loadTestData("test_data/calculate_verifier.csv")
+		rows := loadTestData("test_data/srp/calculate_verifier.csv")
 
 		for _, row := range rows {
 			username := row[0]
@@ -102,7 +102,7 @@ func Test_passVerify(t *testing.T) {
 }
 
 func Test_calcServerPublicKey(t *testing.T) {
-	rows := loadTestData("test_data/calculate_server_public_key.csv")
+	rows := loadTestData("test_data/srp/calculate_server_public_key.csv")
 
 	for _, row := range rows {
 		verifier := hexToByteArray(row[0], false).BigInt()
@@ -114,7 +114,7 @@ func Test_calcServerPublicKey(t *testing.T) {
 }
 
 func Test_calcClientSKey(t *testing.T) {
-	rows := loadTestData("test_data/calculate_client_s.csv")
+	rows := loadTestData("test_data/srp/calculate_client_s.csv")
 
 	for _, row := range rows {
 		serverPublicKey := hexToByteArray(row[0], false).BigInt()
@@ -128,7 +128,7 @@ func Test_calcClientSKey(t *testing.T) {
 }
 
 func Test_calcServerSKey(t *testing.T) {
-	rows := loadTestData("test_data/calculate_server_s.csv")
+	rows := loadTestData("test_data/srp/calculate_server_s.csv")
 
 	for _, row := range rows {
 		clientPublicKey := hexToByteArray(row[0], false).BigInt()
@@ -142,7 +142,7 @@ func Test_calcServerSKey(t *testing.T) {
 }
 
 func Test_calcU(t *testing.T) {
-	rows := loadTestData("test_data/calculate_u.csv")
+	rows := loadTestData("test_data/srp/calculate_u.csv")
 
 	for _, row := range rows {
 		clientPublicKey := hexToByteArray(row[0], false).BigInt()
@@ -173,7 +173,7 @@ func Test_prepareInterleave(t *testing.T) {
 }
 
 func Test_calcInterleave(t *testing.T) {
-	rows := loadTestData("test_data/calculate_interleaved.csv")
+	rows := loadTestData("test_data/srp/calculate_interleaved.csv")
 
 	for _, row := range rows {
 		S := hexToByteArray(row[0], false)
@@ -184,7 +184,7 @@ func Test_calcInterleave(t *testing.T) {
 }
 
 func Test_calcServerSessionKey(t *testing.T) {
-	rows := loadTestData("test_data/calculate_server_session_key.csv")
+	rows := loadTestData("test_data/srp/calculate_server_session_key.csv")
 
 	for _, row := range rows {
 		clientPublicKey := hexToByteArray(row[0], false).BigInt()
@@ -206,7 +206,7 @@ func Test_calcServerSessionKey(t *testing.T) {
 }
 
 func Test_calcClientSessionKey(t *testing.T) {
-	rows := loadTestData("test_data/calculate_client_session_key.csv")
+	rows := loadTestData("test_data/srp/calculate_client_session_key.csv")
 
 	for _, row := range rows {
 		username := row[0]
@@ -232,7 +232,7 @@ func Test_calcClientSessionKey(t *testing.T) {
 }
 
 func Test_calcServerProof(t *testing.T) {
-	rows := loadTestData("test_data/calculate_server_proof.csv")
+	rows := loadTestData("test_data/srp/calculate_server_proof.csv")
 
 	for _, row := range rows {
 		clientPublicKey := hexToByteArray(row[0], false).BigInt()
@@ -252,7 +252,7 @@ func Test_calcServerProof(t *testing.T) {
 }
 
 func Test_calcClientProof(t *testing.T) {
-	rows := loadTestData("test_data/calculate_client_proof.csv")
+	rows := loadTestData("test_data/srp/calculate_client_proof.csv")
 
 	for _, row := range rows {
 		username := row[0]
