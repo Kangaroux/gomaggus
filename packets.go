@@ -15,5 +15,13 @@ type LoginChallengePacket struct {
 	AccountNameLength uint8
 
 	// The account name is a variable size and needs to be read manually
-	// AccountName    []byte
+	// AccountName string
+}
+
+type LoginProofPacket struct {
+	Opcode           byte // 0x1
+	ClientPublicKey  [32]byte
+	ClientProof      [20]byte
+	CRCHash          [20]byte // unused
+	NumTelemetryKeys uint8    // unused
 }

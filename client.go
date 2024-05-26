@@ -10,10 +10,12 @@ import (
 var nextId int64 = 1
 
 type Client struct {
-	conn        net.Conn
-	id          int64
-	connectedAt time.Time
-	log         log.Logger
+	conn            net.Conn
+	id              int64
+	connectedAt     time.Time
+	log             log.Logger
+	serverPublicKey BigInteger
+	verifier        BigInteger
 }
 
 func NewClient(conn net.Conn) *Client {
