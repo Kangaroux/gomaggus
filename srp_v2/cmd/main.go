@@ -37,7 +37,7 @@ func init() {
 
 	MOCK_VERIFIER = srpv2.CalculateVerifier(MOCK_USERNAME, MOCK_PASSWORD, MOCK_SALT)
 
-	MOCK_PRIVATE_KEY = make([]byte, 20)
+	MOCK_PRIVATE_KEY = make([]byte, 19) // TrinityCore has this as 19 bytes, does it matter?
 	if _, err := rand.Read(MOCK_PRIVATE_KEY); err != nil {
 		log.Fatalf("error generating private key: %v\n", err)
 	}
@@ -160,15 +160,15 @@ func handlePacket(c net.Conn, data []byte) error {
 			return err
 		}
 
-		revPub := srpv2.Reverse(p.ClientPublicKey[:])
+		clientPublicKey := p.ClientPublicKey[:]
 
-		log.Printf("client public key: %x\n", revPub)
+		log.Printf("client public key: %x\n", clientPublicKey)
 		log.Printf("client proof: %x\n", p.ClientProof)
 
 		sessionKey := srpv2.CalculateServerSessionKey(
-			revPub, MOCK_PUBLIC_KEY, MOCK_PRIVATE_KEY, MOCK_VERIFIER)
+			clientPublicKey, MOCK_PUBLIC_KEY, MOCK_PRIVATE_KEY, MOCK_VERIFIER)
 		calculatedClientProof := srpv2.CalculateClientProof(
-			MOCK_USERNAME, MOCK_SALT, revPub, MOCK_PUBLIC_KEY, sessionKey,
+			MOCK_USERNAME, MOCK_SALT, clientPublicKey, MOCK_PUBLIC_KEY, sessionKey,
 		)
 
 		log.Printf("computed proof: %x\n", calculatedClientProof)
