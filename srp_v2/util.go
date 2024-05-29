@@ -12,7 +12,7 @@ func pad(length int, data []byte) []byte {
 	return ret
 }
 
-func reverse(data []byte) []byte {
+func Reverse(data []byte) []byte {
 	n := len(data)
 	for i := 0; i < n/2; i++ {
 		data[i], data[n-i-1] = data[n-i-1], data[i]

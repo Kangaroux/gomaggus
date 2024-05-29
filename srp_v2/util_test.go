@@ -13,6 +13,6 @@ func TestPad(t *testing.T) {
 }
 
 func TestReverse(t *testing.T) {
-	assert.Equal(t, []byte{0, 1}, reverse([]byte{1, 0}))
-	assert.Equal(t, []byte{0, 1, 2}, reverse([]byte{2, 1, 0}))
+	assert.Equal(t, []byte{0, 1}, Reverse([]byte{1, 0}))
+	assert.Equal(t, []byte{0, 1, 2}, Reverse([]byte{2, 1, 0}))
 }
