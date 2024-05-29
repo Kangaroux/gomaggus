@@ -214,7 +214,7 @@ func calcClientProof(
 	serverPublicKey BigInteger,
 	salt *ByteArray,
 ) *ByteArray {
-	hUsername := sha1.Sum([]byte(username))
+	hUsername := sha1.Sum([]byte(strings.ToUpper(username)))
 	h := sha1.New()
 	h.Write(xorHash.Bytes())
 	h.Write(hUsername[:])

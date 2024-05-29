@@ -98,7 +98,9 @@ func handleLoginChallenge(c *Client, data []byte) error {
 	// c.log.Printf("AccountNameLength: %v", p.AccountNameLength)
 	// c.log.Printf("AccountName: %v", accountName)
 
-	loginChallengeResponse(c, accountName)
+	withRetry(c, func() error {
+		return loginChallengeResponse(c, accountName)
+	})
 
 	return nil
 }
@@ -131,7 +133,7 @@ func loginChallengeResponse(c *Client, username string) error {
 
 	c.log.Println("Username OK, requesting client login proof")
 	if _, err := c.conn.Write(buf.Bytes()); err != nil {
-		c.log.Fatal(err)
+		c.log.Println(err)
 	}
 
 	return nil
@@ -148,10 +150,13 @@ func handleLoginProof(c *Client, data []byte) error {
 		return err
 	}
 
-	// c.log.Printf("PublicKey: %x\n", p.ClientPublicKey)
-	// c.log.Printf("Proof: %x\n", p.ClientProof)
-
-	loginProofResponse(c, NewByteArray(p.ClientPublicKey[:], 32, false).BigInt(), NewByteArray(p.ClientProof[:], 20, false))
+	withRetry(c, func() error {
+		return loginProofResponse(
+			c,
+			NewByteArray(p.ClientPublicKey[:], 32, true).LittleEndian().BigInt(), // big endian?
+			NewByteArray(p.ClientProof[:], 20, false),
+		)
+	})
 
 	return nil
 }
@@ -169,9 +174,12 @@ func loginProofResponse(c *Client, clientPublicKey BigInteger, clientProof *Byte
 	if clientProof != expectedProof {
 		c.log.Println("Client proof does not match, disconnecting")
 
+		c.log.Printf("Got:      %x\n", clientProof.Bytes())
+		c.log.Printf("Expected: %x\n", expectedProof.Bytes())
+
 		buf.Write([]byte{WOW_FAIL_INCORRECT_PASSWORD, 0, 0}) // Add 2 bytes of padding so packet is 4 bytes
 		c.conn.Write(buf.Bytes())
-		c.conn.Close()
+		// c.conn.Close()
 		return nil
 	}
 
@@ -193,12 +201,12 @@ func handlePacket(c *Client, data []byte, dataLen int) error {
 		return nil
 	}
 
-	// c.log.Printf("read %d bytes", dataLen)
-	// c.log.Printf("%v", data)
-
 	opcode := data[0]
 
-	// c.log.Printf("opcode: 0x%x", opcode)
+	select {
+	case c.cancelRetry <- true:
+	default:
+	}
 
 	switch opcode {
 	case AuthLoginChallengeOpCode:
@@ -213,16 +221,18 @@ func handlePacket(c *Client, data []byte, dataLen int) error {
 func handleConnection(c *Client) {
 	defer func() {
 		c.conn.Close()
+		c.cancelRetry <- true
 		c.log.Print("disconnected")
 	}()
 
 	c.log.Printf("connected from %v", c.conn.RemoteAddr())
 	buf := make([]byte, 4096)
 
-	time.AfterFunc(time.Second*5, func() { c.conn.Close() })
-
 	for {
+		c.conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		c.log.Println("Reading...")
 		n, err := c.conn.Read(buf)
+		c.log.Printf("Read %d bytes", n)
 
 		if err != nil && err != io.EOF {
 			c.log.Printf("read failed: %v", err)
@@ -239,4 +249,25 @@ func handleConnection(c *Client) {
 			return
 		}
 	}
+}
+
+func withRetry(c *Client, f func() error) {
+	if err := f(); err != nil {
+		return
+	}
+
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-c.cancelRetry:
+	// 			c.log.Println("client sent response in time, cancel retry")
+	// 			return
+	// 		case <-time.After(1 * time.Second):
+	// 			c.log.Println("Client hasn't responded yet, retrying")
+	// 			if err := f(); err != nil {
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// }()
 }

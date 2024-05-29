@@ -16,6 +16,7 @@ type Client struct {
 	log             log.Logger
 	serverPublicKey BigInteger
 	verifier        BigInteger
+	cancelRetry     chan bool
 }
 
 func NewClient(conn net.Conn) *Client {
@@ -27,5 +28,6 @@ func NewClient(conn net.Conn) *Client {
 		id:          id,
 		connectedAt: time.Now(),
 		log:         *log.New(log.Writer(), fmt.Sprintf("Client %d: ", id), log.Flags()|log.Lmsgprefix),
+		cancelRetry: make(chan bool),
 	}
 }
