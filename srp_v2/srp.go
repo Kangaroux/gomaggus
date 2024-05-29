@@ -25,7 +25,7 @@ var (
 	k = big.NewInt(3)
 )
 
-func calculateX(username, password string, salt []byte) []byte {
+func CalculateX(username, password string, salt []byte) []byte {
 	h := sha1.New()
 	h.Write(salt)
 	inner := sha1.Sum([]byte(strings.ToUpper(username) + ":" + strings.ToUpper(password)))
@@ -33,33 +33,33 @@ func calculateX(username, password string, salt []byte) []byte {
 	return reverse(h.Sum(nil))
 }
 
-func calculateVerifier(username, password string, salt []byte) []byte {
-	x := big.NewInt(0).SetBytes(calculateX(username, password, salt))
+func CalculateVerifier(username, password string, salt []byte) []byte {
+	x := big.NewInt(0).SetBytes(CalculateX(username, password, salt))
 	return pad(32, big.NewInt(0).Exp(g, x, n).Bytes())
 }
 
-func calculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
+func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	publicKey := big.NewInt(0).Exp(g, toInt(serverPrivateKey), n)
 	kv := big.NewInt(0).Mul(k, toInt(verifier))
 	publicKey.Add(publicKey, kv).Mod(publicKey, n)
 	return pad(32, publicKey.Bytes())
 }
 
-func calculateU(clientPublicKey, serverPublicKey []byte) []byte {
+func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 	h := sha1.New()
 	h.Write(reverse(clientPublicKey))
 	h.Write(reverse(serverPublicKey))
 	return reverse(h.Sum(nil))
 }
 
-func calculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
+func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
 	S := big.NewInt(0).Exp(toInt(verifier), toInt(u), n)
 	S.Mul(S, toInt(clientPublicKey))
 	S.Exp(S, toInt(serverPrivateKey), n)
 	return reverse(pad(32, S.Bytes()))
 }
 
-func calculateInterleave(S []byte) []byte {
+func CalculateInterleave(S []byte) []byte {
 	for len(S) > 0 && S[0] == 0 {
 		S = S[2:]
 	}
@@ -84,13 +84,13 @@ func calculateInterleave(S []byte) []byte {
 	return interleaved
 }
 
-func calculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKey, verifier []byte) []byte {
-	u := calculateU(clientPublicKey, serverPublicKey)
-	S := calculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
-	return calculateInterleave(S)
+func CalculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKey, verifier []byte) []byte {
+	u := CalculateU(clientPublicKey, serverPublicKey)
+	S := CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
+	return CalculateInterleave(S)
 }
 
-func calculateClientProof(
+func CalculateClientProof(
 	username string,
 	salt,
 	clientPublicKey,
