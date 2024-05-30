@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	OP_LOGIN_CHALLENGE = 0
-	OP_LOGIN_PROOF     = 1
+	OP_LOGIN_CHALLENGE byte = 0
+	OP_LOGIN_PROOF          = 1
 
-	WOW_SUCCESS = 0
+	WOW_SUCCESS              byte = 0
+	WOW_FAIL_UNKNOWN_ACCOUNT      = 4
 
 	MOCK_USERNAME = "TEST"
 	MOCK_PASSWORD = "PASSWORD"
@@ -121,6 +122,7 @@ func handlePacket(c net.Conn, data []byte) error {
 
 	switch data[0] {
 	case OP_LOGIN_CHALLENGE:
+		log.Println("Starting login challenge")
 		p := LoginChallengePacket{}
 		reader := bytes.NewReader(data)
 		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
@@ -133,6 +135,7 @@ func handlePacket(c net.Conn, data []byte) error {
 		username := string(usernameBytes)
 		log.Printf("client trying to login as '%s'\n", username)
 
+		// https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 		resp := bytes.Buffer{}
 		resp.WriteByte(OP_LOGIN_CHALLENGE)
 		resp.WriteByte(0) // protocol version
@@ -147,8 +150,10 @@ func handlePacket(c net.Conn, data []byte) error {
 		resp.WriteByte(0)
 
 		_, err := c.Write(resp.Bytes())
+		log.Println("Replied to login challenge")
 		return err
 	case OP_LOGIN_PROOF:
+		log.Println("Starting login proof")
 		p := LoginProofPacket{}
 		reader := bytes.NewReader(data)
 		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
@@ -156,9 +161,7 @@ func handlePacket(c net.Conn, data []byte) error {
 		}
 
 		clientPublicKey := p.ClientPublicKey[:]
-
-		log.Printf("client public key: %x\n", clientPublicKey)
-		log.Printf("client proof: %x\n", p.ClientProof)
+		clientProof := p.ClientProof[:]
 
 		sessionKey := srpv2.CalculateServerSessionKey(
 			clientPublicKey, MOCK_PUBLIC_KEY, MOCK_PRIVATE_KEY, MOCK_VERIFIER)
@@ -166,9 +169,24 @@ func handlePacket(c net.Conn, data []byte) error {
 			MOCK_USERNAME, MOCK_SALT, clientPublicKey, MOCK_PUBLIC_KEY, sessionKey,
 		)
 
-		log.Printf("computed proof: %x\n", calculatedClientProof)
+		// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
+		resp := bytes.Buffer{}
+		resp.WriteByte(OP_LOGIN_PROOF)
 
-		return nil
+		if !bytes.Equal(calculatedClientProof, clientProof) {
+			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
+			resp.Write([]byte{0, 0}) // padding
+		} else {
+			resp.WriteByte(WOW_SUCCESS)
+			resp.Write(srpv2.CalculateServerProof(clientPublicKey, clientProof, sessionKey))
+			resp.Write([]byte{0, 0, 0, 0}) // Account flag
+			resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
+			resp.Write([]byte{0, 0})       // Unknown
+		}
+
+		_, err := c.Write(resp.Bytes())
+		log.Println("Replied to login proof")
+		return err
 	default:
 		return fmt.Errorf("error: unknown opcode (%v)", data[0])
 	}
