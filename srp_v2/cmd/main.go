@@ -17,6 +17,7 @@ const (
 	OP_LOGIN_PROOF         byte = 1
 	OP_RECONNECT_CHALLENGE byte = 2
 	OP_RECONNECT_PROOF     byte = 3
+	OP_REALM_LIST          byte = 16
 
 	WOW_SUCCESS              byte = 0
 	WOW_FAIL_UNKNOWN_ACCOUNT byte = 4
@@ -25,11 +26,84 @@ const (
 	MOCK_PASSWORD = "PASSWORD"
 )
 
+type RealmType uint8
+
+const (
+	REALM_PVE   RealmType = 0
+	REALM_PVP   RealmType = 1
+	REALM_RP    RealmType = 6
+	REALM_RPPVP RealmType = 8
+)
+
+type RealmFlag uint8
+
+const (
+	REALMFLAG_NONE          RealmFlag = 0
+	REALMFLAG_INVALID       RealmFlag = 1
+	REALMFLAG_OFFLINE       RealmFlag = 2
+	REALMFLAG_SPECIFY_BUILD RealmFlag = 4
+	REALMFLAG_UNKNOWN1      RealmFlag = 8
+	REALMFLAG_UNKNOWN2      RealmFlag = 16
+	REALMFLAG_NEW_PLAYERS   RealmFlag = 32  // Population: "New Players" in blue text
+	REALMFLAG_NEW_SERVER    RealmFlag = 64  // Population: "New" in green text
+	REALMFLAG_FULL          RealmFlag = 128 // Population: "Full" in red text
+)
+
+type RealmRegion uint8
+
+const (
+	// TODO: get a descriptive name for these
+	REALMREGION_DEVELOPMENT RealmRegion = 0
+	REALMREGION_1           RealmRegion = 1
+	REALMREGION_2           RealmRegion = 2
+	REALMREGION_3           RealmRegion = 3
+	REALMREGION_5           RealmRegion = 5
+)
+
 var (
 	MOCK_SALT        []byte
 	MOCK_VERIFIER    []byte
 	MOCK_PRIVATE_KEY []byte
 	MOCK_PUBLIC_KEY  []byte
+
+	MOCK_REALMS = []Realm{
+		{
+			Type:            REALM_PVE,
+			Locked:          false,
+			Flags:           32,
+			Name:            "Test Realm\x00",
+			Host:            "localhost:8085\x00",
+			Population:      2.0,
+			NumCharsOnRealm: 1,
+			Region:          REALMREGION_1,
+			Id:              0,
+			// Version:         RealmVersion{Major: 3, Minor: 3, Patch: 5, Build: 12340},
+		},
+		{
+			Type:            REALM_PVP,
+			Locked:          false,
+			Flags:           64,
+			Name:            "Test Realm 2\x00",
+			Host:            "localhost:8085\x00",
+			Population:      2.0,
+			NumCharsOnRealm: 1,
+			Region:          REALMREGION_2,
+			Id:              1,
+			// Version:         RealmVersion{Major: 3, Minor: 3, Patch: 5, Build: 12340},
+		},
+		{
+			Type:            REALM_RP,
+			Locked:          false,
+			Flags:           128,
+			Name:            "Test Realm 3\x00",
+			Host:            "localhost:8085\x00",
+			Population:      2.0,
+			NumCharsOnRealm: 1,
+			Region:          REALMREGION_3,
+			Id:              2,
+			// Version:         RealmVersion{Major: 3, Minor: 3, Patch: 5, Build: 12340},
+		},
+	}
 )
 
 func init() {
@@ -136,6 +210,27 @@ type ReconnectProofPacket struct {
 	KeyCount       byte     // unused
 }
 
+type RealmVersion struct {
+	Major uint8
+	Minor uint8
+	Patch uint8
+	Build uint16
+}
+
+// https://gtker.com/wow_messages/docs/realm.html#protocol-version-8
+type Realm struct {
+	Type            RealmType
+	Locked          bool
+	Flags           RealmFlag
+	Name            string  // C-style NUL terminated, e.g. "Test Realm\x00"
+	Host            string  // C-style NUL terminated, e.g. "localhost:8085\x00"
+	Population      float32 // Percentage of server capacity. 0 = nobody is online, 1 = server is maxed out
+	NumCharsOnRealm uint8   // Number of characters for the logged in account
+	Region          RealmRegion
+	Id              uint8
+	Version         RealmVersion // included only if REALMFLAG_SPECIFY_BUILD flag is set
+}
+
 func handlePacket(c *Client, data []byte) error {
 	if len(data) == 0 {
 		return fmt.Errorf("error: packet is empty")
@@ -157,7 +252,7 @@ func handlePacket(c *Client, data []byte) error {
 		log.Printf("client trying to login as '%s'\n", username)
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
-		resp := bytes.Buffer{}
+		resp := &bytes.Buffer{}
 		resp.WriteByte(OP_LOGIN_CHALLENGE)
 		resp.WriteByte(0) // protocol version
 		resp.WriteByte(WOW_SUCCESS)
@@ -195,7 +290,7 @@ func handlePacket(c *Client, data []byte) error {
 		)
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
-		resp := bytes.Buffer{}
+		resp := &bytes.Buffer{}
 		resp.WriteByte(OP_LOGIN_PROOF)
 
 		if !bytes.Equal(calculatedClientProof, clientProof) {
@@ -226,7 +321,7 @@ func handlePacket(c *Client, data []byte) error {
 		}
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
-		resp := bytes.Buffer{}
+		resp := &bytes.Buffer{}
 		resp.WriteByte(OP_RECONNECT_CHALLENGE)
 		resp.WriteByte(WOW_SUCCESS)
 		resp.Write(c.reconnectData)
@@ -252,7 +347,7 @@ func handlePacket(c *Client, data []byte) error {
 		log.Printf("client proof: %x\n", p.ClientProof)
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
-		resp := bytes.Buffer{}
+		resp := &bytes.Buffer{}
 		resp.WriteByte(OP_RECONNECT_PROOF)
 		if !bytes.Equal(serverProof, p.ClientProof[:]) {
 			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
@@ -270,6 +365,51 @@ func handlePacket(c *Client, data []byte) error {
 		}
 
 		log.Println("Replied to reconnect proof")
+		return nil
+	case OP_REALM_LIST:
+		// https://gtker.com/wow_messages/docs/cmd_realm_list_server.html#protocol-version-8
+		resp := &bytes.Buffer{}
+		resp.WriteByte(OP_REALM_LIST)
+
+		realmList := &bytes.Buffer{}
+		realmList.Write([]byte{0, 0, 0, 0}) // header padding
+		binary.Write(realmList, binary.LittleEndian, uint16(len(MOCK_REALMS)))
+		for _, r := range MOCK_REALMS {
+			realmList.WriteByte(byte(r.Type))
+
+			if r.Locked {
+				realmList.WriteByte(1)
+			} else {
+				realmList.WriteByte(0)
+			}
+
+			realmList.WriteByte(byte(r.Flags))
+			realmList.WriteString(r.Name)
+			realmList.WriteString(r.Host)
+			binary.Write(realmList, binary.LittleEndian, r.Population)
+			realmList.WriteByte(byte(r.NumCharsOnRealm))
+			realmList.WriteByte(byte(r.Region))
+			realmList.WriteByte(byte(r.Id))
+
+			if r.Flags&REALMFLAG_SPECIFY_BUILD > 0 {
+				realmList.WriteByte(byte(r.Version.Major))
+				realmList.WriteByte(byte(r.Version.Minor))
+				realmList.WriteByte(byte(r.Version.Patch))
+				binary.Write(realmList, binary.LittleEndian, r.Version.Build)
+			}
+		}
+		realmList.Write([]byte{0, 0}) // footer padding
+
+		// Write size of realm list payload
+		binary.Write(resp, binary.LittleEndian, uint16(realmList.Len()))
+		// Concat to main payload
+		realmList.WriteTo(resp)
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("Replied to realm list")
 		return nil
 	default:
 		return fmt.Errorf("error: unknown opcode (%v)", data[0])
