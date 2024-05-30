@@ -7,7 +7,6 @@ import (
 )
 
 var (
-	// OK
 	LargeSafePrime = []byte{
 		0x89, 0x4B, 0x64, 0x5E, 0x89, 0xE1, 0x53, 0x5B,
 		0xBD, 0xAD, 0x5B, 0x8B, 0x29, 0x06, 0x50, 0x53,
@@ -22,11 +21,10 @@ var (
 	}
 
 	n = toInt(LargeSafePrime)
-	g = big.NewInt(7) // OK
-	k = big.NewInt(3) // OK
+	g = big.NewInt(7)
+	k = big.NewInt(3)
 )
 
-// OK
 func CalculateX(username, password string, salt []byte) []byte {
 	h := sha1.New()
 	h.Write(salt)
@@ -35,13 +33,11 @@ func CalculateX(username, password string, salt []byte) []byte {
 	return h.Sum(nil)
 }
 
-// OK
 func CalculateVerifier(username, password string, salt []byte) []byte {
 	x := big.NewInt(0).SetBytes(CalculateX(username, password, salt))
 	return pad(32, big.NewInt(0).Exp(g, x, n).Bytes())
 }
 
-// OK (probably)
 func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	publicKey := big.NewInt(0).Exp(g, toInt(serverPrivateKey), n)
 	kv := big.NewInt(0).Mul(k, toInt(verifier))
@@ -49,7 +45,6 @@ func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	return Reverse(pad(32, publicKey.Bytes()))
 }
 
-// OK
 func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 	h := sha1.New()
 	h.Write(clientPublicKey)
@@ -57,7 +52,6 @@ func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 	return Reverse(h.Sum(nil))
 }
 
-// OK (probably)
 func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
 	S := big.NewInt(0).Exp(toInt(verifier), toInt(u), n)
 	S.Mul(S, toInt(Reverse(clientPublicKey)))
