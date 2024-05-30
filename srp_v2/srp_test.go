@@ -74,3 +74,11 @@ func TestClientProof(t *testing.T) {
 	sessionKey := decodeHex("77A4D39CF9C0BF373EF870BD2941C339C575FDD1CBAA31C919EA7BD5023267D303E20FEC9A9C402F")
 	assert.Equal(t, expected, CalculateClientProof(username, salt, clientPublic, serverPublic, sessionKey))
 }
+
+func TestServerProof(t *testing.T) {
+	expected := Reverse(decodeHex("269E3A3EF5DCD15944F043513BDA20D20FEBA2E0"))
+	clientPublic := Reverse(decodeHex("BFD1AC65C8DAAAD88BF9DFF9AF8D1DCDF11DFD0C7E398EDCDF5DBBD08EFB39D3"))
+	clientProof := Reverse(decodeHex("7EBBC190D9AB2DC0CD891372CB30DF1ED35CDA1E"))
+	sessionKey := decodeHex("9382b5e82c16e1105b8e8e88a99118811d88170fad6e8b35f236dbebbcc9c99bcab6cc9f8fe67648")
+	assert.Equal(t, expected, CalculateServerProof(clientPublic, clientProof, sessionKey))
+}

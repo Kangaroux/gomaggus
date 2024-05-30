@@ -3,7 +3,6 @@ package srpv2
 import (
 	"crypto/rand"
 	"crypto/sha1"
-	"fmt"
 	"math/big"
 	"strings"
 )
@@ -62,11 +61,6 @@ func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 }
 
 func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
-	fmt.Println("---")
-	fmt.Printf("A: %x\n", Reverse(clientPublicKey))
-	fmt.Printf("v: %x\n", Reverse(verifier))
-	fmt.Printf("u: %x\n", Reverse(u))
-	fmt.Printf("b: %x\n", Reverse(serverPrivateKey))
 	S := big.NewInt(0).Exp(toInt(Reverse(verifier)), toInt(Reverse(u)), n)
 	S.Mul(S, toInt(Reverse(clientPublicKey)))
 	S.Exp(S, toInt(Reverse(serverPrivateKey)), n)
@@ -100,9 +94,7 @@ func CalculateInterleave(S []byte) []byte {
 
 func CalculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKey, verifier []byte) []byte {
 	u := CalculateU(clientPublicKey, serverPublicKey)
-	fmt.Printf("u: %x\n", u)
 	S := CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
-	fmt.Printf("S: %x\n", S)
 	return CalculateInterleave(S)
 }
 
@@ -120,6 +112,14 @@ func CalculateClientProof(
 	h.Write(salt)
 	h.Write(clientPublicKey)
 	h.Write(serverPublicKey)
+	h.Write(sessionKey)
+	return h.Sum(nil)
+}
+
+func CalculateServerProof(clientPublicKey, clientProof, sessionKey []byte) []byte {
+	h := sha1.New()
+	h.Write(clientPublicKey)
+	h.Write(clientProof)
 	h.Write(sessionKey)
 	return h.Sum(nil)
 }
