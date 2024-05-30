@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 
 	srpv2 "github.com/kangaroux/go-realmd/srp_v2"
 )
@@ -123,6 +124,12 @@ var (
 		// 	// Version:         RealmVersion{Major: 4, Minor: 3, Patch: 6, Build: 12340},
 		// },
 	}
+)
+
+var (
+	// Maps usernames to session keys. This tracks the last known session key for a particular
+	// user and is used for reconnecting.
+	SESSION_KEY_MAP = make(map[string][]byte)
 )
 
 func init() {
@@ -273,28 +280,32 @@ func handlePacket(c *Client, data []byte) error {
 		if _, err := reader.Read(usernameBytes); err != nil {
 			return err
 		}
-		username := string(usernameBytes)
-		log.Printf("client trying to login as '%s'\n", username)
+		c.username = strings.ToUpper(string(usernameBytes))
+		log.Printf("client trying to login as '%s'\n", c.username)
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 		resp := &bytes.Buffer{}
 		resp.WriteByte(OP_LOGIN_CHALLENGE)
 		resp.WriteByte(0) // protocol version
-		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(MOCK_PUBLIC_KEY)
-		resp.WriteByte(1)  // generator size (1 byte)
-		resp.WriteByte(7)  // generator
-		resp.WriteByte(32) // large prime size (32 bytes)
-		resp.Write(srpv2.Reverse(srpv2.LargeSafePrime))
-		resp.Write(MOCK_SALT)
-		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
-		resp.WriteByte(0)
+
+		if c.username == MOCK_USERNAME {
+			resp.WriteByte(WOW_SUCCESS)
+			resp.Write(MOCK_PUBLIC_KEY)
+			resp.WriteByte(1)  // generator size (1 byte)
+			resp.WriteByte(7)  // generator
+			resp.WriteByte(32) // large prime size (32 bytes)
+			resp.Write(srpv2.Reverse(srpv2.LargeSafePrime))
+			resp.Write(MOCK_SALT)
+			resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
+			resp.WriteByte(0)
+		} else {
+			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
+		}
 
 		if _, err := c.conn.Write(resp.Bytes()); err != nil {
 			return err
 		}
 
-		c.username = username
 		log.Println("Replied to login challenge")
 		return nil
 	case OP_LOGIN_PROOF:
@@ -327,6 +338,9 @@ func handlePacket(c *Client, data []byte) error {
 			resp.Write([]byte{0, 0, 0, 0}) // Account flag
 			resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
 			resp.Write([]byte{0, 0})       // Unknown
+
+			// Save the session key in case the client needs to reconnect later
+			SESSION_KEY_MAP[c.username] = c.sessionKey
 		}
 
 		if _, err := c.conn.Write(resp.Bytes()); err != nil {
@@ -337,20 +351,38 @@ func handlePacket(c *Client, data []byte) error {
 		return nil
 	case OP_RECONNECT_CHALLENGE:
 		log.Println("Starting reconnect challenge")
+		p := LoginChallengePacket{}
+		reader := bytes.NewReader(data)
+		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+			return err
+		}
+		usernameBytes := make([]byte, p.UsernameLength)
+		if _, err := reader.Read(usernameBytes); err != nil {
+			return err
+		}
+		c.username = strings.ToUpper(string(usernameBytes))
+		log.Printf("client trying to login as '%s'\n", c.username)
 
-		// We don't need to parse the reconnect challenge packet, it's the same data as the login
-		// challenge. Our response doesn't rely on the challenge data either.
-
+		// Generate random data that will be used for the reconnect proof
 		if _, err := rand.Read(c.reconnectData); err != nil {
 			return err
 		}
 
+		sessionKey, hasSessionKey := SESSION_KEY_MAP[c.username]
+
 		// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
 		resp := &bytes.Buffer{}
 		resp.WriteByte(OP_RECONNECT_CHALLENGE)
-		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(c.reconnectData)
-		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // checksum salt
+
+		if c.username == MOCK_USERNAME && hasSessionKey {
+			resp.WriteByte(WOW_SUCCESS)
+			resp.Write(c.reconnectData)
+			resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // checksum salt
+
+			c.sessionKey = sessionKey
+		} else {
+			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
+		}
 
 		if _, err := c.conn.Write(resp.Bytes()); err != nil {
 			return err
