@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rc4"
+	"encoding/binary"
 	"encoding/csv"
 	"encoding/hex"
 	"os"
@@ -32,15 +33,6 @@ func loadTestData(path string) [][]string {
 	}
 
 	return rows
-}
-
-func Reverse(data []byte) []byte {
-	n := len(data)
-	newData := make([]byte, n)
-	for i := 0; i < n; i++ {
-		newData[i] = data[n-i-1]
-	}
-	return newData
 }
 
 func TestGenerateKey(t *testing.T) {
@@ -83,4 +75,16 @@ func TestEncryptDecrypt(t *testing.T) {
 	h.Init()
 	assert.Equal(t, expectedDecrypt, h.Decrypt(data))
 	assert.Equal(t, expectedEncrypt, h.Encrypt(data))
+}
+
+func TestCalculateWorldProof(t *testing.T) {
+	expected := decodeHex("6095EB678CD195253F66F32BADA785CA6D9376B2")
+	username := "TNDQWSHEBWHPABV2"
+	clientSeed := make([]byte, 4)
+	serverSeed := make([]byte, 4)
+	binary.BigEndian.PutUint32(clientSeed, 1454143186)
+	binary.BigEndian.PutUint32(serverSeed, 309086257)
+	sessionKey := decodeHex("914D6219A99109D6BD946F6E6AF12BB611C59A22531C6F1A3F3CF58624D528DC163BE43813112C3D")
+
+	assert.Equal(t, expected, CalculateWorldProof(username, clientSeed, serverSeed, sessionKey))
 }
