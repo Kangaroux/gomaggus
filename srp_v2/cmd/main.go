@@ -36,12 +36,7 @@ func init() {
 	}
 
 	MOCK_VERIFIER = srpv2.CalculateVerifier(MOCK_USERNAME, MOCK_PASSWORD, MOCK_SALT)
-
-	MOCK_PRIVATE_KEY = make([]byte, 19) // TrinityCore has this as 19 bytes, does it matter?
-	if _, err := rand.Read(MOCK_PRIVATE_KEY); err != nil {
-		log.Fatalf("error generating private key: %v\n", err)
-	}
-
+	MOCK_PRIVATE_KEY = srpv2.NewPrivateKey()
 	MOCK_PUBLIC_KEY = srpv2.CalculateServerPublicKey(MOCK_VERIFIER, MOCK_PRIVATE_KEY)
 }
 
