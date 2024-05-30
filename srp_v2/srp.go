@@ -123,3 +123,12 @@ func CalculateServerProof(clientPublicKey, clientProof, sessionKey []byte) []byt
 	h.Write(sessionKey)
 	return h.Sum(nil)
 }
+
+func CalculateReconnectProof(username string, clientData, serverData, sessionKey []byte) []byte {
+	h := sha1.New()
+	h.Write([]byte(strings.ToUpper(username)))
+	h.Write(clientData)
+	h.Write(serverData)
+	h.Write(sessionKey)
+	return h.Sum(nil)
+}

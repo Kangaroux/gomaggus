@@ -82,3 +82,12 @@ func TestServerProof(t *testing.T) {
 	sessionKey := decodeHex("9382b5e82c16e1105b8e8e88a99118811d88170fad6e8b35f236dbebbcc9c99bcab6cc9f8fe67648")
 	assert.Equal(t, expected, CalculateServerProof(clientPublic, clientProof, sessionKey))
 }
+
+func TestReconnectProof(t *testing.T) {
+	expected := decodeHex("D94CE2B08B7FAC0919D7D5419D78CABFA372B6A9")
+	username := "GXJ8M6VDUAC0JL9W"
+	clientData := decodeHex("DD801B2FBCF4F7ABC6023EFAAF6A9AEA")
+	serverData := decodeHex("0D27763BDEEF92CB273B7BC4EE72D0EC")
+	sessionKey := decodeHex("6A0E7B35C70C70DA142D57BF49FD25D84CCEE3D21CC1A10AD71323FB34F45F3006D606F1F39A6BB9")
+	assert.Equal(t, expected, CalculateReconnectProof(username, clientData, serverData, sessionKey))
+}

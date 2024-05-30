@@ -64,8 +64,16 @@ func main() {
 	}
 }
 
+type Client struct {
+	conn          net.Conn
+	username      string
+	reconnectData []byte
+	sessionKey    []byte
+}
+
 func handleClient(c net.Conn) {
 	buf := make([]byte, 4096)
+	client := &Client{conn: c, reconnectData: make([]byte, 16)}
 
 	log.Printf("client connected from %v\n", c.RemoteAddr().String())
 
@@ -83,7 +91,7 @@ func handleClient(c net.Conn) {
 
 		log.Printf("read %d bytes\n", n)
 
-		if err := handlePacket(c, buf[:n]); err != nil {
+		if err := handlePacket(client, buf[:n]); err != nil {
 			log.Printf("error handling packet: %v\n", err)
 			c.Close()
 			return
@@ -91,8 +99,9 @@ func handleClient(c net.Conn) {
 	}
 }
 
+// https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
 type LoginChallengePacket struct {
-	Opcode         byte // 0x0
+	Opcode         byte // 0x0 or 0x2 if reconnecting
 	Error          byte // unused?
 	Size           uint16
 	GameName       [4]byte
@@ -109,6 +118,7 @@ type LoginChallengePacket struct {
 	// Username string
 }
 
+// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8
 type LoginProofPacket struct {
 	Opcode           byte // 0x1
 	ClientPublicKey  [32]byte
@@ -117,7 +127,16 @@ type LoginProofPacket struct {
 	NumTelemetryKeys uint8    // unused
 }
 
-func handlePacket(c net.Conn, data []byte) error {
+// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_client.html
+type ReconnectProofPacket struct {
+	Opcode         byte // 0x3
+	ProofData      [16]byte
+	ClientProof    [20]byte
+	ClientChecksum [20]byte // unused
+	KeyCount       byte     // unused
+}
+
+func handlePacket(c *Client, data []byte) error {
 	if len(data) == 0 {
 		return fmt.Errorf("error: packet is empty")
 	}
@@ -151,10 +170,11 @@ func handlePacket(c net.Conn, data []byte) error {
 		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
 		resp.WriteByte(0)
 
-		if _, err := c.Write(resp.Bytes()); err != nil {
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
 			return err
 		}
 
+		c.username = username
 		log.Println("Replied to login challenge")
 		return nil
 	case OP_LOGIN_PROOF:
@@ -168,10 +188,10 @@ func handlePacket(c net.Conn, data []byte) error {
 		clientPublicKey := p.ClientPublicKey[:]
 		clientProof := p.ClientProof[:]
 
-		sessionKey := srpv2.CalculateServerSessionKey(
+		c.sessionKey = srpv2.CalculateServerSessionKey(
 			clientPublicKey, MOCK_PUBLIC_KEY, MOCK_PRIVATE_KEY, MOCK_VERIFIER)
 		calculatedClientProof := srpv2.CalculateClientProof(
-			MOCK_USERNAME, MOCK_SALT, clientPublicKey, MOCK_PUBLIC_KEY, sessionKey,
+			MOCK_USERNAME, MOCK_SALT, clientPublicKey, MOCK_PUBLIC_KEY, c.sessionKey,
 		)
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
@@ -183,13 +203,13 @@ func handlePacket(c net.Conn, data []byte) error {
 			resp.Write([]byte{0, 0}) // padding
 		} else {
 			resp.WriteByte(WOW_SUCCESS)
-			resp.Write(srpv2.CalculateServerProof(clientPublicKey, clientProof, sessionKey))
+			resp.Write(srpv2.CalculateServerProof(clientPublicKey, clientProof, c.sessionKey))
 			resp.Write([]byte{0, 0, 0, 0}) // Account flag
 			resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
 			resp.Write([]byte{0, 0})       // Unknown
 		}
 
-		if _, err := c.Write(resp.Bytes()); err != nil {
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
 			return err
 		}
 
@@ -197,36 +217,59 @@ func handlePacket(c net.Conn, data []byte) error {
 		return nil
 	case OP_RECONNECT_CHALLENGE:
 		log.Println("Starting reconnect challenge")
-		p := LoginChallengePacket{}
-		reader := bytes.NewReader(data)
-		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
-			return err
-		}
-		usernameBytes := make([]byte, p.UsernameLength)
-		if _, err := reader.Read(usernameBytes); err != nil {
-			return err
-		}
-		username := string(usernameBytes)
-		log.Printf("client trying to reconnect as '%s'\n", username)
 
-		randBytes := make([]byte, 16)
-		if _, err := rand.Read(randBytes); err != nil {
+		// We don't need to parse the reconnect challenge packet, it's the same data as the login
+		// challenge. Our response doesn't rely on the challenge data either.
+
+		if _, err := rand.Read(c.reconnectData); err != nil {
 			return err
 		}
 
 		// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
 		resp := bytes.Buffer{}
 		resp.WriteByte(OP_RECONNECT_CHALLENGE)
-		resp.Write(randBytes)
+		resp.WriteByte(WOW_SUCCESS)
+		resp.Write(c.reconnectData)
 		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // checksum salt
 
-		if _, err := c.Write(resp.Bytes()); err != nil {
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
 			return err
 		}
 
 		log.Println("Replied to reconnect challenge")
 		return nil
 	case OP_RECONNECT_PROOF:
+		log.Println("Starting reconnect proof")
+		p := ReconnectProofPacket{}
+		reader := bytes.NewReader(data)
+		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+			return err
+		}
+
+		serverProof := srpv2.CalculateReconnectProof(c.username, p.ProofData[:], c.reconnectData, c.sessionKey)
+
+		log.Printf("computed recon proof: %x\n", serverProof)
+		log.Printf("client proof: %x\n", p.ClientProof)
+
+		// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
+		resp := bytes.Buffer{}
+		resp.WriteByte(OP_RECONNECT_PROOF)
+		if !bytes.Equal(serverProof, p.ClientProof[:]) {
+			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
+			resp.Write([]byte{0, 0}) // padding
+		} else {
+			resp.WriteByte(WOW_SUCCESS)
+			resp.Write(serverProof)
+			resp.Write([]byte{0, 0, 0, 0}) // Account flag
+			resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
+			resp.Write([]byte{0, 0})       // Unknown
+		}
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("Replied to reconnect proof")
 		return nil
 	default:
 		return fmt.Errorf("error: unknown opcode (%v)", data[0])
