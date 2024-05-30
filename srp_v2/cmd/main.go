@@ -155,7 +155,8 @@ func handlePacket(c net.Conn, data []byte) error {
 			return err
 		}
 
-		clientPublicKey := p.ClientPublicKey[:]
+		// shadowburn reverses on authenticator.ex:L96
+		clientPublicKey := srpv2.Reverse(p.ClientPublicKey[:])
 
 		log.Printf("client public key: %x\n", clientPublicKey)
 		log.Printf("client proof: %x\n", p.ClientProof)
