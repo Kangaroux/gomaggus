@@ -1,0 +1,10 @@
+- wrath header cipher is listed as RC4A but it's actually RC4 (or ARC4). RC4A is a variant of RC4 with a different algorithm
+- size/opcode tests for headers
+  - it's confusing that the test files use 8 byte headers when it's 4/6 bytes for server/client
+  - there's a wowdev link to world packets at the start of the section but it's easy to miss, adding that link to the header tests would be helpful
+  - for wrath, server headers can be 5 bytes in some instances, calling that out in the guide would be helpful
+  - the tables describing the test data are a bit vague, including byte size and endianness of size/opcode fields would be helpful
+    - client headers: size (2 bytes BE) + opcode (4 bytes LE)
+    - server headers: size (4 bytes BE) + opcode (2 bytes LE)
+  - the naming of the \*\_server.txt and \*\_client.txt files is confusing. if you're writing an auth _server_ you want to test against the \*\_client.txt file.
+- the size/opcode tests {vanilla,tbc,wrath}\_{server,client}.txt have the header data as 8 bytes, which doesn't match the 4/6 bytes for server/client headers

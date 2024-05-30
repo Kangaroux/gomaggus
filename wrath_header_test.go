@@ -88,3 +88,26 @@ func TestCalculateWorldProof(t *testing.T) {
 
 	assert.Equal(t, expected, CalculateWorldProof(username, clientSeed, serverSeed, sessionKey))
 }
+
+// func TestHeaderParse(t *testing.T) {
+// 	// sessionKey := []byte{
+// 	// 	0x2E, 0xFE, 0xE7, 0xB0, 0xC1, 0x77, 0xEB, 0xBD, 0xFF, 0x66, 0x76, 0xC5, 0x6E, 0xFC, 0x23,
+// 	// 	0x39, 0xBE, 0x9C, 0xAD, 0x14, 0xBF, 0x8B, 0x54, 0xBB, 0x5A, 0x86, 0xFB, 0xF8, 0x1F, 0x6D,
+// 	// 	0x42, 0x4A, 0xA2, 0x3C, 0xC9, 0xA3, 0x14, 0x9F, 0xB1, 0x75,
+// 	// }
+// 	// // seed := decodeHex("DEADBEEF")
+// 	// data := decodeHex("60B1D4C5E50485EB")
+// 	// // expectedSize := 19826
+// 	// // expectedOpcode := 2589630381
+
+// 	// h := NewWrathHeaderCrypto(sessionKey)
+// 	// assert.NoError(t, h.Init())
+
+// 	// // decrypting client header (6 bytes).
+// 	// decrypted := h.Decrypt(data)
+// 	// fmt.Printf("%x\n", decrypted)
+// 	// size := binary.BigEndian.Uint16(decrypted[:2])
+// 	// opcode := binary.LittleEndian.Uint32(decrypted[2:6])
+// 	// fmt.Printf("size: %d\n", size)
+// 	// fmt.Printf("opcode: %d\n", opcode)
+// }
