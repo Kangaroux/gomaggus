@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	OP_WORLD_AUTH_CHALLENGE uint16 = 0xEC01
+	OP_WORLD_AUTH_CHALLENGE uint16 = 0x1EC
 )
 
 func main() {
@@ -89,7 +89,7 @@ func sendAuthChallenge(c *Client) error {
 
 	resp := &bytes.Buffer{}
 	binary.Write(resp, binary.BigEndian, uint16(body.Len())+2)
-	binary.Write(resp, binary.BigEndian, OP_WORLD_AUTH_CHALLENGE)
+	binary.Write(resp, binary.LittleEndian, OP_WORLD_AUTH_CHALLENGE)
 	body.WriteTo(resp)
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
