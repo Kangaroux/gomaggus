@@ -7,56 +7,77 @@ import (
 )
 
 var (
-	fixedDecryptKey = NewByteArray([]byte{
+	fixedDecryptKey = []byte{
 		0xC2, 0xB3, 0x72, 0x3C, 0xC6, 0xAE, 0xD9, 0xB5,
 		0x34, 0x3C, 0x53, 0xEE, 0x2F, 0x43, 0x67, 0xCE,
-	}, 16, false)
-	fixedEncryptKey = NewByteArray([]byte{
+	}
+	fixedEncryptKey = []byte{
 		0xCC, 0x98, 0xAE, 0x04, 0xE8, 0x97, 0xEA, 0xCA,
 		0x12, 0xDD, 0xC0, 0x93, 0x42, 0x91, 0x53, 0x57,
-	}, 16, false)
+	}
 )
 
 type WrathHeaderCrypto struct {
 	decryptCipher *rc4.Cipher
-	decryptKey    []byte
 	encryptCipher *rc4.Cipher
-	encryptKey    []byte
-	sessionKey    *ByteArray
+	sessionKey    []byte
 }
 
-func NewWrathHeaderCrypto(sessionKey *ByteArray) (*WrathHeaderCrypto, error) {
+func NewWrathHeaderCrypto(sessionKey []byte) *WrathHeaderCrypto {
+	return &WrathHeaderCrypto{sessionKey: sessionKey}
+}
+
+func (h *WrathHeaderCrypto) Init() error {
+	return h.InitKeys(fixedDecryptKey, fixedEncryptKey)
+}
+
+func (h *WrathHeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
 	var err error
-	ret := &WrathHeaderCrypto{
-		sessionKey: sessionKey,
+
+	h.decryptCipher, err = rc4.NewCipher(h.GenerateKey(decryptKey))
+	if err != nil {
+		return err
+	}
+	h.encryptCipher, err = rc4.NewCipher(h.GenerateKey(encryptKey))
+	if err != nil {
+		return err
 	}
 
-	ret.decryptKey = ret.generateKey(fixedDecryptKey)
-	if ret.decryptCipher, err = rc4.NewCipher(ret.decryptKey); err != nil {
-		return nil, err
-	}
+	drop1024(h.decryptCipher)
+	drop1024(h.encryptCipher)
 
-	ret.encryptKey = ret.generateKey(fixedEncryptKey)
-	if ret.encryptCipher, err = rc4.NewCipher(ret.encryptKey); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return nil
 }
 
-// func (h *WrathHeaderCrypto) Encrypt([])
+func (h *WrathHeaderCrypto) Decrypt(data []byte) []byte {
+	if h.decryptCipher == nil {
+		panic("cipher has not been initialized, call Init() first")
+	}
 
-func (h *WrathHeaderCrypto) generateKey(fixedKey *ByteArray) []byte {
-	hash := hmac.New(crypto.SHA1.New, fixedKey.LittleEndian().Bytes())
-	hash.Write(h.sessionKey.LittleEndian().Bytes())
+	dataCopy := make([]byte, len(data))
+	copy(dataCopy, data)
+	h.decryptCipher.XORKeyStream(dataCopy, dataCopy)
+	return dataCopy
+}
+
+func (h *WrathHeaderCrypto) Encrypt(data []byte) []byte {
+	if h.encryptCipher == nil {
+		panic("cipher has not been initialized, call Init() first")
+	}
+
+	dataCopy := make([]byte, len(data))
+	copy(dataCopy, data)
+	h.encryptCipher.XORKeyStream(dataCopy, dataCopy)
+	return dataCopy
+}
+
+func (h *WrathHeaderCrypto) GenerateKey(fixedKey []byte) []byte {
+	hash := hmac.New(crypto.SHA1.New, fixedKey)
+	hash.Write(h.sessionKey)
 	return hash.Sum(nil)
 }
 
-// func (h *WrathHeaderCrypto) newCipher(key []byte) (*rc4.Cipher, error) {
-// 	if cipher, err := rc4.NewCipher(key); err != nil {
-// 		return nil, err
-// 	} else {
-// 		return nil, nil
-// 		// return cipher.XORKeyStream()
-// 	}
-// }
+func drop1024(cipher *rc4.Cipher) {
+	var drop1024 [1024]byte
+	cipher.XORKeyStream(drop1024[:], drop1024[:])
+}
