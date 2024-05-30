@@ -13,11 +13,13 @@ import (
 )
 
 const (
-	OP_LOGIN_CHALLENGE byte = 0
-	OP_LOGIN_PROOF          = 1
+	OP_LOGIN_CHALLENGE     byte = 0
+	OP_LOGIN_PROOF         byte = 1
+	OP_RECONNECT_CHALLENGE byte = 2
+	OP_RECONNECT_PROOF     byte = 3
 
 	WOW_SUCCESS              byte = 0
-	WOW_FAIL_UNKNOWN_ACCOUNT      = 4
+	WOW_FAIL_UNKNOWN_ACCOUNT byte = 4
 
 	MOCK_USERNAME = "TEST"
 	MOCK_PASSWORD = "PASSWORD"
@@ -146,12 +148,15 @@ func handlePacket(c net.Conn, data []byte) error {
 		resp.WriteByte(32) // large prime size (32 bytes)
 		resp.Write(srpv2.Reverse(srpv2.LargeSafePrime))
 		resp.Write(MOCK_SALT)
-		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
 		resp.WriteByte(0)
 
-		_, err := c.Write(resp.Bytes())
+		if _, err := c.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
 		log.Println("Replied to login challenge")
-		return err
+		return nil
 	case OP_LOGIN_PROOF:
 		log.Println("Starting login proof")
 		p := LoginProofPacket{}
@@ -184,9 +189,45 @@ func handlePacket(c net.Conn, data []byte) error {
 			resp.Write([]byte{0, 0})       // Unknown
 		}
 
-		_, err := c.Write(resp.Bytes())
+		if _, err := c.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
 		log.Println("Replied to login proof")
-		return err
+		return nil
+	case OP_RECONNECT_CHALLENGE:
+		log.Println("Starting reconnect challenge")
+		p := LoginChallengePacket{}
+		reader := bytes.NewReader(data)
+		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+			return err
+		}
+		usernameBytes := make([]byte, p.UsernameLength)
+		if _, err := reader.Read(usernameBytes); err != nil {
+			return err
+		}
+		username := string(usernameBytes)
+		log.Printf("client trying to reconnect as '%s'\n", username)
+
+		randBytes := make([]byte, 16)
+		if _, err := rand.Read(randBytes); err != nil {
+			return err
+		}
+
+		// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
+		resp := bytes.Buffer{}
+		resp.WriteByte(OP_RECONNECT_CHALLENGE)
+		resp.Write(randBytes)
+		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // checksum salt
+
+		if _, err := c.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("Replied to reconnect challenge")
+		return nil
+	case OP_RECONNECT_PROOF:
+		return nil
 	default:
 		return fmt.Errorf("error: unknown opcode (%v)", data[0])
 	}
