@@ -14,10 +14,11 @@ func pad(length int, data []byte) []byte {
 
 func Reverse(data []byte) []byte {
 	n := len(data)
-	for i := 0; i < n/2; i++ {
-		data[i], data[n-i-1] = data[n-i-1], data[i]
+	newData := make([]byte, n)
+	for i := 0; i < n; i++ {
+		newData[i] = data[n-i-1]
 	}
-	return data
+	return newData
 }
 
 func toInt(data []byte) *big.Int {

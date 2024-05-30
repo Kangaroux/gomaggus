@@ -3,6 +3,7 @@ package srpv2
 import (
 	"crypto/rand"
 	"crypto/sha1"
+	"fmt"
 	"math/big"
 	"strings"
 )
@@ -42,35 +43,40 @@ func CalculateX(username, password string, salt []byte) []byte {
 	inner := sha1.Sum([]byte(strings.ToUpper(username) + ":" + strings.ToUpper(password)))
 	h.Write(salt)
 	h.Write(inner[:])
-	return Reverse(h.Sum(nil))
+	return h.Sum(nil)
 }
 
 // OK (shadowburn)
 func CalculateVerifier(username, password string, salt []byte) []byte {
-	x := big.NewInt(0).SetBytes(CalculateX(username, password, salt))
-	return pad(32, big.NewInt(0).Exp(g, x, n).Bytes())
+	x := big.NewInt(0).SetBytes(Reverse(CalculateX(username, password, salt)))
+	return Reverse(pad(32, big.NewInt(0).Exp(g, x, n).Bytes()))
 }
 
 // OK (shadowburn)
 func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
-	publicKey := big.NewInt(0).Exp(g, toInt(serverPrivateKey), n)
-	kv := big.NewInt(0).Mul(k, toInt(verifier))
-	return pad(32, publicKey.Add(publicKey, kv).Mod(publicKey, n).Bytes())
+	publicKey := big.NewInt(0).Exp(g, toInt(Reverse(serverPrivateKey)), n)
+	kv := big.NewInt(0).Mul(k, toInt(Reverse(verifier)))
+	return Reverse(pad(32, publicKey.Add(publicKey, kv).Mod(publicKey, n).Bytes()))
 }
 
 // OK (shadowburn)
 func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 	h := sha1.New()
-	h.Write(Reverse(clientPublicKey))
-	h.Write(Reverse(serverPublicKey))
-	return Reverse(h.Sum(nil))
+	h.Write(clientPublicKey)
+	h.Write(serverPublicKey)
+	return h.Sum(nil)
 }
 
 // OK (shadowburn)
 func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
-	S := big.NewInt(0).Exp(toInt(verifier), toInt(u), n)
-	S.Mul(S, toInt(clientPublicKey))
-	S.Exp(S, toInt(serverPrivateKey), n)
+	fmt.Println("---")
+	fmt.Printf("A: %x\n", Reverse(clientPublicKey))
+	fmt.Printf("v: %x\n", Reverse(verifier))
+	fmt.Printf("u: %x\n", Reverse(u))
+	fmt.Printf("b: %x\n", Reverse(serverPrivateKey))
+	S := big.NewInt(0).Exp(toInt(Reverse(verifier)), toInt(Reverse(u)), n)
+	S.Mul(S, toInt(Reverse(clientPublicKey)))
+	S.Exp(S, toInt(Reverse(serverPrivateKey)), n)
 	return Reverse(pad(32, S.Bytes()))
 }
 
@@ -103,7 +109,9 @@ func CalculateInterleave(S []byte) []byte {
 // OK (shadowburn)
 func CalculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKey, verifier []byte) []byte {
 	u := CalculateU(clientPublicKey, serverPublicKey)
+	fmt.Printf("u: %x\n", u)
 	S := CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
+	fmt.Printf("S: %x\n", S)
 	return CalculateInterleave(S)
 }
 
@@ -120,8 +128,8 @@ func CalculateClientProof(
 	h.Write(xorHash)
 	h.Write(hUsername[:])
 	h.Write(salt)
-	h.Write(Reverse(clientPublicKey))
-	h.Write(Reverse(serverPublicKey))
+	h.Write(clientPublicKey)
+	h.Write(serverPublicKey)
 	h.Write(sessionKey)
 	return h.Sum(nil)
 }

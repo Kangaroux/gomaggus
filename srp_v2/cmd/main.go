@@ -137,7 +137,7 @@ func handlePacket(c net.Conn, data []byte) error {
 		resp.WriteByte(OP_LOGIN_CHALLENGE)
 		resp.WriteByte(0) // protocol version
 		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(srpv2.Reverse(MOCK_PUBLIC_KEY))
+		resp.Write(MOCK_PUBLIC_KEY)
 		resp.WriteByte(1)  // generator size (1 byte)
 		resp.WriteByte(7)  // generator
 		resp.WriteByte(32) // large prime size (32 bytes)
@@ -155,8 +155,7 @@ func handlePacket(c net.Conn, data []byte) error {
 			return err
 		}
 
-		// shadowburn reverses on authenticator.ex:L96
-		clientPublicKey := srpv2.Reverse(p.ClientPublicKey[:])
+		clientPublicKey := p.ClientPublicKey[:]
 
 		log.Printf("client public key: %x\n", clientPublicKey)
 		log.Printf("client proof: %x\n", p.ClientProof)
