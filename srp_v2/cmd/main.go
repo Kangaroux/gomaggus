@@ -29,19 +29,19 @@ const (
 type RealmType uint8
 
 const (
-	REALM_PVE   RealmType = 0
-	REALM_PVP   RealmType = 1
-	REALM_RP    RealmType = 6
-	REALM_RPPVP RealmType = 8
+	REALMTYPE_PVE   RealmType = 0
+	REALMTYPE_PVP   RealmType = 1
+	REALMTYPE_RP    RealmType = 6
+	REALMTYPE_RPPVP RealmType = 8
 )
 
 type RealmFlag uint8
 
 const (
 	REALMFLAG_NONE          RealmFlag = 0
-	REALMFLAG_INVALID       RealmFlag = 1
-	REALMFLAG_OFFLINE       RealmFlag = 2
-	REALMFLAG_SPECIFY_BUILD RealmFlag = 4
+	REALMFLAG_INVALID       RealmFlag = 1 // Realm is greyed out and can't be selected
+	REALMFLAG_OFFLINE       RealmFlag = 2 // Population: "Offline" and can't be selected
+	REALMFLAG_SPECIFY_BUILD RealmFlag = 4 // Includes version in realm name
 	REALMFLAG_UNKNOWN1      RealmFlag = 8
 	REALMFLAG_UNKNOWN2      RealmFlag = 16
 	REALMFLAG_NEW_PLAYERS   RealmFlag = 32  // Population: "New Players" in blue text
@@ -52,12 +52,43 @@ const (
 type RealmRegion uint8
 
 const (
-	// TODO: get a descriptive name for these
-	REALMREGION_DEVELOPMENT RealmRegion = 0
-	REALMREGION_1           RealmRegion = 1
-	REALMREGION_2           RealmRegion = 2
-	REALMREGION_3           RealmRegion = 3
-	REALMREGION_5           RealmRegion = 5
+	REALMREGION_DEV           RealmRegion = 1
+	REALMREGION_US            RealmRegion = 2
+	REALMREGION_OCEANIC       RealmRegion = 3
+	REALMREGION_LATIN_AMERICA RealmRegion = 4
+	REALMREGION_TOURNAMENT    RealmRegion = 5
+	REALMREGION_KOREA         RealmRegion = 6
+	REALMREGION_TOURNAMENT2   RealmRegion = 7
+	REALMREGION_ENGLISH       RealmRegion = 8
+	REALMREGION_GERMAN        RealmRegion = 9
+	REALMREGION_FRENCH        RealmRegion = 10
+	REALMREGION_SPANISH       RealmRegion = 11
+	REALMREGION_RUSSIAN       RealmRegion = 12
+	REALMREGION_TOURNAMENT3   RealmRegion = 13
+	REALMREGION_TAIWAN        RealmRegion = 14
+	REALMREGION_TOURNAMENT4   RealmRegion = 15
+	REALMREGION_CHINA         RealmRegion = 16
+	REALMREGION_CN1           RealmRegion = 17
+	REALMREGION_CN2           RealmRegion = 18
+	REALMREGION_CN3           RealmRegion = 19
+	REALMREGION_CN4           RealmRegion = 20
+	REALMREGION_CN5           RealmRegion = 21
+	REALMREGION_CN6           RealmRegion = 22
+	REALMREGION_CN7           RealmRegion = 23
+	REALMREGION_CN8           RealmRegion = 24
+	REALMREGION_TOURNAMENT5   RealmRegion = 25
+	REALMREGION_TEST          RealmRegion = 26
+	REALMREGION_TOURNAMENT6   RealmRegion = 27
+	REALMREGION_QA            RealmRegion = 28
+	REALMREGION_CN9           RealmRegion = 29
+	REALMREGION_TEST2         RealmRegion = 30
+	REALMREGION_CN10          RealmRegion = 31
+	REALMREGION_CTC           RealmRegion = 32
+	REALMREGION_CNC           RealmRegion = 33
+	REALMREGION_CN1_4         RealmRegion = 34
+	REALMREGION_CN2_6_9       RealmRegion = 35
+	REALMREGION_CN3_7         RealmRegion = 36
+	REALMREGION_CN5_8         RealmRegion = 37
 )
 
 var (
@@ -68,41 +99,29 @@ var (
 
 	MOCK_REALMS = []Realm{
 		{
-			Type:            REALM_PVE,
+			Type:            REALMTYPE_PVE,
 			Locked:          false,
-			Flags:           32,
+			Flags:           REALMFLAG_NONE,
 			Name:            "Test Realm\x00",
 			Host:            "localhost:8085\x00",
-			Population:      2.0,
-			NumCharsOnRealm: 1,
-			Region:          REALMREGION_1,
+			Population:      0.01,
+			NumCharsOnRealm: 0,
+			Region:          REALMREGION_US,
 			Id:              0,
-			// Version:         RealmVersion{Major: 3, Minor: 3, Patch: 5, Build: 12340},
+			// Version:         RealmVersion{Major: 4, Minor: 3, Patch: 6, Build: 12340},
 		},
-		{
-			Type:            REALM_PVP,
-			Locked:          false,
-			Flags:           64,
-			Name:            "Test Realm 2\x00",
-			Host:            "localhost:8085\x00",
-			Population:      2.0,
-			NumCharsOnRealm: 1,
-			Region:          REALMREGION_2,
-			Id:              1,
-			// Version:         RealmVersion{Major: 3, Minor: 3, Patch: 5, Build: 12340},
-		},
-		{
-			Type:            REALM_RP,
-			Locked:          false,
-			Flags:           128,
-			Name:            "Test Realm 3\x00",
-			Host:            "localhost:8085\x00",
-			Population:      2.0,
-			NumCharsOnRealm: 1,
-			Region:          REALMREGION_3,
-			Id:              2,
-			// Version:         RealmVersion{Major: 3, Minor: 3, Patch: 5, Build: 12340},
-		},
+		// {
+		// 	Type:            REALMTYPE_PVP,
+		// 	Locked:          false,
+		// 	Flags:           REALMFLAG_NONE,
+		// 	Name:            "Test Realm1\x00",
+		// 	Host:            "localhost:8085\x00",
+		// 	Population:      0,
+		// 	NumCharsOnRealm: 0,
+		// 	Region:          REALMREGION_US,
+		// 	Id:              1,
+		// 	// Version:         RealmVersion{Major: 4, Minor: 3, Patch: 6, Build: 12340},
+		// },
 	}
 )
 
@@ -219,13 +238,19 @@ type RealmVersion struct {
 
 // https://gtker.com/wow_messages/docs/realm.html#protocol-version-8
 type Realm struct {
-	Type            RealmType
-	Locked          bool
-	Flags           RealmFlag
-	Name            string  // C-style NUL terminated, e.g. "Test Realm\x00"
-	Host            string  // C-style NUL terminated, e.g. "localhost:8085\x00"
-	Population      float32 // Percentage of server capacity. 0 = nobody is online, 1 = server is maxed out
-	NumCharsOnRealm uint8   // Number of characters for the logged in account
+	Type   RealmType
+	Locked bool
+	Flags  RealmFlag
+	Name   string // C-style NUL terminated, e.g. "Test Realm\x00"
+	Host   string // C-style NUL terminated, e.g. "localhost:8085\x00"
+
+	// A percentage of how full the server is with active sessions. Mangos has the upper limit of this
+	// value as 2.0 for some reason. The game client only seems to interpret this value on an absolute
+	// scale if there is only one realm. It seems like when there are multiple realms, it compares the
+	// pop relatively, i.e. whatever realm has the highest pop is now the upper limit. Suffice to say,
+	// it's not important whether this value is accurate.
+	Population      float32
+	NumCharsOnRealm uint8 // Number of characters for the logged in account
 	Region          RealmRegion
 	Id              uint8
 	Version         RealmVersion // included only if REALMFLAG_SPECIFY_BUILD flag is set
