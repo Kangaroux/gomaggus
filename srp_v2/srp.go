@@ -27,17 +27,14 @@ var (
 	k = big.NewInt(3)
 )
 
-// maybe OK (shadowburn). srp6 impl is a bit hidden, but it doesn't seem like this gets reversed
-// is 19 bytes *actually* necessary?
 func NewPrivateKey() []byte {
-	key := make([]byte, 19)
+	key := make([]byte, 32)
 	if _, err := rand.Read(key); err != nil {
 		panic(err)
 	}
 	return key
 }
 
-// OK (shadowburn)
 func CalculateX(username, password string, salt []byte) []byte {
 	h := sha1.New()
 	inner := sha1.Sum([]byte(strings.ToUpper(username) + ":" + strings.ToUpper(password)))
@@ -46,20 +43,17 @@ func CalculateX(username, password string, salt []byte) []byte {
 	return h.Sum(nil)
 }
 
-// OK (shadowburn)
 func CalculateVerifier(username, password string, salt []byte) []byte {
 	x := big.NewInt(0).SetBytes(Reverse(CalculateX(username, password, salt)))
 	return Reverse(pad(32, big.NewInt(0).Exp(g, x, n).Bytes()))
 }
 
-// OK (shadowburn)
 func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
 	publicKey := big.NewInt(0).Exp(g, toInt(Reverse(serverPrivateKey)), n)
 	kv := big.NewInt(0).Mul(k, toInt(Reverse(verifier)))
 	return Reverse(pad(32, publicKey.Add(publicKey, kv).Mod(publicKey, n).Bytes()))
 }
 
-// OK (shadowburn)
 func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 	h := sha1.New()
 	h.Write(clientPublicKey)
@@ -67,7 +61,6 @@ func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 	return h.Sum(nil)
 }
 
-// OK (shadowburn)
 func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
 	fmt.Println("---")
 	fmt.Printf("A: %x\n", Reverse(clientPublicKey))
@@ -80,7 +73,6 @@ func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) 
 	return Reverse(pad(32, S.Bytes()))
 }
 
-// OK (multiple sources). Shadowburn doesn't drop bytes like it should
 func CalculateInterleave(S []byte) []byte {
 	for len(S) > 0 && S[0] == 0 {
 		S = S[2:]
@@ -106,7 +98,6 @@ func CalculateInterleave(S []byte) []byte {
 	return interleaved
 }
 
-// OK (shadowburn)
 func CalculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKey, verifier []byte) []byte {
 	u := CalculateU(clientPublicKey, serverPublicKey)
 	fmt.Printf("u: %x\n", u)
@@ -115,7 +106,6 @@ func CalculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKe
 	return CalculateInterleave(S)
 }
 
-// OK (shadowburn)
 func CalculateClientProof(
 	username string,
 	salt,
