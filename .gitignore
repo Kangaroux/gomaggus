@@ -1,3 +1,5 @@
-TrinityCore/
+.vscode/
 __pycache__/
-srp6.py
+
+shadowburn/
+TrinityCore/
