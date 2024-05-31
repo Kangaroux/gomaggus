@@ -1,4 +1,4 @@
-module github.com/kangaroux/go-realmd
+module github.com/kangaroux/gomaggus
 
 go 1.20
 

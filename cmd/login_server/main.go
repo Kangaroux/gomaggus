@@ -10,7 +10,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/kangaroux/go-realmd/srp"
+	"github.com/kangaroux/gomaggus/srp"
 )
 
 const (
