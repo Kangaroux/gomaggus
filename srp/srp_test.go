@@ -1,4 +1,4 @@
-package srpv2
+package srp
 
 import (
 	"encoding/hex"

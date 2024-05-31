@@ -10,7 +10,7 @@ import (
 	"net"
 	"strings"
 
-	srpv2 "github.com/kangaroux/go-realmd/srp_v2"
+	"github.com/kangaroux/go-realmd/srp"
 )
 
 const (
@@ -138,9 +138,9 @@ func init() {
 		log.Fatalf("error generating salt: %v\n", err)
 	}
 
-	MOCK_VERIFIER = srpv2.CalculateVerifier(MOCK_USERNAME, MOCK_PASSWORD, MOCK_SALT)
-	MOCK_PRIVATE_KEY = srpv2.NewPrivateKey()
-	MOCK_PUBLIC_KEY = srpv2.CalculateServerPublicKey(MOCK_VERIFIER, MOCK_PRIVATE_KEY)
+	MOCK_VERIFIER = srp.CalculateVerifier(MOCK_USERNAME, MOCK_PASSWORD, MOCK_SALT)
+	MOCK_PRIVATE_KEY = srp.NewPrivateKey()
+	MOCK_PUBLIC_KEY = srp.CalculateServerPublicKey(MOCK_VERIFIER, MOCK_PRIVATE_KEY)
 }
 
 func main() {
@@ -294,7 +294,7 @@ func handlePacket(c *Client, data []byte) error {
 			resp.WriteByte(1)  // generator size (1 byte)
 			resp.WriteByte(7)  // generator
 			resp.WriteByte(32) // large prime size (32 bytes)
-			resp.Write(srpv2.Reverse(srpv2.LargeSafePrime))
+			resp.Write(srp.Reverse(srp.LargeSafePrime))
 			resp.Write(MOCK_SALT)
 			resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
 			resp.WriteByte(0)
@@ -319,9 +319,9 @@ func handlePacket(c *Client, data []byte) error {
 		clientPublicKey := p.ClientPublicKey[:]
 		clientProof := p.ClientProof[:]
 
-		c.sessionKey = srpv2.CalculateServerSessionKey(
+		c.sessionKey = srp.CalculateServerSessionKey(
 			clientPublicKey, MOCK_PUBLIC_KEY, MOCK_PRIVATE_KEY, MOCK_VERIFIER)
-		calculatedClientProof := srpv2.CalculateClientProof(
+		calculatedClientProof := srp.CalculateClientProof(
 			MOCK_USERNAME, MOCK_SALT, clientPublicKey, MOCK_PUBLIC_KEY, c.sessionKey,
 		)
 
@@ -334,7 +334,7 @@ func handlePacket(c *Client, data []byte) error {
 			resp.Write([]byte{0, 0}) // padding
 		} else {
 			resp.WriteByte(WOW_SUCCESS)
-			resp.Write(srpv2.CalculateServerProof(clientPublicKey, clientProof, c.sessionKey))
+			resp.Write(srp.CalculateServerProof(clientPublicKey, clientProof, c.sessionKey))
 			resp.Write([]byte{0, 0, 0, 0}) // Account flag
 			resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
 			resp.Write([]byte{0, 0})       // Unknown
@@ -398,7 +398,7 @@ func handlePacket(c *Client, data []byte) error {
 			return err
 		}
 
-		serverProof := srpv2.CalculateReconnectProof(c.username, p.ProofData[:], c.reconnectData, c.sessionKey)
+		serverProof := srp.CalculateReconnectProof(c.username, p.ProofData[:], c.reconnectData, c.sessionKey)
 
 		log.Printf("computed recon proof: %x\n", serverProof)
 		log.Printf("client proof: %x\n", p.ClientProof)
