@@ -53,7 +53,7 @@ func (h *WrathHeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
 
 func (h *WrathHeaderCrypto) Decrypt(data []byte) []byte {
 	if h.decryptCipher == nil {
-		panic("cipher has not been initialized, call Init() first")
+		panic("decrypt: cipher has not been initialized, call Init() first")
 	}
 
 	dataCopy := make([]byte, len(data))
@@ -64,7 +64,7 @@ func (h *WrathHeaderCrypto) Decrypt(data []byte) []byte {
 
 func (h *WrathHeaderCrypto) Encrypt(data []byte) []byte {
 	if h.encryptCipher == nil {
-		panic("cipher has not been initialized, call Init() first")
+		panic("encrypt: cipher has not been initialized, call Init() first")
 	}
 
 	dataCopy := make([]byte, len(data))

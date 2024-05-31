@@ -265,7 +265,7 @@ type Realm struct {
 
 func handlePacket(c *Client, data []byte) error {
 	if len(data) == 0 {
-		return fmt.Errorf("error: packet is empty")
+		return fmt.Errorf("handlePacket: packet is empty")
 	}
 
 	switch data[0] {
@@ -469,6 +469,6 @@ func handlePacket(c *Client, data []byte) error {
 		log.Println("Replied to realm list")
 		return nil
 	default:
-		return fmt.Errorf("error: unknown opcode (%v)", data[0])
+		return fmt.Errorf("handlePacket: unknown opcode (%v)", data[0])
 	}
 }
