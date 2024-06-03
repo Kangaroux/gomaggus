@@ -9,6 +9,8 @@ import (
 	"io"
 	"log"
 	"net"
+
+	"github.com/kangaroux/gomaggus/internal/worldd"
 )
 
 // Opcodes sent by the server
@@ -46,7 +48,7 @@ type Client struct {
 	conn          net.Conn
 	username      string
 	authenticated bool
-	crypto        *WrathHeaderCrypto
+	crypto        *worldd.WrathHeaderCrypto
 }
 
 func handleClient(c net.Conn) {

@@ -1,4 +1,4 @@
-package main
+package worldd
 
 import (
 	"crypto/rc4"
