@@ -14,4 +14,5 @@ type Account struct {
 	SrpSaltHex     string `db:"srp_salt"`
 	Email          string
 	RealmId        uint32 `db:"realm_id"`
+	Realm          *Realm
 }
