@@ -1,5 +1,7 @@
 package realmd
 
+import "github.com/kangaroux/gomaggus/internal/models"
+
 type RealmVersion struct {
 	Major uint8
 	Minor uint8
@@ -9,7 +11,7 @@ type RealmVersion struct {
 
 // https://gtker.com/wow_messages/docs/realm.html#protocol-version-8
 type Realm struct {
-	Type   RealmType
+	Type   models.RealmType
 	Locked bool
 	Flags  RealmFlag
 	Name   string // C-style NUL terminated, e.g. "Test Realm\x00"
@@ -22,7 +24,7 @@ type Realm struct {
 	// it's not important whether this value is accurate.
 	Population      float32
 	NumCharsOnRealm uint8 // Number of characters for the logged in account
-	Region          RealmRegion
+	Region          models.RealmRegion
 	Id              uint8
 	Version         RealmVersion // included only if REALMFLAG_SPECIFY_BUILD flag is set
 }
