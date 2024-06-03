@@ -1,14 +1,17 @@
 package models
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 )
 
 type RealmService interface {
+	Get(uint32) (*Realm, error)
 	List() ([]*Realm, error)
 	Create(*Realm) error
-	Update(*Realm) error
-	Delete(uint32) error
+	Update(*Realm) (bool, error)
+	Delete(uint32) (bool, error)
 }
 
 type DbRealmService struct {
@@ -21,6 +24,17 @@ func NewDbRealmService(db *sqlx.DB) *DbRealmService {
 	return &DbRealmService{db}
 }
 
+func (s *DbRealmService) Get(id uint32) (*Realm, error) {
+	result := &Realm{}
+	if err := s.db.Get(result, `SELECT * FROM realms WHERE id = $1`, id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
 func (s *DbRealmService) List() ([]*Realm, error) {
 	results := []*Realm{}
 	if err := s.db.Select(&results, `SELECT * FROM realms`); err != nil {
@@ -30,34 +44,33 @@ func (s *DbRealmService) List() ([]*Realm, error) {
 }
 
 func (s *DbRealmService) Create(r *Realm) error {
-	result, err := s.db.Exec(
-		`INSERT INTO realms (name, type, host, region)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id`,
-		r.Name, r.Type, r.Host, r.Region,
-	)
+	q := `
+	INSERT INTO realms (name, type, host, region)
+	VALUES (:name, :type, :host, :region)
+	RETURNING id, created_at`
+	result, err := s.db.NamedQuery(q, r)
 	if err != nil {
 		return err
 	}
+	result.Next()
+	return result.StructScan(r)
+}
 
-	id, err := result.LastInsertId()
+func (s *DbRealmService) Update(r *Realm) (bool, error) {
+	q := `UPDATE realms SET name=:name, type=:type, host=:host, region=:region WHERE id=:id`
+	result, err := s.db.NamedExec(q, r)
 	if err != nil {
-		return err
+		return false, err
 	}
-
-	r.Id = uint32(id)
-	return nil
+	n, _ := result.RowsAffected()
+	return n > 0, err
 }
 
-func (s *DbRealmService) Update(r *Realm) error {
-	_, err := s.db.Exec(
-		`UPDATE realms SET name=$1 type=$2 host=$3 region=$4 WHERE id=$5`,
-		r.Name, r.Type, r.Host, r.Region, r.Id,
-	)
-	return err
-}
-
-func (s *DbRealmService) Delete(id uint32) error {
-	_, err := s.db.Exec(`DELETE FROM realms WHERE id=$1`, id)
-	return err
+func (s *DbRealmService) Delete(id uint32) (bool, error) {
+	result, err := s.db.Exec(`DELETE FROM realms WHERE id=$1`, id)
+	if err != nil {
+		return false, err
+	}
+	n, _ := result.RowsAffected()
+	return n > 0, err
 }
