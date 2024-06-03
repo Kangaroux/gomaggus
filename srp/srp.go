@@ -5,6 +5,8 @@ import (
 	"crypto/sha1"
 	"math/big"
 	"strings"
+
+	"github.com/kangaroux/gomaggus/internal"
 )
 
 var (
@@ -43,14 +45,14 @@ func CalculateX(username, password string, salt []byte) []byte {
 }
 
 func CalculateVerifier(username, password string, salt []byte) []byte {
-	x := big.NewInt(0).SetBytes(Reverse(CalculateX(username, password, salt)))
-	return Reverse(pad(32, big.NewInt(0).Exp(g, x, n).Bytes()))
+	x := big.NewInt(0).SetBytes(internal.Reverse(CalculateX(username, password, salt)))
+	return internal.Reverse(internal.Pad(32, big.NewInt(0).Exp(g, x, n).Bytes()))
 }
 
 func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
-	publicKey := big.NewInt(0).Exp(g, toInt(Reverse(serverPrivateKey)), n)
-	kv := big.NewInt(0).Mul(k, toInt(Reverse(verifier)))
-	return Reverse(pad(32, publicKey.Add(publicKey, kv).Mod(publicKey, n).Bytes()))
+	publicKey := big.NewInt(0).Exp(g, toInt(internal.Reverse(serverPrivateKey)), n)
+	kv := big.NewInt(0).Mul(k, toInt(internal.Reverse(verifier)))
+	return internal.Reverse(internal.Pad(32, publicKey.Add(publicKey, kv).Mod(publicKey, n).Bytes()))
 }
 
 func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
@@ -61,10 +63,10 @@ func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 }
 
 func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
-	S := big.NewInt(0).Exp(toInt(Reverse(verifier)), toInt(Reverse(u)), n)
-	S.Mul(S, toInt(Reverse(clientPublicKey)))
-	S.Exp(S, toInt(Reverse(serverPrivateKey)), n)
-	return Reverse(pad(32, S.Bytes()))
+	S := big.NewInt(0).Exp(toInt(internal.Reverse(verifier)), toInt(internal.Reverse(u)), n)
+	S.Mul(S, toInt(internal.Reverse(clientPublicKey)))
+	S.Exp(S, toInt(internal.Reverse(serverPrivateKey)), n)
+	return internal.Reverse(internal.Pad(32, S.Bytes()))
 }
 
 func CalculateInterleave(S []byte) []byte {
@@ -131,4 +133,8 @@ func CalculateReconnectProof(username string, clientData, serverData, sessionKey
 	h.Write(serverData)
 	h.Write(sessionKey)
 	return h.Sum(nil)
+}
+
+func toInt(data []byte) *big.Int {
+	return big.NewInt(0).SetBytes(data)
 }

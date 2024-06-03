@@ -10,6 +10,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -141,7 +142,7 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 		resp.WriteByte(1)  // generator size (1 byte)
 		resp.WriteByte(7)  // generator
 		resp.WriteByte(32) // large prime size (32 bytes)
-		resp.Write(srp.Reverse(srp.LargeSafePrime))
+		resp.Write(internal.Reverse(srp.LargeSafePrime))
 		resp.Write(MOCK_SALT)
 		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
 		resp.WriteByte(0)
