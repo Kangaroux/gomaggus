@@ -182,7 +182,11 @@ func handleClient(c net.Conn) {
 	log.Printf("client connected from %v\n", c.RemoteAddr().String())
 
 	buf := make([]byte, 4096)
-	client := &Client{conn: c, serverSeed: mathrand.Uint32()}
+	client := &Client{
+		conn:       c,
+		serverSeed: mathrand.Uint32(),
+		crypto:     worldd.NewWrathHeaderCrypto(nil /* TODO session key */),
+	}
 
 	// The server is the one who initiates the auth challenge here, unlike the login server where
 	// the client is the one who initiates it
@@ -228,9 +232,12 @@ func sendAuthChallenge(c *Client) error {
 	body.Write(seed) // seed, unused. This differs from the 4 byte server seed
 
 	resp := &bytes.Buffer{}
-	binary.Write(resp, binary.BigEndian, uint16(body.Len())+2)
-	binary.Write(resp, binary.LittleEndian, OP_AUTH_CHALLENGE)
-	body.WriteTo(resp)
+	respHeader, err := makeServerHeader(OP_AUTH_CHALLENGE, uint32(body.Len()))
+	if err != nil {
+		return err
+	}
+	resp.Write(respHeader)
+	resp.Write(body.Bytes())
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
 		return err
@@ -312,6 +319,8 @@ func handlePacket(c *Client, data []byte) error {
 
 	switch header.Opcode {
 	case OP_AUTH_SESSION:
+		log.Println("starting auth session")
+
 		r := bytes.NewReader(data)
 
 		// Skip the header
@@ -368,12 +377,14 @@ func handlePacket(c *Client, data []byte) error {
 		if err != nil {
 			return err
 		}
-		resp.Write(respHeader)
+		resp.Write(c.crypto.Encrypt(respHeader))
 		resp.Write(inner.Bytes())
 
 		if _, err := c.conn.Write(resp.Bytes()); err != nil {
 			return err
 		}
+
+		log.Println("sent auth response")
 
 		return nil
 	}
