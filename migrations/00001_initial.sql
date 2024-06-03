@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS accounts (
     srp_verifier    varchar(64) NOT NULL, -- 32 byte hex string
     srp_salt        varchar(64) NOT NULL, -- 32 byte hex string
     email           varchar(100) NOT NULL,
-    realm_id        integer REFERENCES realms(id)
+    realm_id        integer NOT NULL REFERENCES realms(id)
 );
 CREATE TABLE IF NOT EXISTS sessions (
     id              serial PRIMARY KEY,
