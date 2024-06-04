@@ -7,10 +7,16 @@ import (
 )
 
 type SessionService interface {
+	// Get returns the matching Session, or nil if it doesn't exist.
 	Get(uint32) (*Session, error)
-	List() ([]*Session, error)
+
+	// Create creates a new Session and sets the Id and CreatedAt fields.
 	Create(*Session) error
+
+	// Update tries to update an existing Session and returns if it was updated.
 	Update(*Session) (bool, error)
+
+	// Delete tries to delete an existing Session by id and returns if it was deleted.
 	Delete(uint32) (bool, error)
 }
 
@@ -33,14 +39,6 @@ func (s *DbSessionService) Get(accountId uint32) (*Session, error) {
 		return nil, err
 	}
 	return result, nil
-}
-
-func (s *DbSessionService) List() ([]*Session, error) {
-	results := []*Session{}
-	if err := s.db.Select(&results, `SELECT * FROM sessions`); err != nil {
-		return nil, err
-	}
-	return results, nil
 }
 
 func (s *DbSessionService) Create(session *Session) error {
