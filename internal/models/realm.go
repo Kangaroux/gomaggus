@@ -7,10 +7,11 @@ import (
 type Realm struct {
 	Id        uint32
 	CreatedAt time.Time `db:"created_at"`
-	Name      string
-	Type      RealmType
-	Host      string
-	Region    RealmRegion
+
+	Name   string
+	Type   RealmType
+	Host   string
+	Region RealmRegion
 }
 
 type RealmType uint8
