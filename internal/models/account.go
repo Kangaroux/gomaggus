@@ -16,9 +16,9 @@ type Account struct {
 
 	Username       string
 	Email          string
-	SrpVerifierHex string `db:"srp_verifier"`
-	SrpSaltHex     string `db:"srp_salt"`
 	RealmId        uint32 `db:"realm_id"`
+	SrpSaltHex     string `db:"srp_salt"`
+	SrpVerifierHex string `db:"srp_verifier"`
 }
 
 func (acc *Account) SetUsernamePassword(username, password string) error {
