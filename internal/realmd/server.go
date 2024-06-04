@@ -10,7 +10,9 @@ import (
 	"net"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/internal"
+	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -24,12 +26,15 @@ type Server struct {
 	// Maps usernames to session keys to allow reconnecting.
 	// FIXME?: clients can't reconnect if the realmd server restarts since this isn't persisted
 	sessionKeys map[string][]byte
+
+	realmsDb models.RealmService
 }
 
-func NewServer(port int) *Server {
+func NewServer(db *sqlx.DB, port int) *Server {
 	return &Server{
 		port:        port,
 		sessionKeys: make(map[string][]byte),
+		realmsDb:    models.NewDbRealmService(db),
 	}
 }
 
@@ -303,43 +308,37 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 }
 
 func (s *Server) handleRealmList(c *Client) error {
+	realmList, err := s.realmsDb.List()
+	if err != nil {
+		return err
+	}
+
 	// https://gtker.com/wow_messages/docs/cmd_realm_list_server.html#protocol-version-8
 	resp := &bytes.Buffer{}
 	resp.WriteByte(OP_REALM_LIST)
 
-	realmList := &bytes.Buffer{}
-	realmList.Write([]byte{0, 0, 0, 0}) // header padding
-	binary.Write(realmList, binary.LittleEndian, uint16(len(MOCK_REALMS)))
-	for _, r := range MOCK_REALMS {
-		realmList.WriteByte(byte(r.Type))
-
-		if r.Locked {
-			realmList.WriteByte(1)
-		} else {
-			realmList.WriteByte(0)
-		}
-
-		realmList.WriteByte(byte(r.Flags))
-		realmList.WriteString(r.Name)
-		realmList.WriteString(r.Host)
-		binary.Write(realmList, binary.LittleEndian, r.Population)
-		realmList.WriteByte(byte(r.NumCharsOnRealm))
-		realmList.WriteByte(byte(r.Region))
-		realmList.WriteByte(byte(r.Id))
-
-		if r.Flags&REALMFLAG_SPECIFY_BUILD > 0 {
-			realmList.WriteByte(byte(r.Version.Major))
-			realmList.WriteByte(byte(r.Version.Minor))
-			realmList.WriteByte(byte(r.Version.Patch))
-			binary.Write(realmList, binary.LittleEndian, r.Version.Build)
-		}
+	inner := &bytes.Buffer{}
+	inner.Write([]byte{0, 0, 0, 0}) // header padding
+	binary.Write(inner, binary.LittleEndian, uint16(len(realmList)))
+	for _, r := range realmList {
+		inner.WriteByte(byte(r.Type))
+		inner.WriteByte(0)                    // locked
+		inner.WriteByte(byte(REALMFLAG_NONE)) // TODO?
+		inner.WriteString(r.Name)
+		inner.WriteByte(0) // name is NUL-terminated
+		inner.WriteString(r.Host)
+		inner.WriteByte(0)                                   // host is NUL-terminated
+		binary.Write(inner, binary.LittleEndian, float32(0)) // TODO: population
+		inner.WriteByte(byte(0))                             // TODO: number of chars on realm
+		inner.WriteByte(byte(r.Region))
+		inner.WriteByte(byte(r.Id))
 	}
-	realmList.Write([]byte{0, 0}) // footer padding
+	inner.Write([]byte{0, 0}) // footer padding
 
 	// Write size of realm list payload
-	binary.Write(resp, binary.LittleEndian, uint16(realmList.Len()))
+	binary.Write(resp, binary.LittleEndian, uint16(inner.Len()))
 	// Concat to main payload
-	realmList.WriteTo(resp)
+	inner.WriteTo(resp)
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
 		return err

@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -18,33 +17,6 @@ var (
 	MOCK_VERIFIER    []byte
 	MOCK_PRIVATE_KEY []byte
 	MOCK_PUBLIC_KEY  []byte
-
-	MOCK_REALMS = []Realm{
-		{
-			Type:            models.REALMTYPE_PVE,
-			Locked:          false,
-			Flags:           REALMFLAG_NONE,
-			Name:            "Test Realm\x00",
-			Host:            "localhost:8085\x00",
-			Population:      0.01,
-			NumCharsOnRealm: 0,
-			Region:          models.REALMREGION_US,
-			Id:              0,
-			// Version:         RealmVersion{Major: 4, Minor: 3, Patch: 6, Build: 12340},
-		},
-		// {
-		// 	Type:            REALMTYPE_PVP,
-		// 	Locked:          false,
-		// 	Flags:           REALMFLAG_NONE,
-		// 	Name:            "Test Realm1\x00",
-		// 	Host:            "localhost:8085\x00",
-		// 	Population:      0,
-		// 	NumCharsOnRealm: 0,
-		// 	Region:          REALMREGION_US,
-		// 	Id:              1,
-		// 	// Version:         RealmVersion{Major: 4, Minor: 3, Patch: 6, Build: 12340},
-		// },
-	}
 )
 
 func init() {
