@@ -16,17 +16,17 @@ CREATE TABLE IF NOT EXISTS accounts (
     created_at      timestamp NOT NULL DEFAULT now(),
     last_login      timestamp,
     username        varchar(16) NOT NULL,
-    srp_verifier    varchar(64) NOT NULL, -- 32 byte hex string
-    srp_salt        varchar(64) NOT NULL, -- 32 byte hex string
     email           varchar(100) NOT NULL,
-    realm_id        integer NOT NULL REFERENCES realms ON DELETE CASCADE
+    realm_id        integer NOT NULL REFERENCES realms ON DELETE CASCADE,
+    srp_salt        varchar(64) NOT NULL, -- 32 byte hex string
+    srp_verifier    varchar(64) NOT NULL -- 32 byte hex string
 );
 CREATE UNIQUE INDEX IF NOT EXISTS accounts_email_unique_idx ON accounts (lower(email));
 CREATE UNIQUE INDEX IF NOT EXISTS accounts_username_unique_idx ON accounts (upper(username));
 
 CREATE TABLE IF NOT EXISTS sessions (
     id              serial PRIMARY KEY,
-    account         integer UNIQUE NOT NULL REFERENCES accounts ON DELETE CASCADE,
+    account_id      integer UNIQUE NOT NULL REFERENCES accounts ON DELETE CASCADE,
     session_key     varchar(80) NOT NULL, -- 40 byte hex string
     connected       integer NOT NULL,
     connected_at    timestamp,
