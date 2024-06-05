@@ -10,6 +10,17 @@ import (
 	"github.com/kangaroux/gomaggus/internal"
 )
 
+const (
+	// 23 bits + 1 bit for LARGE_HEADER_FLAG
+	SizeFieldMaxValue = 0x7FFFFF
+
+	// 15 bits (16th bit is reserved for LARGE_HEADER_FLAG)
+	LargeHeaderThreshold = 0x7FFF
+
+	// Set on MSB of size field (first header byte)
+	LargeHeaderFlag = 0x80
+)
+
 var (
 	fixedDecryptKey = []byte{
 		0xC2, 0xB3, 0x72, 0x3C, 0xC6, 0xAE, 0xD9, 0xB5,
