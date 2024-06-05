@@ -6,8 +6,6 @@ import (
 )
 
 type Session struct {
-	Id uint32
-
 	AccountId      uint32       `db:"account_id"`
 	SessionKeyHex  string       `db:"session_key"`
 	Connected      uint8        // TODO: add types
