@@ -64,14 +64,9 @@ type creater interface {
 func (s *DbSessionService) create(db creater, session *Session) error {
 	q := `
 	INSERT INTO sessions (account_id, session_key, connected, connected_at, disconnected_at)
-	VALUES (:account_id, :session_key, :connected, :connected_at, :disconnected_at)
-	RETURNING id`
-	result, err := db.NamedQuery(q, session)
-	if err != nil {
-		return err
-	}
-	result.Next()
-	return result.StructScan(session)
+	VALUES (:account_id, :session_key, :connected, :connected_at, :disconnected_at)`
+	_, err := db.NamedQuery(q, session)
+	return err
 }
 
 func (s *DbSessionService) Update(session *Session) (bool, error) {
