@@ -16,7 +16,6 @@ type Account struct {
 
 	Username       string
 	Email          string
-	RealmId        uint32 `db:"realm_id"`
 	SrpSaltHex     string `db:"srp_salt"`
 	SrpVerifierHex string `db:"srp_verifier"`
 

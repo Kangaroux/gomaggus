@@ -88,8 +88,8 @@ func (s *DbAccountService) List() ([]*Account, error) {
 
 func (s *DbAccountService) Create(a *Account) error {
 	q := `
-	INSERT INTO accounts (username, email, srp_verifier, srp_salt, realm_id)
-	VALUES (:username, :email, :srp_verifier, :srp_salt, :realm_id)
+	INSERT INTO accounts (username, email, srp_verifier, srp_salt)
+	VALUES (:username, :email, :srp_verifier, :srp_salt)
 	RETURNING id, created_at`
 	result, err := s.db.NamedQuery(q, a)
 	if err != nil {
