@@ -10,7 +10,6 @@ const (
 
 const (
 	WOW_SUCCESS              byte = 0
-	WOW_UNABLE_TO_CONNECT    byte = 1
 	WOW_FAIL_UNKNOWN_ACCOUNT byte = 4
 )
 

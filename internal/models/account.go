@@ -59,14 +59,14 @@ func (acc *Account) DecodeSrp() error {
 
 func (acc *Account) Salt() []byte {
 	if acc.srpSalt == nil {
-		panic("decodeSrp must be called before accessing Salt")
+		panic("DecodeSrp must be called before accessing Salt")
 	}
 	return acc.srpSalt
 }
 
 func (acc *Account) Verifier() []byte {
 	if acc.srpVerifier == nil {
-		panic("decodeSrp must be called before accessing Verifier")
+		panic("DecodeSrp must be called before accessing Verifier")
 	}
 	return acc.srpVerifier
 }

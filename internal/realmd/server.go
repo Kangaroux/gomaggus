@@ -175,7 +175,6 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	var salt []byte
 
 	if c.account == nil {
-		log.Println("no account with that username exists, generating fake response")
 		publicKey = make([]byte, srp.KeySize)
 		if _, err := rand.Read(publicKey); err != nil {
 			return err
@@ -194,7 +193,6 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 			return err
 		}
 	} else {
-		log.Printf("account exists id=%d\n", c.account.Id)
 		if err = c.account.DecodeSrp(); err != nil {
 			return err
 		}
@@ -346,11 +344,8 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 	log.Println("Starting reconnect proof")
 
 	authenticated := false
-	haveSessionKey := false
 
 	if c.account != nil {
-		log.Printf("account exists id=%d\n", c.account.Id)
-
 		session, err := s.sessionsDb.Get(c.account.Id)
 		if err != nil {
 			return err
@@ -358,7 +353,10 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 
 		// We can only try to reconnect the client if we have a previous session key
 		if session != nil {
-			haveSessionKey = true
+			if err := session.Decode(); err != nil {
+				return err
+			}
+			c.sessionKey = session.SessionKey()
 			p := ReconnectProofPacket{}
 
 			reader := bytes.NewReader(data)
@@ -376,11 +374,7 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 	resp.WriteByte(OP_RECONNECT_PROOF)
 
 	if !authenticated {
-		if !haveSessionKey {
-			resp.WriteByte(WOW_UNABLE_TO_CONNECT)
-		} else {
-			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
-		}
+		resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
 	} else {
 		resp.WriteByte(WOW_SUCCESS)
 	}
