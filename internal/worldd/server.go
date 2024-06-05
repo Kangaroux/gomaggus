@@ -72,11 +72,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
 	buf := make([]byte, 4096)
+
 	client := &Client{
-		conn:       conn,
-		serverSeed: mrand.Uint32(),
-		crypto:     NewWrathHeaderCrypto(nil /* TODO session key */),
+		conn:   conn,
+		crypto: NewWrathHeaderCrypto(nil /* TODO session key */),
 	}
+	binary.BigEndian.PutUint32(client.serverSeed[:], mrand.Uint32())
 
 	// The server is the one who initiates the auth challenge here, unlike the login server where
 	// the client is the one who initiates it
@@ -179,6 +180,8 @@ func readCString(r *bytes.Reader) (string, error) {
 }
 
 func (s *Server) handlePacket(c *Client, data []byte) error {
+	var err error
+
 	if len(data) == 0 {
 		return fmt.Errorf("handlePacket: packet is empty")
 	}
@@ -197,6 +200,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		// Skip the header
 		r.Seek(6, io.SeekStart)
 
+		// https://gtker.com/wow_messages/docs/cmsg_auth_session.html#client-version-335
 		p := AuthSessionPacket{}
 		if err = binary.Read(r, binary.BigEndian, &p.ClientBuild); err != nil {
 			return err
@@ -234,6 +238,12 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 		p.AddonInfo = addonInfoBuf.Bytes()
 
+		authenticated, err := s.authenticateClient(c, &p)
+
+		if authenticated {
+			// do thing
+		}
+
 		// TODO: Check client proof
 
 		// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
@@ -261,6 +271,41 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	}
 
 	return nil
+}
+
+func (s *Server) authenticateClient(c *Client, p *AuthSessionPacket) (bool, error) {
+	var err error
+
+	if c.account, err = s.accountsDb.Get(&models.AccountGetParams{Username: p.Username}); err != nil {
+		return false, err
+	} else if c.account == nil {
+		log.Printf("no account with username %s exists", p.Username)
+		return false, nil
+	}
+
+	if c.realm, err = s.realmsDb.Get(p.RealmId); err != nil {
+		return false, err
+	} else if c.realm == nil {
+		log.Printf("no realm with id %d exists", p.RealmId)
+		return false, nil
+	}
+
+	if c.session, err = s.sessionsDb.Get(c.account.Id); err != nil {
+		return false, err
+	} else if c.session == nil {
+		log.Printf("no session for username %s exists", c.account.Username)
+		return false, nil
+	}
+
+	proof := CalculateWorldProof(p.Username, p.ClientSeed[:], c.serverSeed[:], c.session.SessionKey())
+	if !bytes.Equal(proof, p.ClientProof[:]) {
+		log.Println("proofs don't match")
+		log.Printf("got:    %x\n", p.ClientProof)
+		log.Printf("wanted: %x\n", proof)
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func makeServerHeader(opcode uint16, size uint32) ([]byte, error) {
