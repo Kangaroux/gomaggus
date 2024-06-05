@@ -285,40 +285,40 @@ func (s *Server) handleLoginProof(c *Client, data []byte) error {
 func (s *Server) handleReconnectChallenge(c *Client, data []byte) error {
 	log.Println("Starting reconnect challenge")
 
+	var err error
 	p := LoginChallengePacket{}
 
 	reader := bytes.NewReader(data)
 	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
 		return err
 	}
+
 	usernameBytes := make([]byte, p.UsernameLength)
 	if _, err := reader.Read(usernameBytes); err != nil {
 		return err
 	}
 	c.username = strings.ToUpper(string(usernameBytes))
+
 	log.Printf("client trying to login as '%s'\n", c.username)
+
+	c.account, err = s.accountsDb.Get(&models.AccountGetParams{Username: c.username})
+	if err != nil {
+		return err
+	}
 
 	// Generate random data that will be used for the reconnect proof
 	if _, err := rand.Read(c.reconnectData); err != nil {
 		return err
 	}
 
-	sessionKey, hasSessionKey := s.sessionKeys[c.username]
-	canReconnect := c.username == MOCK_USERNAME && hasSessionKey
-
 	// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
 	resp := &bytes.Buffer{}
 	resp.WriteByte(OP_RECONNECT_CHALLENGE)
 
-	if canReconnect {
-		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(c.reconnectData)
-		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // checksum salt
-
-		c.sessionKey = sessionKey
-	} else {
-		resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
-	}
+	// Always return success to prevent a bad actor from mining usernames
+	resp.WriteByte(WOW_SUCCESS)
+	resp.Write(c.reconnectData)
+	resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // checksum salt
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
 		return err
@@ -326,11 +326,7 @@ func (s *Server) handleReconnectChallenge(c *Client, data []byte) error {
 
 	log.Println("Replied to reconnect challenge")
 
-	if canReconnect {
-		c.state = StateReconnectProof
-	} else {
-		c.state = StateInvalid
-	}
+	c.state = StateReconnectProof
 
 	return nil
 }
@@ -338,29 +334,45 @@ func (s *Server) handleReconnectChallenge(c *Client, data []byte) error {
 func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 	log.Println("Starting reconnect proof")
 
-	p := ReconnectProofPacket{}
+	authenticated := false
+	haveSessionKey := false
 
-	reader := bytes.NewReader(data)
-	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
-		return err
+	if c.account != nil {
+		session, err := s.sessionsDb.Get(c.account.Id)
+		if err != nil {
+			return err
+		}
+
+		// We can only try to reconnect the client if we have a previous session key
+		if session != nil || false {
+			haveSessionKey = true
+			p := ReconnectProofPacket{}
+
+			reader := bytes.NewReader(data)
+			if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+				return err
+			}
+
+			serverProof := srp.CalculateReconnectProof(c.username, p.ProofData[:], c.reconnectData, c.sessionKey)
+			authenticated = bytes.Equal(serverProof, p.ClientProof[:])
+		}
 	}
 
-	serverProof := srp.CalculateReconnectProof(c.username, p.ProofData[:], c.reconnectData, c.sessionKey)
-	proofMatch := bytes.Equal(serverProof, p.ClientProof[:])
-
-	// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
+	// https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_server.html#protocol-version-8
 	resp := &bytes.Buffer{}
 	resp.WriteByte(OP_RECONNECT_PROOF)
-	if !proofMatch {
-		resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
-		resp.Write([]byte{0, 0}) // padding
+
+	if !authenticated {
+		if !haveSessionKey {
+			resp.WriteByte(WOW_UNABLE_TO_CONNECT)
+		} else {
+			resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
+		}
 	} else {
 		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(serverProof)
-		resp.Write([]byte{0, 0, 0, 0}) // Account flag
-		resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
-		resp.Write([]byte{0, 0})       // Unknown
 	}
+
+	resp.Write([]byte{0, 0}) // padding
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
 		return err
@@ -368,8 +380,14 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 
 	log.Println("Replied to reconnect proof")
 
-	if proofMatch {
+	if authenticated {
 		c.state = StateAuthenticated
+		s.sessionsDb.UpdateOrCreate(&models.Session{
+			AccountId:     c.account.Id,
+			SessionKeyHex: hex.EncodeToString(c.sessionKey),
+			Connected:     1,
+			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
+		})
 	} else {
 		c.state = StateInvalid
 	}
