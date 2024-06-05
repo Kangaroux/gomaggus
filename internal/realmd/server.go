@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	mrand "math/rand"
 	"net"
 	"strings"
 	"time"
@@ -161,9 +162,6 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	if err != nil {
 		return err
 	}
-	if err = c.account.DecodeSrp(); err != nil {
-		return err
-	}
 
 	// https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 	resp := &bytes.Buffer{}
@@ -182,12 +180,24 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 		if _, err := rand.Read(publicKey); err != nil {
 			return err
 		}
+
+		// A real account will always return the same salt, so our fake account needs to do that, too.
+		// Using the username as a seed for the fake salt guarantees we always generate the same data.
+		// Ironically, using crypto/rand here is actually less secure.
+		//
+		// If we didn't do this, a bad actor could send two challenges with the same username and compare
+		// the salts. The salts would be the same for real accounts and different for fake accounts.
+		// This would allow someone to mine usernames and start building an attack vector.
+		seededRand := mrand.New(mrand.NewSource(internal.FastHash(c.username)))
 		salt = make([]byte, srp.SaltSize)
-		if _, err := rand.Read(salt); err != nil {
+		if _, err := seededRand.Read(salt); err != nil {
 			return err
 		}
 	} else {
 		log.Printf("account exists id=%d\n", c.account.Id)
+		if err = c.account.DecodeSrp(); err != nil {
+			return err
+		}
 		publicKey = srp.CalculateServerPublicKey(c.account.Verifier(), c.privateKey)
 		c.serverPublicKey = publicKey
 		salt = c.account.Salt()
@@ -339,13 +349,15 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 	haveSessionKey := false
 
 	if c.account != nil {
+		log.Printf("account exists id=%d\n", c.account.Id)
+
 		session, err := s.sessionsDb.Get(c.account.Id)
 		if err != nil {
 			return err
 		}
 
 		// We can only try to reconnect the client if we have a previous session key
-		if session != nil || false {
+		if session != nil {
 			haveSessionKey = true
 			p := ReconnectProofPacket{}
 
