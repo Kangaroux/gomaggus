@@ -2,13 +2,21 @@ package worldd
 
 // Opcodes sent by the server
 const (
-	OP_AUTH_CHALLENGE uint16 = 0x1EC
-	OP_AUTH_RESPONSE  uint16 = 0x1EE
+	OP_SRV_AUTH_CHALLENGE uint16 = 0x1EC
+	OP_SRV_AUTH_RESPONSE  uint16 = 0x1EE
+	OP_SRV_PONG           uint16 = 0x1DD
 )
 
 // Opcodes sent by the client
 const (
-	OP_AUTH_SESSION uint32 = 0x1ED
+	OP_CL_AUTH_SESSION uint32 = 0x1ED
+	OP_CL_REALM_SPLIT  uint32 = 0x38C
+	OP_CL_PING         uint32 = 0x1DC
+	OP_CL_CHAR_ENUM    uint32 = 0x37
+
+	// Client sent after receiving our OP_SRV_AUTH_RESPONSE. The packet is empty besides the header.
+	// Immediately after the client sends OP_CL_CHAR_ENUM.
+	OP_CL_UNKNOWN uint32 = 0x4FF
 )
 
 const (

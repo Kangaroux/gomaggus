@@ -123,7 +123,7 @@ func (s *Server) sendAuthChallenge(c *Client) error {
 	body.Write(seed) // seed, unused. This differs from the 4 byte server seed
 
 	resp := &bytes.Buffer{}
-	respHeader, err := makeServerHeader(OP_AUTH_CHALLENGE, uint32(body.Len()))
+	respHeader, err := makeServerHeader(OP_SRV_AUTH_CHALLENGE, uint32(body.Len()))
 	if err != nil {
 		return err
 	}
@@ -152,6 +152,8 @@ func parseHeader(c *Client, data []byte) (*Header, error) {
 
 		headerData = c.crypto.Decrypt(headerData)
 	}
+
+	fmt.Printf("header: %x\n", headerData)
 
 	h := &Header{
 		Size:   binary.BigEndian.Uint16(headerData[:2]),
@@ -192,7 +194,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	}
 
 	switch header.Opcode {
-	case OP_AUTH_SESSION:
+	case OP_CL_AUTH_SESSION:
 		log.Println("starting auth session")
 
 		r := bytes.NewReader(data)
@@ -238,12 +240,12 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 		p.AddonInfo = addonInfoBuf.Bytes()
 
-		authenticated, err := s.authenticateClient(c, &p)
+		c.authenticated, err = s.authenticateClient(c, &p)
 		if err != nil {
 			return err
 		}
 
-		if !authenticated {
+		if !c.authenticated {
 			// We can't return an error to the client due to the header encryption, just drop the connection
 			return errors.New("client could not be authenticated")
 		}
@@ -257,7 +259,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_AUTH_RESPONSE, uint32(inner.Len()))
+		respHeader, err := makeServerHeader(OP_SRV_AUTH_RESPONSE, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
