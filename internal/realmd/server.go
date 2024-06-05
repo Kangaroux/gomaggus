@@ -177,6 +177,7 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	var salt []byte
 
 	if c.account == nil {
+		log.Println("no account with that username exists, generating fake response")
 		publicKey = make([]byte, srp.KeySize)
 		if _, err := rand.Read(publicKey); err != nil {
 			return err
@@ -186,12 +187,12 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 			return err
 		}
 	} else {
+		log.Printf("account exists id=%d\n", c.account.Id)
 		publicKey = srp.CalculateServerPublicKey(c.account.Verifier(), c.privateKey)
 		c.serverPublicKey = publicKey
 		salt = c.account.Salt()
 	}
 
-	resp.WriteByte(WOW_SUCCESS)
 	resp.Write(publicKey)
 	resp.WriteByte(1)  // generator size (1 byte)
 	resp.WriteByte(7)  // generator
