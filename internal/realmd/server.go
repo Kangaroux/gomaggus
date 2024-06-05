@@ -27,10 +27,6 @@ const (
 type Server struct {
 	port int
 
-	// Maps usernames to session keys to allow reconnecting.
-	// FIXME?: clients can't reconnect if the realmd server restarts since this isn't persisted
-	sessionKeys map[string][]byte
-
 	accountsDb models.AccountService
 	realmsDb   models.RealmService
 	sessionsDb models.SessionService
@@ -38,11 +34,10 @@ type Server struct {
 
 func NewServer(db *sqlx.DB, port int) *Server {
 	return &Server{
-		port:        port,
-		sessionKeys: make(map[string][]byte),
-		accountsDb:  models.NewDbAccountService(db),
-		realmsDb:    models.NewDbRealmService(db),
-		sessionsDb:  models.NewDbSessionService(db),
+		port:       port,
+		accountsDb: models.NewDbAccountService(db),
+		realmsDb:   models.NewDbRealmService(db),
+		sessionsDb: models.NewDbSessionService(db),
 	}
 }
 
