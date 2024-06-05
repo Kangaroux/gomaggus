@@ -305,6 +305,10 @@ func (s *Server) authenticateClient(c *Client, p *AuthSessionPacket) (bool, erro
 	}
 
 	c.crypto = NewWrathHeaderCrypto(c.session.SessionKey())
+	if err := c.crypto.Init(); err != nil {
+		return false, err
+	}
+
 	proof := CalculateWorldProof(p.Username, p.ClientSeed[:], c.serverSeed[:], c.session.SessionKey())
 
 	if !bytes.Equal(proof, p.ClientProof[:]) {
