@@ -7,20 +7,20 @@ import (
 )
 
 type SessionService interface {
-	// Get returns the matching Session, or nil if it doesn't exist.
+	// Get returns the session for the given account id, or nil if it doesn't exist.
 	Get(uint32) (*Session, error)
 
-	// Create creates a new Session and sets the Id and CreatedAt fields.
+	// Create creates a new session and sets the Id and CreatedAt fields.
 	Create(*Session) error
 
-	// Update tries to update an existing Session and returns if it was updated.
+	// Update tries to update an existing session and returns if it was updated.
 	Update(*Session) (bool, error)
 
-	// Delete tries to delete an existing Session by id and returns if it was deleted.
+	// Delete tries to delete an existing session by account id and returns if it was deleted.
 	Delete(uint32) (bool, error)
 
-	// UpdateOrCreate tries to update an existing session with the given Account id. If no session
-	// for that Account exists, it creates one.
+	// UpdateOrCreate tries to update an existing session with the given account id. If no session
+	// for that account exists, it creates one.
 	UpdateOrCreate(*Session) error
 }
 

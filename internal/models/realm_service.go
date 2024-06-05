@@ -7,19 +7,19 @@ import (
 )
 
 type RealmService interface {
-	// Get returns the matching Realm, or nil if it doesn't exist.
+	// Get returns the matching realm, or nil if it doesn't exist.
 	Get(uint32) (*Realm, error)
 
-	// List returns a list of all Realms.
+	// List returns a list of all realms.
 	List() ([]*Realm, error)
 
-	// Create creates a new Realm and sets the Id and CreatedAt fields.
+	// Create creates a new realm and sets the Id and CreatedAt fields.
 	Create(*Realm) error
 
-	// Update tries to update an existing Realm and returns if it was updated.
+	// Update tries to update an existing realm and returns if it was updated.
 	Update(*Realm) (bool, error)
 
-	// Delete tries to delete an existing Realm by id and returns if it was deleted.
+	// Delete tries to delete an existing realm by id and returns if it was deleted.
 	Delete(uint32) (bool, error)
 }
 

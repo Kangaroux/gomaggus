@@ -17,20 +17,20 @@ type AccountGetParams struct {
 var ErrEmptyGetParams = errors.New("at least one get param must be set")
 
 type AccountService interface {
-	// Get returns the matching Account, or nil if it doesn't exist. At least one param must be specified.
+	// Get returns the matching account, or nil if it doesn't exist. At least one param must be specified.
 	// Params are searched using OR.
 	Get(*AccountGetParams) (*Account, error)
 
-	// List returns a list of all Accounts.
+	// List returns a list of all accounts.
 	List() ([]*Account, error)
 
-	// Create creates a new Account and sets the Id and CreatedAt fields.
+	// Create creates a new account and sets the Id and CreatedAt fields.
 	Create(*Account) error
 
-	// Update tries to update an existing Account and returns if it was updated.
+	// Update tries to update an existing account and returns if it was updated.
 	Update(*Account) (bool, error)
 
-	// Delete tries to delete an existing Account by id and returns if it was deleted.
+	// Delete tries to delete an existing account by id and returns if it was deleted.
 	Delete(uint32) (bool, error)
 }
 
