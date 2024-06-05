@@ -86,7 +86,7 @@ func (s *DbSessionService) update(db updater, session *Session) (bool, error) {
 	q := `
 	UPDATE sessions SET
 	session_key=:session_key, connected=:connected, connected_at=:connected_at, disconnected_at=:disconnected_at
-	WHERE id=:id`
+	WHERE account_id=:account_id`
 	result, err := db.NamedExec(q, session)
 	if err != nil {
 		return false, err
