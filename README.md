@@ -17,7 +17,7 @@ $ bin/goose -dir migrations postgres 'postgres://gomaggus:password@localhost:543
 Create a new migration:
 
 ```bash
-$ bin/goose -dir migrations -s create MIGRATION_NAME
+$ bin/goose -dir migrations -s create MIGRATION_NAME sql
 ```
 
 ## Resources
