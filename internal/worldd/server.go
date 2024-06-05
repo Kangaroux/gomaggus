@@ -38,14 +38,14 @@ func NewServer(db *sqlx.DB, port int) *Server {
 }
 
 func (s *Server) Start() {
-	listener, err := net.Listen("tcp", ":8085")
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	defer listener.Close()
-	log.Print("listening on port 8085")
+	log.Printf("listening on port %d\n", s.port)
 
 	for {
 		conn, err := listener.Accept()
