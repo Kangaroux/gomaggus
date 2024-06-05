@@ -6,8 +6,6 @@ import (
 	"crypto/rc4"
 	"crypto/sha1"
 	"strings"
-
-	"github.com/kangaroux/gomaggus/internal"
 )
 
 const (
@@ -101,8 +99,8 @@ func CalculateWorldProof(username string, clientSeed, serverSeed, sessionKey []b
 	h := sha1.New()
 	h.Write([]byte(strings.ToUpper(username)))
 	h.Write([]byte{0, 0, 0, 0})
-	h.Write(internal.Reverse(clientSeed))
-	h.Write(internal.Reverse(serverSeed))
-	h.Write(internal.Reverse(sessionKey))
-	return internal.Reverse(h.Sum(nil))
+	h.Write(clientSeed)
+	h.Write(serverSeed)
+	h.Write(sessionKey)
+	return h.Sum(nil)
 }

@@ -272,13 +272,17 @@ func (s *Server) handleLoginProof(c *Client, data []byte) error {
 	log.Println("Replied to login proof")
 
 	if authenticated {
-		c.state = StateAuthenticated
-		s.sessionsDb.UpdateOrCreate(&models.Session{
+		err := s.sessionsDb.UpdateOrCreate(&models.Session{
 			AccountId:     c.account.Id,
 			SessionKeyHex: hex.EncodeToString(c.sessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		})
+		if err != nil {
+			return err
+		}
+
+		c.state = StateAuthenticated
 	} else {
 		c.state = StateInvalid
 	}
@@ -383,13 +387,16 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 	log.Println("Replied to reconnect proof")
 
 	if authenticated {
-		c.state = StateAuthenticated
-		s.sessionsDb.UpdateOrCreate(&models.Session{
+		err := s.sessionsDb.UpdateOrCreate(&models.Session{
 			AccountId:     c.account.Id,
 			SessionKeyHex: hex.EncodeToString(c.sessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		})
+		if err != nil {
+			return err
+		}
+		c.state = StateAuthenticated
 	} else {
 		c.state = StateInvalid
 	}

@@ -114,7 +114,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 func (s *Server) sendAuthChallenge(c *Client) error {
 	body := &bytes.Buffer{}
 	body.Write([]byte{1, 0, 0, 0}) // unknown
-	binary.Write(body, binary.LittleEndian, c.serverSeed)
+	binary.Write(body, binary.BigEndian, c.serverSeed)
 
 	seed := make([]byte, 32)
 	if _, err := rand.Read(seed); err != nil {
@@ -202,31 +202,31 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		// https://gtker.com/wow_messages/docs/cmsg_auth_session.html#client-version-335
 		p := AuthSessionPacket{}
-		if err = binary.Read(r, binary.BigEndian, &p.ClientBuild); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.ClientBuild); err != nil {
 			return err
 		}
-		if err = binary.Read(r, binary.BigEndian, &p.LoginServerId); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.LoginServerId); err != nil {
 			return err
 		}
 		if p.Username, err = readCString(r); err != nil {
 			return err
 		}
-		if err = binary.Read(r, binary.BigEndian, &p.LoginServerType); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.LoginServerType); err != nil {
 			return err
 		}
 		if err = binary.Read(r, binary.BigEndian, &p.ClientSeed); err != nil {
 			return err
 		}
-		if err = binary.Read(r, binary.BigEndian, &p.RegionId); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.RegionId); err != nil {
 			return err
 		}
-		if err = binary.Read(r, binary.BigEndian, &p.BattlegroundId); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.BattlegroundId); err != nil {
 			return err
 		}
-		if err = binary.Read(r, binary.BigEndian, &p.RealmId); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.RealmId); err != nil {
 			return err
 		}
-		if err = binary.Read(r, binary.BigEndian, &p.DOSResponse); err != nil {
+		if err = binary.Read(r, binary.LittleEndian, &p.DOSResponse); err != nil {
 			return err
 		}
 		if _, err = r.Read(p.ClientProof[:]); err != nil {
@@ -239,20 +239,23 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		p.AddonInfo = addonInfoBuf.Bytes()
 
 		authenticated, err := s.authenticateClient(c, &p)
-
-		if authenticated {
-			// do thing
+		if err != nil {
+			return err
 		}
 
-		// TODO: Check client proof
+		if !authenticated {
+			// We can't return an error to the client due to the header encryption, just drop the connection
+			return errors.New("client could not be authenticated")
+		}
 
-		// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
 		inner := bytes.Buffer{}
 		inner.WriteByte(RespCodeAuthOk)
 		inner.Write([]byte{0, 0, 0, 0})   // billing time
 		inner.WriteByte(0x0)              // billing flags
 		inner.Write([]byte{0, 0, 0, 0})   // billing rested
 		inner.WriteByte(ExpansionVanilla) // exp
+
+		// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
 		resp := bytes.Buffer{}
 		respHeader, err := makeServerHeader(OP_AUTH_RESPONSE, uint32(inner.Len()))
 		if err != nil {
@@ -297,13 +300,21 @@ func (s *Server) authenticateClient(c *Client, p *AuthSessionPacket) (bool, erro
 		return false, nil
 	}
 
+	if err := c.session.Decode(); err != nil {
+		return false, err
+	}
+
+	c.crypto = NewWrathHeaderCrypto(c.session.SessionKey())
 	proof := CalculateWorldProof(p.Username, p.ClientSeed[:], c.serverSeed[:], c.session.SessionKey())
+
 	if !bytes.Equal(proof, p.ClientProof[:]) {
 		log.Println("proofs don't match")
 		log.Printf("got:    %x\n", p.ClientProof)
 		log.Printf("wanted: %x\n", proof)
 		return false, nil
 	}
+
+	log.Println("client authenticated successfully")
 
 	return true, nil
 }
