@@ -17,7 +17,8 @@ type AccountGetParams struct {
 var ErrEmptyGetParams = errors.New("at least one get param must be set")
 
 type AccountService interface {
-	// Get returns the matching Account, or nil if it doesn't exist. Only one param should be specified.
+	// Get returns the matching Account, or nil if it doesn't exist. At least one param must be specified.
+	// Params are searched using OR.
 	Get(*AccountGetParams) (*Account, error)
 
 	// List returns a list of all Accounts.
@@ -44,24 +45,31 @@ func NewDbAccountService(db *sqlx.DB) *DbAccountService {
 }
 
 func (s *DbAccountService) Get(params *AccountGetParams) (*Account, error) {
-	var arg interface{}
 	q := `SELECT * FROM accounts WHERE `
+	cond := []string{}
+	args := []interface{}{}
 
 	if params.Id > 0 {
-		q += `id = $1`
-		arg = params.Id
-	} else if len(params.Email) > 0 {
-		q += `lower(email) = $1`
-		arg = strings.ToLower(params.Email)
-	} else if len(params.Username) > 0 {
-		q += `upper(username) = $1`
-		arg = strings.ToUpper(params.Username)
-	} else {
+		cond = append(cond, `id = ?`)
+		args = append(args, params.Id)
+	}
+	if len(params.Email) > 0 {
+		cond = append(cond, `lower(email) = ?`)
+		args = append(args, strings.ToLower(params.Email))
+	}
+	if len(params.Username) > 0 {
+		cond = append(cond, `upper(username) = ?`)
+		args = append(args, strings.ToUpper(params.Username))
+	}
+	if len(cond) == 0 {
 		return nil, ErrEmptyGetParams
 	}
 
+	q += strings.Join(cond, " OR ")
+	q = s.db.Rebind(q)
+
 	result := &Account{}
-	if err := s.db.Get(result, q, arg); err != nil {
+	if err := s.db.Get(result, q, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
