@@ -205,7 +205,7 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	resp.WriteByte(1)  // generator size (1 byte)
 	resp.WriteByte(7)  // generator
 	resp.WriteByte(32) // large prime size (32 bytes)
-	resp.Write(internal.Reverse(srp.LargeSafePrime()))
+	resp.Write(srp.LargeSafePrime())
 	resp.Write(salt)
 	resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
 	resp.WriteByte(0)

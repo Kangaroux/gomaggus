@@ -1,21 +1,12 @@
 package srp
 
 import (
-	"crypto/rand"
 	"crypto/sha1"
 	"math/big"
 	"strings"
 
 	"github.com/kangaroux/gomaggus/internal"
 )
-
-func NewPrivateKey() []byte {
-	key := make([]byte, KeySize)
-	if _, err := rand.Read(key); err != nil {
-		panic(err)
-	}
-	return key
-}
 
 func CalculateX(username, password string, salt []byte) []byte {
 	h := sha1.New()
@@ -26,14 +17,14 @@ func CalculateX(username, password string, salt []byte) []byte {
 }
 
 func CalculateVerifier(username, password string, salt []byte) []byte {
-	x := big.NewInt(0).SetBytes(internal.Reverse(CalculateX(username, password, salt)))
-	return internal.Reverse(internal.Pad(VerifierSize, big.NewInt(0).Exp(g, x, n).Bytes()))
+	x := BytesToInt(CalculateX(username, password, salt))
+	return IntToBytes(VerifierSize, big.NewInt(0).Exp(g, x, n))
 }
 
 func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
-	publicKey := big.NewInt(0).Exp(g, toInt(internal.Reverse(serverPrivateKey)), n)
-	kv := big.NewInt(0).Mul(k, toInt(internal.Reverse(verifier)))
-	return internal.Reverse(internal.Pad(KeySize, publicKey.Add(publicKey, kv).Mod(publicKey, n).Bytes()))
+	publicKey := big.NewInt(0).Exp(g, BytesToInt(serverPrivateKey), n)
+	kv := big.NewInt(0).Mul(k, BytesToInt(verifier))
+	return IntToBytes(KeySize, publicKey.Add(publicKey, kv).Mod(publicKey, n))
 }
 
 func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
@@ -44,10 +35,10 @@ func CalculateU(clientPublicKey, serverPublicKey []byte) []byte {
 }
 
 func CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey []byte) []byte {
-	S := big.NewInt(0).Exp(toInt(internal.Reverse(verifier)), toInt(internal.Reverse(u)), n)
-	S.Mul(S, toInt(internal.Reverse(clientPublicKey)))
-	S.Exp(S, toInt(internal.Reverse(serverPrivateKey)), n)
-	return internal.Reverse(internal.Pad(KeySize, S.Bytes()))
+	S := big.NewInt(0).Exp(BytesToInt(verifier), BytesToInt(u), n)
+	S.Mul(S, BytesToInt(clientPublicKey))
+	S.Exp(S, BytesToInt(serverPrivateKey), n)
+	return IntToBytes(KeySize, S)
 }
 
 func CalculateInterleave(S []byte) []byte {
@@ -116,6 +107,12 @@ func CalculateReconnectProof(username string, clientData, serverData, sessionKey
 	return h.Sum(nil)
 }
 
-func toInt(data []byte) *big.Int {
-	return big.NewInt(0).SetBytes(data)
+// BytesToInt returns a little endian big integer from a big endian byte array.
+func BytesToInt(data []byte) *big.Int {
+	return big.NewInt(0).SetBytes(internal.Reverse(data))
+}
+
+// IntToBytes returns a big endian byte array from a little endian big integer.
+func IntToBytes(padding int, bi *big.Int) []byte {
+	return internal.Reverse(internal.Pad(padding, bi.Bytes()))
 }
