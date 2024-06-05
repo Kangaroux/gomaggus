@@ -16,12 +16,17 @@ func usage() {
 	fmt.Println()
 	fmt.Println("commands")
 	fmt.Println()
-	fmt.Println("\tadd, a")
+	fmt.Println("    add, a           Add a new account")
+	fmt.Println("    password, p      Change an existing account's password")
 	fmt.Println()
 }
 
 func addUsage() {
 	fmt.Println("usage:", os.Args[1], "<username> <password> <email> <realmId>")
+}
+
+func passwordUsage() {
+	fmt.Println("usage:", os.Args[1], "<username> <password>")
 }
 
 func main() {
@@ -106,5 +111,40 @@ func main() {
 
 		fmt.Println("success")
 		fmt.Println("account id:", account.Id)
+
+	case "password", "p":
+		args := os.Args[2:]
+
+		if len(args) != 2 {
+			fmt.Println("error: expected 2 arguments")
+			passwordUsage()
+			os.Exit(1)
+		}
+
+		username := strings.TrimSpace(args[0])
+		password := args[1]
+
+		if len(password) < 6 || len(password) > 16 {
+			fmt.Println("error: password must be between 6-16 characters")
+			passwordUsage()
+			os.Exit(1)
+		}
+
+		account, err := accountsDb.Get(&models.AccountGetParams{Username: username})
+		if err != nil {
+			fmt.Println("failed to get account:", err)
+			os.Exit(1)
+		} else if account == nil {
+			fmt.Println("error: no account with that username exists")
+			os.Exit(1)
+		}
+
+		account.SetUsernamePassword(username, password)
+		if _, err := accountsDb.Update(account); err != nil {
+			fmt.Println("failed to update account:", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("success")
 	}
 }
