@@ -1,6 +1,10 @@
 package realmd
 
-import "net"
+import (
+	"net"
+
+	"github.com/kangaroux/gomaggus/internal/models"
+)
 
 type ClientState int
 
@@ -22,9 +26,13 @@ const (
 )
 
 type Client struct {
-	conn          net.Conn
-	username      string
-	reconnectData []byte
-	sessionKey    []byte
-	state         ClientState
+	conn            net.Conn
+	username        string
+	reconnectData   []byte
+	sessionKey      []byte
+	clientPublicKey []byte
+	serverPublicKey []byte
+	privateKey      []byte
+	state           ClientState
+	account         *models.Account
 }

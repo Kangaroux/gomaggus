@@ -19,6 +19,9 @@ type Account struct {
 	RealmId        uint32 `db:"realm_id"`
 	SrpSaltHex     string `db:"srp_salt"`
 	SrpVerifierHex string `db:"srp_verifier"`
+
+	srpSalt     []byte
+	srpVerifier []byte
 }
 
 func (acc *Account) SetUsernamePassword(username, password string) error {
@@ -41,4 +44,29 @@ func (acc *Account) SetUsernamePassword(username, password string) error {
 	acc.SrpVerifierHex = hex.EncodeToString(srp.CalculateVerifier(username, password, salt))
 
 	return nil
+}
+
+func (acc *Account) DecodeSrp() error {
+	var err error
+	if acc.srpSalt, err = hex.DecodeString(acc.SrpSaltHex); err != nil {
+		return err
+	}
+	if acc.srpVerifier, err = hex.DecodeString(acc.SrpVerifierHex); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (acc *Account) Salt() []byte {
+	if acc.srpSalt == nil {
+		panic("decodeSrp must be called before accessing Salt")
+	}
+	return acc.srpSalt
+}
+
+func (acc *Account) Verifier() []byte {
+	if acc.srpVerifier == nil {
+		panic("decodeSrp must be called before accessing Verifier")
+	}
+	return acc.srpVerifier
 }

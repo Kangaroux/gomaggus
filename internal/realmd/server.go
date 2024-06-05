@@ -3,12 +3,15 @@ package realmd
 import (
 	"bytes"
 	"crypto/rand"
+	"database/sql"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/internal"
@@ -27,14 +30,18 @@ type Server struct {
 	// FIXME?: clients can't reconnect if the realmd server restarts since this isn't persisted
 	sessionKeys map[string][]byte
 
-	realmsDb models.RealmService
+	accountsDb models.AccountService
+	realmsDb   models.RealmService
+	sessionsDb models.SessionService
 }
 
 func NewServer(db *sqlx.DB, port int) *Server {
 	return &Server{
 		port:        port,
 		sessionKeys: make(map[string][]byte),
+		accountsDb:  models.NewDbAccountService(db),
 		realmsDb:    models.NewDbRealmService(db),
+		sessionsDb:  models.NewDbSessionService(db),
 	}
 }
 
@@ -57,31 +64,42 @@ func (s *Server) Start() {
 
 		log.Printf("client connected from %s\n", conn.RemoteAddr().String())
 
-		client := &Client{conn: conn, reconnectData: make([]byte, 16)}
-		go s.handleClient(client)
+		go s.handleConnection(conn)
 	}
 }
 
-func (s *Server) handleClient(c *Client) {
+func (s *Server) handleConnection(conn net.Conn) {
+	defer func() {
+		conn.Close()
+	}()
+
+	client := &Client{
+		conn:          conn,
+		reconnectData: make([]byte, 16),
+		privateKey:    make([]byte, srp.KeySize),
+	}
+
+	if _, err := rand.Read(client.privateKey); err != nil {
+		return
+	}
+
 	buf := make([]byte, 4096)
 
 	for {
-		n, err := c.conn.Read(buf)
+		n, err := client.conn.Read(buf)
 
 		if err == io.EOF {
 			log.Println("client disconnected (closed by client)")
 			return
 		} else if err != nil {
 			log.Printf("error reading from client: %v\n", err)
-			c.conn.Close()
 			return
 		}
 
 		log.Printf("read %d bytes\n", n)
 
-		if err := s.handlePacket(c, buf[:n]); err != nil {
+		if err := s.handlePacket(client, buf[:n]); err != nil {
 			log.Println(err)
-			c.conn.Close()
 			return
 		}
 	}
@@ -124,7 +142,10 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	log.Println("Starting login challenge")
+
+	var err error
 	p := LoginChallengePacket{}
+
 	reader := bytes.NewReader(data)
 	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
 		return err
@@ -136,24 +157,49 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	c.username = strings.ToUpper(string(usernameBytes))
 	log.Printf("client trying to login as '%s'\n", c.username)
 
+	c.account, err = s.accountsDb.Get(&models.AccountGetParams{Username: c.username})
+	if err != nil {
+		return err
+	}
+	if err = c.account.DecodeSrp(); err != nil {
+		return err
+	}
+
 	// https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 	resp := &bytes.Buffer{}
 	resp.WriteByte(OP_LOGIN_CHALLENGE)
 	resp.WriteByte(0) // protocol version
 
-	if c.username == MOCK_USERNAME {
-		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(MOCK_PUBLIC_KEY)
-		resp.WriteByte(1)  // generator size (1 byte)
-		resp.WriteByte(7)  // generator
-		resp.WriteByte(32) // large prime size (32 bytes)
-		resp.Write(internal.Reverse(srp.LargeSafePrime))
-		resp.Write(MOCK_SALT)
-		resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
-		resp.WriteByte(0)
+	// Always return success to prevent a bad actor from mining usernames
+	resp.WriteByte(WOW_SUCCESS)
+
+	var publicKey []byte
+	var salt []byte
+
+	if c.account == nil {
+		publicKey = make([]byte, srp.KeySize)
+		if _, err := rand.Read(publicKey); err != nil {
+			return err
+		}
+		salt = make([]byte, srp.SaltSize)
+		if _, err := rand.Read(salt); err != nil {
+			return err
+		}
 	} else {
-		resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
+		publicKey = srp.CalculateServerPublicKey(c.account.Verifier(), c.privateKey)
+		c.serverPublicKey = publicKey
+		salt = c.account.Salt()
 	}
+
+	resp.WriteByte(WOW_SUCCESS)
+	resp.Write(publicKey)
+	resp.WriteByte(1)  // generator size (1 byte)
+	resp.WriteByte(7)  // generator
+	resp.WriteByte(32) // large prime size (32 bytes)
+	resp.Write(internal.Reverse(srp.LargeSafePrime()))
+	resp.Write(salt)
+	resp.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}) // crc hash
+	resp.WriteByte(0)
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
 		return err
@@ -167,38 +213,52 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 
 func (s *Server) handleLoginProof(c *Client, data []byte) error {
 	log.Println("Starting login proof")
-	p := LoginProofPacket{}
-	reader := bytes.NewReader(data)
-	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
-		return err
+
+	var serverProof []byte
+	authenticated := false
+
+	if c.account != nil {
+		p := LoginProofPacket{}
+
+		reader := bytes.NewReader(data)
+		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+			return err
+		}
+
+		c.clientPublicKey = p.ClientPublicKey[:]
+		c.sessionKey = srp.CalculateServerSessionKey(
+			c.clientPublicKey,
+			c.serverPublicKey,
+			c.privateKey,
+			c.account.Verifier(),
+		)
+		calculatedClientProof := srp.CalculateClientProof(
+			c.account.Username,
+			c.account.Salt(),
+			c.clientPublicKey,
+			c.serverPublicKey,
+			c.sessionKey,
+		)
+		authenticated = bytes.Equal(calculatedClientProof, p.ClientProof[:])
+
+		if authenticated {
+			serverProof = srp.CalculateServerProof(c.clientPublicKey, p.ClientProof[:], c.sessionKey)
+		}
 	}
-
-	clientPublicKey := p.ClientPublicKey[:]
-	clientProof := p.ClientProof[:]
-
-	c.sessionKey = srp.CalculateServerSessionKey(
-		clientPublicKey, MOCK_PUBLIC_KEY, MOCK_PRIVATE_KEY, MOCK_VERIFIER)
-	calculatedClientProof := srp.CalculateClientProof(
-		MOCK_USERNAME, MOCK_SALT, clientPublicKey, MOCK_PUBLIC_KEY, c.sessionKey,
-	)
-	proofMatch := bytes.Equal(calculatedClientProof, clientProof)
 
 	// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
 	resp := &bytes.Buffer{}
 	resp.WriteByte(OP_LOGIN_PROOF)
 
-	if !proofMatch {
+	if !authenticated {
 		resp.WriteByte(WOW_FAIL_UNKNOWN_ACCOUNT)
 		resp.Write([]byte{0, 0}) // padding
 	} else {
 		resp.WriteByte(WOW_SUCCESS)
-		resp.Write(srp.CalculateServerProof(clientPublicKey, clientProof, c.sessionKey))
+		resp.Write(serverProof)
 		resp.Write([]byte{0, 0, 0, 0}) // Account flag
 		resp.Write([]byte{0, 0, 0, 0}) // Hardware survey ID
 		resp.Write([]byte{0, 0})       // Unknown
-
-		// Save the session key in case the client needs to reconnect later
-		s.sessionKeys[c.username] = c.sessionKey
 	}
 
 	if _, err := c.conn.Write(resp.Bytes()); err != nil {
@@ -207,8 +267,14 @@ func (s *Server) handleLoginProof(c *Client, data []byte) error {
 
 	log.Println("Replied to login proof")
 
-	if proofMatch {
+	if authenticated {
 		c.state = StateAuthenticated
+		s.sessionsDb.UpdateOrCreate(&models.Session{
+			AccountId:     c.account.Id,
+			SessionKeyHex: hex.EncodeToString(c.sessionKey),
+			Connected:     1,
+			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
+		})
 	} else {
 		c.state = StateInvalid
 	}
@@ -218,7 +284,9 @@ func (s *Server) handleLoginProof(c *Client, data []byte) error {
 
 func (s *Server) handleReconnectChallenge(c *Client, data []byte) error {
 	log.Println("Starting reconnect challenge")
+
 	p := LoginChallengePacket{}
+
 	reader := bytes.NewReader(data)
 	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
 		return err
@@ -269,7 +337,9 @@ func (s *Server) handleReconnectChallenge(c *Client, data []byte) error {
 
 func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 	log.Println("Starting reconnect proof")
+
 	p := ReconnectProofPacket{}
+
 	reader := bytes.NewReader(data)
 	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
 		return err
