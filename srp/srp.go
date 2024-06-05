@@ -21,7 +21,7 @@ func CalculateVerifier(username, password string, salt []byte) []byte {
 	return IntToBytes(VerifierSize, big.NewInt(0).Exp(g, x, n))
 }
 
-func CalculateServerPublicKey(verifier []byte, serverPrivateKey []byte) []byte {
+func CalculateServerPublicKey(verifier, serverPrivateKey []byte) []byte {
 	publicKey := big.NewInt(0).Exp(g, BytesToInt(serverPrivateKey), n)
 	kv := big.NewInt(0).Mul(k, BytesToInt(verifier))
 	return IntToBytes(KeySize, publicKey.Add(publicKey, kv).Mod(publicKey, n))

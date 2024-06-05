@@ -2,6 +2,7 @@ package srp
 
 import (
 	"encoding/hex"
+	"strings"
 	"testing"
 
 	"github.com/kangaroux/gomaggus/internal"
@@ -17,78 +18,144 @@ func decodeHex(s string) []byte {
 }
 
 func TestX(t *testing.T) {
-	expected := internal.Reverse(decodeHex("D927E98BE3E9AF84FDC99DE9034F8E70ED7E90D6"))
-	salt := internal.Reverse(decodeHex("CAC94AF32D817BA64B13F18FDEDEF92AD4ED7EF7AB0E19E9F2AE13C828AEAF57"))
-	username := "USERNAME123"
-	password := "PASSWORD123"
-	assert.Equal(t, expected, CalculateX(username, password, salt))
+	t.Run("generated test data", func(t *testing.T) {
+		rows := internal.LoadTestData("../test_data/srp/calculate_x.csv")
 
-	expected = internal.Reverse(decodeHex("E2F9A0F1E824006C98DA753448E743F7DAA1EAA1"))
-	username = "00XD0QOSA9L8KMXC"
-	password = "43R4Z35TKBKFW8JI"
-	assert.Equal(t, expected, CalculateX(username, password, salt))
+		for _, row := range rows {
+			username := row[0]
+			password := row[1]
+			salt := decodeHex(row[2])
+			expected := decodeHex(row[3])
+			assert.Equal(t, expected, CalculateX(username, password, salt))
+		}
+	})
+
+	t.Run("user/pass are case insensitive", func(t *testing.T) {
+		username := "test"
+		password := "password"
+		salt := decodeHex("84FD248366EBF8F258B632142B1F3588E7C49BA88D7CDF55753275E9607828B8")
+		first := CalculateX(username, password, salt)
+		second := CalculateX(strings.ToUpper(username), strings.ToUpper(password), salt)
+		assert.Equal(t, first, second)
+	})
 }
 
 func TestVerifier(t *testing.T) {
-	expected := internal.Reverse(decodeHex("21B4153B0A938D0A69D28F2690CC3F79A99A13C40CACB525B3B79D4201EB33FF"))
-	salt := internal.Reverse(decodeHex("AFE5D28E925DBB3DAFED5D91ACA0928940E8FBFEF2D2A3CC154ADA0FE6ABEF6F"))
-	username := "LF2BGFQIFQ3HZ1ZF"
-	password := "MVRVMUJFWRA0IBVK"
-	assert.Equal(t, expected, CalculateVerifier(username, password, salt))
+	t.Run("generated test data", func(t *testing.T) {
+		rows := internal.LoadTestData("../test_data/srp/calculate_verifier.csv")
+
+		for _, row := range rows {
+			username := row[0]
+			password := row[1]
+			salt := decodeHex(row[2])
+			expected := decodeHex(row[3])
+			assert.Equal(t, expected, CalculateVerifier(username, password, salt))
+		}
+	})
+
+	t.Run("user/pass are case insensitive", func(t *testing.T) {
+		username := "test"
+		password := "password"
+		salt := decodeHex("84FD248366EBF8F258B632142B1F3588E7C49BA88D7CDF55753275E9607828B8")
+		first := CalculateVerifier(username, password, salt)
+		second := CalculateVerifier(strings.ToUpper(username), strings.ToUpper(password), salt)
+		assert.Equal(t, first, second)
+	})
 }
 
 func TestServerPublicKey(t *testing.T) {
-	expected := internal.Reverse(decodeHex("85A204C987B68764FA69C523E32B940D1E1822B9E0F134FDC5086B1408A2BB43"))
-	verifier := internal.Reverse(decodeHex("870A98A3DA8CCAFE6B2F4B0C43A022A0C6CEF4374BA4A50CEBF3FACA60237DC4"))
-	privateKey := internal.Reverse(decodeHex("ACDCB7CB1DE67DB1D5E0A37DAE80068BCCE062AE0EDA0CBEADF560BCDAE6D6B9"))
-	assert.Equal(t, expected, CalculateServerPublicKey(verifier, privateKey))
+	rows := internal.LoadTestData("../test_data/srp/calculate_server_public_key.csv")
+
+	for _, row := range rows {
+		verifier := decodeHex(row[0])
+		privateKey := decodeHex(row[1])
+		expected := decodeHex(row[2])
+		assert.Equal(t, expected, CalculateServerPublicKey(verifier, privateKey))
+	}
 }
 
 func TestCalculateU(t *testing.T) {
-	expected := internal.Reverse(decodeHex("1309BD7851A1A505B95D6F60A8D884133458D24E"))
-	clientPublic := internal.Reverse(decodeHex("6FCEEEE7D40AAF0C7A08DFE1EFD3FCE80A152AA436CECB77FC06DAF9E9E5BDF3"))
-	serverPublic := internal.Reverse(decodeHex("F8CD769BDE603FC8F48B9BE7C5BEAAA7BD597ABDBDAC1AEFCACF0EE13443A3B9"))
-	assert.Equal(t, expected, CalculateU(clientPublic, serverPublic))
+	rows := internal.LoadTestData("../test_data/srp/calculate_u.csv")
+
+	for _, row := range rows {
+		clientPublic := decodeHex(row[0])
+		serverPublic := decodeHex(row[1])
+		expected := decodeHex(row[2])
+		assert.Equal(t, expected, CalculateU(clientPublic, serverPublic))
+	}
 }
 
 func TestServerSKey(t *testing.T) {
-	expected := internal.Reverse(decodeHex("3503B289A60D6DD59EBD6FD88DF24836833433E39048ECAFF7E887313554F85C"))
-	clientPublic := internal.Reverse(decodeHex("51CCDDFACF7F960EDF5030F09F0B033C0D08DB1E43FCBA3A92ABB4BE3535D1DB"))
-	verifier := internal.Reverse(decodeHex("6FC7D4ACFCFFFDCF780EE9BBD17AE507FFCDF586F83B2C9AEE2198F195DB3AB5"))
-	u := internal.Reverse(decodeHex("F9CEDDD82E776BEDB1A94852A9A7FFA4FCADD5DE"))
-	serverPrivate := internal.Reverse(decodeHex("A5DBBFCB4C7A1B7C3041CAC9DDBD36CD646F9FBABDAD66A019BCBB8FEDF2FAAE"))
-	assert.Equal(t, expected, CalculateServerSKey(clientPublic, verifier, u, serverPrivate))
+	rows := internal.LoadTestData("../test_data/srp/calculate_server_s.csv")
+
+	for _, row := range rows {
+		clientPublic := decodeHex(row[0])
+		verifier := decodeHex(row[1])
+		u := decodeHex(row[2])
+		serverPrivate := decodeHex(row[3])
+		expected := decodeHex(row[4])
+		assert.Equal(t, expected, CalculateServerSKey(clientPublic, verifier, u, serverPrivate))
+	}
 }
 
 func TestInterleave(t *testing.T) {
-	expected := decodeHex("EE144E1AE08DAC891AB63ABC42BF89738003343422E6B58131BEE4C3087A7027E55A7216D18D556C")
-	S := decodeHex("8F4CEBD60DFC34E5C007E51BD4F3A4FF2BC1D930E2D3EA770D8D3EEDFF2DCCFC")
-	assert.Equal(t, expected, CalculateInterleave(S))
+	rows := internal.LoadTestData("../test_data/srp/calculate_interleaved.csv")
+
+	for _, row := range rows {
+		s := decodeHex(row[0])
+		expected := decodeHex(row[1])
+		assert.Equal(t, expected, CalculateInterleave(s))
+	}
+}
+
+func TestServerSessionKey(t *testing.T) {
+	rows := internal.LoadTestData("../test_data/srp/calculate_server_session_key.csv")
+
+	for _, row := range rows {
+		clientPublic := decodeHex(row[0])
+		serverPrivate := decodeHex(row[1])
+		verifier := decodeHex(row[2])
+		expected := decodeHex(row[3])
+		serverPublic := CalculateServerPublicKey(verifier, serverPrivate)
+		assert.Equal(t, expected, CalculateServerSessionKey(clientPublic, serverPublic, serverPrivate, verifier))
+	}
 }
 
 func TestClientProof(t *testing.T) {
-	expected := internal.Reverse(decodeHex("7D07022B4064CCE633D679F61C6B212B6F8BC5C3"))
-	username := "7WG6SHZL33JMGPO4"
-	salt := internal.Reverse(decodeHex("00A4A09E0B5ACA438B8CD837D0816CA26043DBD1EAEF138EEF72DCF3F696D03D"))
-	clientPublic := internal.Reverse(decodeHex("0095FE039AFE5E1BADE9AC0CAEC3CB73D2D08BBF4CA8ADDBCDF0CE709ED5103F"))
-	serverPublic := internal.Reverse(decodeHex("00B0C41F58CCE894CFB816FA72CA344C9FE2ED7CE799452ADBA7ABDCD26EAE75"))
-	sessionKey := decodeHex("77A4D39CF9C0BF373EF870BD2941C339C575FDD1CBAA31C919EA7BD5023267D303E20FEC9A9C402F")
-	assert.Equal(t, expected, CalculateClientProof(username, salt, clientPublic, serverPublic, sessionKey))
+	rows := internal.LoadTestData("../test_data/srp/calculate_client_proof.csv")
+
+	for _, row := range rows {
+		username := row[0]
+		salt := decodeHex(row[1])
+		clientPublic := decodeHex(row[2])
+		serverPublic := decodeHex(row[3])
+		sessionKey := decodeHex(row[4])
+		expected := decodeHex(row[5])
+		assert.Equal(t, expected, CalculateClientProof(username, salt, clientPublic, serverPublic, sessionKey))
+	}
 }
 
 func TestServerProof(t *testing.T) {
-	expected := internal.Reverse(decodeHex("269E3A3EF5DCD15944F043513BDA20D20FEBA2E0"))
-	clientPublic := internal.Reverse(decodeHex("BFD1AC65C8DAAAD88BF9DFF9AF8D1DCDF11DFD0C7E398EDCDF5DBBD08EFB39D3"))
-	clientProof := internal.Reverse(decodeHex("7EBBC190D9AB2DC0CD891372CB30DF1ED35CDA1E"))
-	sessionKey := decodeHex("9382b5e82c16e1105b8e8e88a99118811d88170fad6e8b35f236dbebbcc9c99bcab6cc9f8fe67648")
-	assert.Equal(t, expected, CalculateServerProof(clientPublic, clientProof, sessionKey))
+	rows := internal.LoadTestData("../test_data/srp/calculate_server_proof.csv")
+
+	for _, row := range rows {
+		clientPublic := decodeHex(row[0])
+		clientProof := decodeHex(row[1])
+		sessionKey := decodeHex(row[2])
+		expected := decodeHex(row[3])
+		assert.Equal(t, expected, CalculateServerProof(clientPublic, clientProof, sessionKey))
+	}
 }
 
 func TestReconnectProof(t *testing.T) {
-	expected := decodeHex("D94CE2B08B7FAC0919D7D5419D78CABFA372B6A9")
-	username := "GXJ8M6VDUAC0JL9W"
-	clientData := decodeHex("DD801B2FBCF4F7ABC6023EFAAF6A9AEA")
-	serverData := decodeHex("0D27763BDEEF92CB273B7BC4EE72D0EC")
-	sessionKey := decodeHex("6A0E7B35C70C70DA142D57BF49FD25D84CCEE3D21CC1A10AD71323FB34F45F3006D606F1F39A6BB9")
-	assert.Equal(t, expected, CalculateReconnectProof(username, clientData, serverData, sessionKey))
+	rows := internal.LoadTestData("../test_data/srp/calculate_reconnect_proof.csv")
+
+	for _, row := range rows {
+		username := row[0]
+		clientData := decodeHex(row[1])
+		serverData := decodeHex(row[2])
+		sessionKey := decodeHex(row[3])
+		expected := decodeHex(row[4])
+		assert.Equal(t, expected, CalculateReconnectProof(username, clientData, serverData, sessionKey))
+	}
 }
