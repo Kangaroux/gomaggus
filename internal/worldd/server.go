@@ -351,9 +351,8 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		// https://gtker.com/wow_messages/docs/smsg_realm_split.html
 		inner := bytes.Buffer{}
 		binary.Write(&inner, binary.LittleEndian, p.RealmId)
-		inner.Write([]byte{0, 0, 0, 0})                         // split state, 0 = normal
-		inner.WriteString(c.realm.CreatedAt.Format("01/02/06")) // date as MM/DD/YY (?)
-		inner.WriteByte(0)                                      // NUL terminator
+		inner.Write([]byte{0, 0, 0, 0})   // split state, 0 = normal
+		inner.WriteString("01/01/01\x00") // send a bogus date (NUL-terminated)
 
 		resp := bytes.Buffer{}
 		respHeader, err := makeServerHeader(OP_SRV_REALM_SPLIT, uint32(inner.Len()))
