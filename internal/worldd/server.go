@@ -324,6 +324,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	case OP_CL_CHAR_ENUM:
 		log.Println("starting character list")
 
+		// https://gtker.com/wow_messages/docs/smsg_char_enum.html#client-version-335
 		resp := bytes.Buffer{}
 		respHeader, err := makeServerHeader(OP_SRV_CHAR_ENUM, 1)
 		if err != nil {
@@ -332,7 +333,41 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		resp.Write(c.crypto.Encrypt(respHeader))
 		resp.WriteByte(0) // number of characters
 
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
 		log.Println("sent character list")
+
+		return nil
+
+	case OP_CL_REALM_SPLIT:
+		log.Println("starting realm split")
+
+		r := bytes.NewReader(data[6:])
+		p := RealmSplitPacket{}
+		binary.Read(r, binary.LittleEndian, &p.RealmId)
+
+		// https://gtker.com/wow_messages/docs/smsg_realm_split.html
+		inner := bytes.Buffer{}
+		binary.Write(&inner, binary.LittleEndian, p.RealmId)
+		inner.Write([]byte{0, 0, 0, 0})                         // split state, 0 = normal
+		inner.WriteString(c.realm.CreatedAt.Format("01/02/06")) // date as MM/DD/YY (?)
+		inner.WriteByte(0)                                      // NUL terminator
+
+		resp := bytes.Buffer{}
+		respHeader, err := makeServerHeader(OP_SRV_CHAR_ENUM, uint32(inner.Len()))
+		if err != nil {
+			return err
+		}
+		resp.Write(c.crypto.Encrypt(respHeader))
+		resp.Write(inner.Bytes())
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("sent realm split")
 
 		return nil
 
