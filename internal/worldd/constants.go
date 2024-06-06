@@ -6,6 +6,7 @@ const (
 	OP_SRV_AUTH_RESPONSE      uint16 = 0x1EE
 	OP_SRV_PONG               uint16 = 0x1DD
 	OP_SRV_ACCOUNT_DATA_TIMES uint16 = 0x209
+	OP_SRV_CHAR_ENUM          uint16 = 0x3B
 )
 
 // Opcodes sent by the client

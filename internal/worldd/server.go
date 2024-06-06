@@ -296,6 +296,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		log.Println("sent pong")
 
 		return nil
+
 	case OP_CL_READY_FOR_ACCOUNT_DATA_TIMES:
 		log.Println("starting account data times")
 
@@ -319,6 +320,22 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		log.Println("sent account data times")
 
 		return nil
+
+	case OP_CL_CHAR_ENUM:
+		log.Println("starting character list")
+
+		resp := bytes.Buffer{}
+		respHeader, err := makeServerHeader(OP_SRV_CHAR_ENUM, 1)
+		if err != nil {
+			return err
+		}
+		resp.Write(c.crypto.Encrypt(respHeader))
+		resp.WriteByte(0) // number of characters
+
+		log.Println("sent character list")
+
+		return nil
+
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 	}
