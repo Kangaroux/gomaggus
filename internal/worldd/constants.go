@@ -8,6 +8,7 @@ const (
 	OP_SRV_ACCOUNT_DATA_TIMES uint16 = 0x209
 	OP_SRV_CHAR_ENUM          uint16 = 0x3B
 	OP_SRV_REALM_SPLIT        uint16 = 0x38B
+	OP_SRV_CHAR_CREATE        uint16 = 0x36
 )
 
 // Opcodes sent by the client
@@ -16,6 +17,7 @@ const (
 	OP_CL_REALM_SPLIT  uint32 = 0x38C
 	OP_CL_PING         uint32 = 0x1DC
 	OP_CL_CHAR_ENUM    uint32 = 0x37
+	OP_CL_CHAR_CREATE  uint32 = 0x36
 
 	// Client sent after receiving our OP_SRV_AUTH_RESPONSE. The packet is empty besides the header.
 	// Immediately after the client sends OP_CL_CHAR_ENUM.
@@ -145,4 +147,53 @@ const (
 	SplitNormal    = 0
 	SplitConfirmed = 1
 	SplitPending   = 2
+)
+
+type Race = byte
+
+const (
+	RaceHuman             Race = 1
+	RaceOrc               Race = 2
+	RaceDwarf             Race = 3
+	RaceNightElf          Race = 4
+	RaceUndead            Race = 5
+	RaceTauren            Race = 6
+	RaceGnome             Race = 7
+	RaceTroll             Race = 8
+	RaceGoblin            Race = 9
+	RaceBlood_elf         Race = 10
+	RaceDraenei           Race = 11
+	RaceFelOrc            Race = 12
+	RaceNaga              Race = 13
+	RaceBroken            Race = 14
+	RaceSkeleton          Race = 15
+	RaceVrykul            Race = 16
+	RaceTuskarr           Race = 17
+	RaceForestTroll       Race = 18
+	RaceTaunka            Race = 19
+	RaceNorthrendSkeleton Race = 20
+	RaceIceTroll          Race = 21
+)
+
+type Class = byte
+
+const (
+	ClassWarrior     Class = 1
+	ClassPaladin     Class = 2
+	ClassHunter      Class = 3
+	ClassRogue       Class = 4
+	ClassPriest      Class = 5
+	ClassDeathKnight Class = 6
+	ClassShaman      Class = 7
+	ClassMage        Class = 8
+	ClassWarlock     Class = 9
+	ClassDruid       Class = 11
+)
+
+type Gender = byte
+
+const (
+	GenderMale   Gender = 0
+	GenderFemale Gender = 1
+	GenderNone   Gender = 2 // used by pets?
 )

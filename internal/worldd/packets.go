@@ -26,6 +26,21 @@ type PingPacket struct {
 	RoundTripTime uint32 // zero if server hasn't responded?
 }
 
+// https://gtker.com/wow_messages/docs/cmsg_realm_split.html
 type RealmSplitPacket struct {
 	RealmId uint32
+}
+
+// https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
+type CharCreatePacket struct {
+	// Name string
+	Race       Race
+	Class      Class
+	Gender     Gender
+	SkinColor  byte
+	Face       byte
+	HairStyle  byte
+	HairColor  byte
+	FacialHair byte
+	OutfitId   byte
 }

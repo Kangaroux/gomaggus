@@ -370,6 +370,28 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
+	case OP_CL_CHAR_CREATE:
+		log.Println("starting character create")
+
+		p := CharCreatePacket{}
+		r := bytes.NewReader(data[6:])
+		charName, err := readCString(r)
+
+		if err != nil {
+			return err
+		}
+
+		if err := binary.Read(r, binary.BigEndian, &p); err != nil {
+			return err
+		}
+
+		log.Println("client wants to create character", charName)
+		log.Println(p)
+
+		log.Println("finished character create")
+
+		return nil
+
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 	}
