@@ -19,3 +19,8 @@ type AuthSessionPacket struct {
 	ClientProof     [20]byte
 	AddonInfo       []byte
 }
+
+type PingPacket struct {
+	SequenceId    uint32
+	RoundTripTime uint32 // zero if server hasn't responded?
+}

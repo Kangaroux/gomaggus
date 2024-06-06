@@ -11,6 +11,7 @@ import (
 	mrand "math/rand"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/internal/models"
@@ -153,8 +154,6 @@ func parseHeader(c *Client, data []byte) (*Header, error) {
 		headerData = c.crypto.Decrypt(headerData)
 	}
 
-	fmt.Printf("header: %x\n", headerData)
-
 	h := &Header{
 		Size:   binary.BigEndian.Uint16(headerData[:2]),
 		Opcode: binary.LittleEndian.Uint32(headerData[2:6]),
@@ -197,10 +196,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	case OP_CL_AUTH_SESSION:
 		log.Println("starting auth session")
 
-		r := bytes.NewReader(data)
-
-		// Skip the header
-		r.Seek(6, io.SeekStart)
+		r := bytes.NewReader(data[6:])
 
 		// https://gtker.com/wow_messages/docs/cmsg_auth_session.html#client-version-335
 		p := AuthSessionPacket{}
@@ -273,6 +269,58 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		log.Println("sent auth response")
 
 		return nil
+	case OP_CL_PING:
+		log.Println("starting ping")
+
+		r := bytes.NewReader(data[6:])
+		p := PingPacket{}
+		if err = binary.Read(r, binary.LittleEndian, &p.SequenceId); err != nil {
+			return err
+		}
+		if err = binary.Read(r, binary.LittleEndian, &p.RoundTripTime); err != nil {
+			return err
+		}
+
+		resp := bytes.Buffer{}
+		respHeader, err := makeServerHeader(OP_SRV_PONG, 4)
+		if err != nil {
+			return err
+		}
+		resp.Write(c.crypto.Encrypt(respHeader))
+		binary.Write(&resp, binary.LittleEndian, p.SequenceId)
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("sent pong")
+
+		return nil
+	case OP_CL_READY_FOR_ACCOUNT_DATA_TIMES:
+		log.Println("starting account data times")
+
+		inner := bytes.Buffer{}
+		binary.Write(&inner, binary.LittleEndian, uint32(time.Now().Unix()))
+		inner.WriteByte(1)              // unknown, mangos uses 1
+		inner.Write([]byte{0, 0, 0, 0}) // mask(?)
+
+		resp := bytes.Buffer{}
+		respHeader, err := makeServerHeader(OP_SRV_ACCOUNT_DATA_TIMES, uint32(inner.Len()))
+		if err != nil {
+			return err
+		}
+		resp.Write(c.crypto.Encrypt(respHeader))
+		resp.Write(inner.Bytes())
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("sent account data times")
+
+		return nil
+	default:
+		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 	}
 
 	return nil
