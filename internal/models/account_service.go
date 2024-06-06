@@ -17,7 +17,7 @@ type AccountGetParams struct {
 var ErrEmptyGetParams = errors.New("at least one get param must be set")
 
 type AccountService interface {
-	// Get returns the matching account, or nil if it doesn't exist. At least one param must be specified.
+	// Get returns an account, or nil if it doesn't exist. At least one param must be specified.
 	// Params are combined using OR.
 	Get(*AccountGetParams) (*Account, error)
 

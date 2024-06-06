@@ -7,7 +7,7 @@ import (
 )
 
 type RealmService interface {
-	// Get returns the matching realm, or nil if it doesn't exist.
+	// Get returns a realm by id, or nil if it doesn't exist.
 	Get(uint32) (*Realm, error)
 
 	// List returns a list of all realms.

@@ -13,8 +13,11 @@ type CharacterListParams struct {
 }
 
 type CharacterService interface {
-	// Get returns the matching character, or nil if it doesn't exist.
+	// Get returns a character by id, or nil if it doesn't exist.
 	Get(uint32) (*Character, error)
+
+	// GetName returns a character by its name and realm id, or nil if it doesn't exist.
+	GetName(name string, realmId uint32) (*Character, error)
 
 	// List returns a list of all characters matching the search query. Any number of params can be
 	// specified. Params are combined using AND.
@@ -43,6 +46,18 @@ func NewDbCharacterervice(db *sqlx.DB) *DbCharacterService {
 func (s *DbCharacterService) Get(id uint32) (*Character, error) {
 	result := &Character{}
 	if err := s.db.Get(result, `SELECT * FROM characters WHERE id = $1`, id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s *DbCharacterService) GetName(name string, realmId uint32) (*Character, error) {
+	q := `SELECT * FROM characters WHERE lower(name) = $1 AND realm_id = $2`
+	result := &Character{}
+	if err := s.db.Get(result, q, strings.ToLower(name), realmId); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}

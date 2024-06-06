@@ -7,7 +7,7 @@ import (
 )
 
 type SessionService interface {
-	// Get returns the session for the given account id, or nil if it doesn't exist.
+	// Get returns a session by account id, or nil if it doesn't exist.
 	Get(uint32) (*Session, error)
 
 	// Create creates a new session and sets the Id and CreatedAt fields.
