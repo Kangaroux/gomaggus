@@ -356,7 +356,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		inner.WriteByte(0)                                      // NUL terminator
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_CHAR_ENUM, uint32(inner.Len()))
+		respHeader, err := makeServerHeader(OP_SRV_REALM_SPLIT, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
