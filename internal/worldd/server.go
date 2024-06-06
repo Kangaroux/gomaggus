@@ -25,6 +25,7 @@ type Server struct {
 	port int
 
 	accountsDb models.AccountService
+	charsDb    models.CharacterService
 	realmsDb   models.RealmService
 	sessionsDb models.SessionService
 }
@@ -33,6 +34,7 @@ func NewServer(db *sqlx.DB, port int) *Server {
 	return &Server{
 		port:       port,
 		accountsDb: models.NewDbAccountService(db),
+		charsDb:    models.NewDbCharacterervice(db),
 		realmsDb:   models.NewDbRealmService(db),
 		sessionsDb: models.NewDbSessionService(db),
 	}
@@ -373,20 +375,71 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	case OP_CL_CHAR_CREATE:
 		log.Println("starting character create")
 
+		// TODO: check if account is full
+		// accountChars, err := s.charsDb.List(&models.CharacterListParams{
+		// 	AccountId: c.account.Id,
+		// 	RealmId:   c.realm.Id,
+		// })
+		// if err != nil {
+		// 	return err
+		// }
+
 		p := CharCreatePacket{}
 		r := bytes.NewReader(data[6:])
 		charName, err := readCString(r)
-
 		if err != nil {
 			return err
 		}
+		charName = strings.TrimSpace(charName)
 
 		if err := binary.Read(r, binary.BigEndian, &p); err != nil {
 			return err
 		}
 
 		log.Println("client wants to create character", charName)
-		log.Println(p)
+
+		existing, err := s.charsDb.GetName(charName, c.realm.Id)
+		if err != nil {
+			return err
+		}
+
+		if existing == nil {
+			char := &models.Character{
+				Name:       charName,
+				AccountId:  c.account.Id,
+				RealmId:    c.realm.Id,
+				Race:       p.Race,
+				Class:      p.Class,
+				Gender:     p.Gender,
+				SkinColor:  p.SkinColor,
+				Face:       p.Face,
+				HairStyle:  p.HairStyle,
+				HairColor:  p.HairColor,
+				FacialHair: p.FacialHair,
+				OutfitId:   p.OutfitId,
+			}
+			if err := s.charsDb.Create(char); err != nil {
+				return err
+			}
+			log.Println("created char with id", char.Id)
+		}
+
+		resp := bytes.Buffer{}
+		respHeader, err := makeServerHeader(OP_SRV_CHAR_CREATE, 1)
+		if err != nil {
+			return err
+		}
+		resp.Write(c.crypto.Encrypt(respHeader))
+
+		if existing != nil {
+			resp.WriteByte(RespCodeCharCreateNameInUse)
+		} else {
+			resp.WriteByte(RespCodeCharCreateSuccess)
+		}
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
 
 		log.Println("finished character create")
 
