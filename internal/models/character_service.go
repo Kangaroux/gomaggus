@@ -91,7 +91,7 @@ func (s *DbCharacterService) List(params *CharacterListParams) ([]*Character, er
 	return results, nil
 }
 
-func (s *DbCharacterService) Create(r *Character) error {
+func (s *DbCharacterService) Create(c *Character) error {
 	q := `
 	INSERT INTO characters (
 		name,
@@ -120,15 +120,15 @@ func (s *DbCharacterService) Create(r *Character) error {
 		:facial_hair,
 		:outfit_id
 	) RETURNING id, created_at`
-	result, err := s.db.NamedQuery(q, r)
+	result, err := s.db.NamedQuery(q, c)
 	if err != nil {
 		return err
 	}
 	result.Next()
-	return result.StructScan(r)
+	return result.StructScan(c)
 }
 
-func (s *DbCharacterService) Update(r *Character) (bool, error) {
+func (s *DbCharacterService) Update(c *Character) (bool, error) {
 	q := `
 	UPDATE characters SET
 		name=:name,
@@ -143,7 +143,7 @@ func (s *DbCharacterService) Update(r *Character) (bool, error) {
 		outfit_id=:outfit_id
 	WHERE
 		id=:id`
-	result, err := s.db.NamedExec(q, r)
+	result, err := s.db.NamedExec(q, c)
 	if err != nil {
 		return false, err
 	}
