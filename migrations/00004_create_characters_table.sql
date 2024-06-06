@@ -7,15 +7,15 @@ CREATE TABLE IF NOT EXISTS characters (
     name          varchar(12) NOT NULL,
     account_id    integer NOT NULL REFERENCES accounts (id),
     realm_id      integer NOT NULL REFERENCES realms (id),
-    race          char NOT NULL,
-    class         char NOT NULL,
-    gender        char NOT NULL,
-    skin_color    char NOT NULL,
-    face          char NOT NULL,
-    hair_style    char NOT NULL,
-    hair_color    char NOT NULL,
-    facial_hair   char NOT NULL,
-    outfit_id     char NOT NULL
+    race          smallint NOT NULL,
+    class         smallint NOT NULL,
+    gender        smallint NOT NULL,
+    skin_color    smallint NOT NULL,
+    face          smallint NOT NULL,
+    hair_style    smallint NOT NULL,
+    hair_color    smallint NOT NULL,
+    facial_hair   smallint NOT NULL,
+    outfit_id     smallint NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS characters_name_realm_unique_idx ON characters (lower(name), realm_id);
 -- +goose StatementEnd
