@@ -563,7 +563,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		} else {
 			// https://gtker.com/wow_messages/docs/smsg_login_verify_world.html
 			inner := bytes.Buffer{}
-			inner.Write([]byte{1, 0, 0, 0})                       // map (hardcoded as kalimdor)
+			inner.Write([]byte{0, 0, 0, 0})                       // map (hardcoded as eastern kingdoms)
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // x
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // y
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // z
@@ -610,23 +610,23 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			// movement block start
 			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
-			inner.Write([]byte{0x1})                                    // object type: PLAYER
-			inner.Write([]byte{0, 0, 0, 0, 0, 0})                       // movement flags
-			inner.Write([]byte{0, 0, 0, 0})                             // timestamp
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // x
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // y
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // z
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // orientation
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // fall time
-			binary.Write(&inner, binary.LittleEndian, float32(1))       // walk speed
-			binary.Write(&inner, binary.LittleEndian, float32(70))      // run speed
-			binary.Write(&inner, binary.LittleEndian, float32(4.5))     // reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // swim speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // swim reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // flight speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // flight reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(3.14159)) // turn speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))       // pitch rate
+			inner.Write([]byte{0x1})                                     // object type: PLAYER
+			inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
+			inner.Write([]byte{0, 0, 0, 0})                              // timestamp
+			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
+			binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
+			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // fall time
+			binary.Write(&inner, binary.LittleEndian, float32(1))        // walk speed
+			binary.Write(&inner, binary.LittleEndian, float32(70))       // run speed
+			binary.Write(&inner, binary.LittleEndian, float32(4.5))      // reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // swim speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // swim reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(3.14159))  // turn speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // pitch rate
 			// movement block end
 
 			// field mask start
