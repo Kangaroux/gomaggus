@@ -518,7 +518,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 		resp.Write(c.crypto.Encrypt(respHeader))
 
-		if char == nil {
+		if char == nil || char.AccountId != c.account.Id || char.RealmId != c.realm.Id {
 			resp.WriteByte(RespCodeCharDeleteFailed)
 		} else {
 			if _, err := s.charsDb.Delete(char.Id); err != nil {
