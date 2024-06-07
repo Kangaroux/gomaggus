@@ -315,7 +315,7 @@ type FieldMask struct {
 	// Size is the number of uint32 blocks used for the field data.
 	Size uint8
 	// Offset is the bit number that is set to indicate this field is included.
-	Offset uint16
+	Offset uint32
 }
 
 var (

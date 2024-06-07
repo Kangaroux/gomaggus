@@ -351,8 +351,8 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			inner.WriteByte(char.HairColor)
 			inner.WriteByte(char.FacialHair)
 			inner.WriteByte(1)                                    // level
-			inner.Write([]byte{215, 0, 0, 0})                     // area (hardcoded as mulgore)
-			inner.Write([]byte{1, 0, 0, 0})                       // map (hardcoded as kalimdor)
+			inner.Write([]byte{12, 0, 0, 0})                      // area (hardcoded as elwynn forest)
+			inner.Write([]byte{0, 0, 0, 0})                       // map (hardcoded as eastern kingdoms)
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // x
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // y
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // z
@@ -563,11 +563,11 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		} else {
 			// https://gtker.com/wow_messages/docs/smsg_login_verify_world.html
 			inner := bytes.Buffer{}
-			inner.Write([]byte{0, 0, 0, 0})                       // map (hardcoded as eastern kingdoms)
-			binary.Write(&inner, binary.LittleEndian, float32(0)) // x
-			binary.Write(&inner, binary.LittleEndian, float32(0)) // y
-			binary.Write(&inner, binary.LittleEndian, float32(0)) // z
-			binary.Write(&inner, binary.LittleEndian, float32(0)) // orientation
+			inner.Write([]byte{0, 0, 0, 0})                              // map (hardcoded as eastern kingdoms)
+			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
+			binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
+			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
 
 			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_VERIFY_WORLD, uint32(inner.Len()))
 			if err != nil {
@@ -604,8 +604,8 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
 			// nested object start
-			inner.WriteByte(3)        // update type: CREATE_OBJECT2
-			inner.Write([]byte{1, 1}) // packed guid
+			inner.WriteByte(UpdateTypeCreateObject2) // update type: CREATE_OBJECT2
+			inner.Write(packGuid(uint64(char.Id)))   // packed guid
 			inner.WriteByte(ObjectTypePlayer)
 
 			// movement block start
@@ -631,12 +631,14 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			// field mask start
 			inner.WriteByte(1) // only 1 uint32 mask is needed
-			mask := uint32(FieldMaskObjectGuid.Offset |
-				FieldMaskObjectType.Offset |
-				FieldMaskUnitHealth.Offset |
-				FieldMaskUnitBytes0.Offset)
-			binary.Write(&inner, binary.BigEndian, mask) // endian ??
-			inner.Write([]byte{1, 0, 0, 0, 0, 0, 0, 0})  // 8 byte GUID
+			mask := uint32(1<<FieldMaskObjectGuid.Offset |
+				1<<(FieldMaskObjectGuid.Offset+1) |
+				1<<FieldMaskObjectType.Offset |
+				1<<FieldMaskUnitHealth.Offset |
+				1<<FieldMaskUnitBytes0.Offset)
+			log.Printf("mask: %x\n", mask)
+			binary.Write(&inner, binary.LittleEndian, mask)
+			binary.Write(&inner, binary.LittleEndian, uint64(char.Id)) // 8 byte GUID (unpacked)
 			binary.Write(&inner, binary.LittleEndian, uint32(ObjectTypePlayer))
 			inner.Write([]byte{100, 0, 0, 0}) // health
 			inner.WriteByte(char.Race)
@@ -766,4 +768,29 @@ func getPowerTypeForClass(c Class) PowerType {
 		log.Println("getPowerTypeForClass: got unexpected class", c)
 		return PowerTypeMana
 	}
+}
+
+// packGuid returns a packed *little-endian* representation of an 8-byte integer. The packing works
+// by creating a bit mask to mark which bytes are non-zero. Any bytes which are zero are discarded.
+// The result is a byte array with the first byte as the bitmask, followed by the remaining
+// undiscarded bytes. The bytes after the bitmask are little-endian.
+func packGuid(val uint64) []byte {
+	// At its largest, a packed guid takes up 9 bytes (1 byte mask + 8 bytes)
+	result := make([]byte, 9)
+	n := 0
+
+	for i := 0; i < 8; i++ {
+		if byte(val) > 0 {
+			// Set the mask bit
+			result[0] |= 1 << i
+			// Add the byte to the result. The loop traverses the bytes from right-to-left but they
+			// are written to the result from left-to-right, which swaps it to little-endian.
+			result[n] = byte(val)
+			n++
+		}
+		// Move to the next byte
+		val >>= 8
+	}
+
+	return result[:n+1]
 }
