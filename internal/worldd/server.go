@@ -550,8 +550,9 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		resp := bytes.Buffer{}
+		ok := char != nil && char.AccountId == c.account.Id && char.RealmId == c.realm.Id
 
-		if char == nil || char.AccountId != c.account.Id || char.RealmId != c.realm.Id {
+		if !ok {
 			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_FAILED, 1)
 			if err != nil {
 				return err
@@ -579,6 +580,22 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		log.Println("finished character login")
+
+		if ok {
+			resp := bytes.Buffer{}
+			respHeader, err := makeServerHeader(OP_SRV_TUTORIAL_FLAGS, 32)
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.Write(bytes.Repeat([]byte{255}, 32))
+
+			if _, err := c.conn.Write(resp.Bytes()); err != nil {
+				return err
+			}
+
+			log.Println("sent tutorial flags")
+		}
 
 		return nil
 

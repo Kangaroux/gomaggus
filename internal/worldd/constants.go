@@ -12,6 +12,8 @@ const (
 	OP_SRV_CHAR_DELETE             uint16 = 0x3C
 	OP_SRV_CHAR_LOGIN_FAILED       uint16 = 0x41
 	OP_SRV_CHAR_LOGIN_VERIFY_WORLD uint16 = 0x236
+	OP_SRV_UPDATE_OBJECT           uint16 = 0xA9
+	OP_SRV_TUTORIAL_FLAGS          uint16 = 0xFD
 )
 
 // Opcodes sent by the client
