@@ -9,6 +9,7 @@ const (
 	OP_SRV_CHAR_ENUM          uint16 = 0x3B
 	OP_SRV_REALM_SPLIT        uint16 = 0x38B
 	OP_SRV_CHAR_CREATE        uint16 = 0x3A
+	OP_SRV_CHAR_DELETE        uint16 = 0x3C
 )
 
 // Opcodes sent by the client
@@ -18,6 +19,7 @@ const (
 	OP_CL_PING         uint32 = 0x1DC
 	OP_CL_CHAR_ENUM    uint32 = 0x37
 	OP_CL_CHAR_CREATE  uint32 = 0x36
+	OP_CL_CHAR_DELETE  uint32 = 0x38
 
 	// Client sent after receiving our OP_SRV_AUTH_RESPONSE. The packet is empty besides the header.
 	// Immediately after the client sends OP_CL_CHAR_ENUM.

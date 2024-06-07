@@ -497,6 +497,44 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
+	case OP_CL_CHAR_DELETE:
+		log.Println("start character delete")
+
+		r := bytes.NewReader(data[6:])
+		p := CharDeletePacket{}
+		if err := binary.Read(r, binary.LittleEndian, &p.CharacterId); err != nil {
+			return err
+		}
+
+		char, err := s.charsDb.Get(uint32(p.CharacterId))
+		if err != nil {
+			return err
+		}
+
+		resp := bytes.Buffer{}
+		respHeader, err := makeServerHeader(OP_SRV_CHAR_DELETE, 1)
+		if err != nil {
+			return err
+		}
+		resp.Write(c.crypto.Encrypt(respHeader))
+
+		if char == nil {
+			resp.WriteByte(RespCodeCharDeleteFailed)
+		} else {
+			if _, err := s.charsDb.Delete(char.Id); err != nil {
+				return err
+			}
+			resp.WriteByte(RespCodeCharDeleteSuccess)
+		}
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("finished character create")
+
+		return nil
+
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 	}

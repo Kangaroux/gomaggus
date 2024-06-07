@@ -44,3 +44,8 @@ type CharCreatePacket struct {
 	FacialHair byte
 	OutfitId   byte
 }
+
+// https://gtker.com/wow_messages/docs/cmsg_char_delete.html
+type CharDeletePacket struct {
+	CharacterId uint64
+}
