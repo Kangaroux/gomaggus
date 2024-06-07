@@ -2,14 +2,16 @@ package worldd
 
 // Opcodes sent by the server
 const (
-	OP_SRV_AUTH_CHALLENGE     uint16 = 0x1EC
-	OP_SRV_AUTH_RESPONSE      uint16 = 0x1EE
-	OP_SRV_PONG               uint16 = 0x1DD
-	OP_SRV_ACCOUNT_DATA_TIMES uint16 = 0x209
-	OP_SRV_CHAR_ENUM          uint16 = 0x3B
-	OP_SRV_REALM_SPLIT        uint16 = 0x38B
-	OP_SRV_CHAR_CREATE        uint16 = 0x3A
-	OP_SRV_CHAR_DELETE        uint16 = 0x3C
+	OP_SRV_AUTH_CHALLENGE          uint16 = 0x1EC
+	OP_SRV_AUTH_RESPONSE           uint16 = 0x1EE
+	OP_SRV_PONG                    uint16 = 0x1DD
+	OP_SRV_ACCOUNT_DATA_TIMES      uint16 = 0x209
+	OP_SRV_CHAR_ENUM               uint16 = 0x3B
+	OP_SRV_REALM_SPLIT             uint16 = 0x38B
+	OP_SRV_CHAR_CREATE             uint16 = 0x3A
+	OP_SRV_CHAR_DELETE             uint16 = 0x3C
+	OP_SRV_CHAR_LOGIN_FAILED       uint16 = 0x41
+	OP_SRV_CHAR_LOGIN_VERIFY_WORLD uint16 = 0x236
 )
 
 // Opcodes sent by the client
@@ -20,6 +22,7 @@ const (
 	OP_CL_CHAR_ENUM    uint32 = 0x37
 	OP_CL_CHAR_CREATE  uint32 = 0x36
 	OP_CL_CHAR_DELETE  uint32 = 0x38
+	OP_CL_PLAYER_LOGIN uint32 = 0x3D
 
 	// Client sent after receiving our OP_SRV_AUTH_RESPONSE. The packet is empty besides the header.
 	// Immediately after the client sends OP_CL_CHAR_ENUM.

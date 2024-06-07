@@ -49,3 +49,8 @@ type CharCreatePacket struct {
 type CharDeletePacket struct {
 	CharacterId uint64
 }
+
+// https://gtker.com/wow_messages/docs/cmsg_player_login.html
+type CharLoginPacket struct {
+	CharacterId uint64
+}

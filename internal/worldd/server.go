@@ -535,6 +535,53 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
+	case OP_CL_PLAYER_LOGIN:
+		log.Println("start character login")
+
+		r := bytes.NewReader(data[6:])
+		p := CharLoginPacket{}
+		if err := binary.Read(r, binary.LittleEndian, &p.CharacterId); err != nil {
+			return err
+		}
+
+		char, err := s.charsDb.Get(uint32(p.CharacterId))
+		if err != nil {
+			return err
+		}
+
+		resp := bytes.Buffer{}
+
+		if char == nil || char.AccountId != c.account.Id || char.RealmId != c.realm.Id {
+			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_FAILED, 1)
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.WriteByte(RespCodeCharLoginFailed)
+		} else {
+			inner := bytes.Buffer{}
+			inner.Write([]byte{1, 0, 0, 0})                       // map (hardcoded as kalimdor)
+			binary.Write(&inner, binary.LittleEndian, float32(0)) // x
+			binary.Write(&inner, binary.LittleEndian, float32(0)) // y
+			binary.Write(&inner, binary.LittleEndian, float32(0)) // z
+			binary.Write(&inner, binary.LittleEndian, float32(0)) // orientation
+
+			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_VERIFY_WORLD, uint32(inner.Len()))
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.Write(inner.Bytes())
+		}
+
+		if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			return err
+		}
+
+		log.Println("finished character login")
+
+		return nil
+
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 	}
