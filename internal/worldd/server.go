@@ -610,7 +610,6 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			// movement block start
 			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
-			inner.Write([]byte{0x1})                                     // object type: PLAYER
 			inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
 			inner.Write([]byte{0, 0, 0, 0})                              // timestamp
 			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
@@ -626,7 +625,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight speed
 			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight reverse speed
 			binary.Write(&inner, binary.LittleEndian, float32(3.14159))  // turn speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // pitch rate
+			binary.Write(&inner, binary.LittleEndian, float32(7))        // pitch rate
 			// movement block end
 
 			// field mask start
