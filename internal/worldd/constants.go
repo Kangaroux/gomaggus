@@ -8,7 +8,7 @@ const (
 	OP_SRV_ACCOUNT_DATA_TIMES uint16 = 0x209
 	OP_SRV_CHAR_ENUM          uint16 = 0x3B
 	OP_SRV_REALM_SPLIT        uint16 = 0x38B
-	OP_SRV_CHAR_CREATE        uint16 = 0x36
+	OP_SRV_CHAR_CREATE        uint16 = 0x3A
 )
 
 // Opcodes sent by the client
