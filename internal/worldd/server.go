@@ -553,6 +553,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		ok := char != nil && char.AccountId == c.account.Id && char.RealmId == c.realm.Id
 
 		if !ok {
+			// https: gtker.com/wow_messages/docs/smsg_character_login_failed.html#client-version-335
 			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_FAILED, 1)
 			if err != nil {
 				return err
@@ -560,6 +561,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			resp.Write(c.crypto.Encrypt(respHeader))
 			resp.WriteByte(RespCodeCharLoginFailed)
 		} else {
+			// https://gtker.com/wow_messages/docs/smsg_login_verify_world.html
 			inner := bytes.Buffer{}
 			inner.Write([]byte{1, 0, 0, 0})                       // map (hardcoded as kalimdor)
 			binary.Write(&inner, binary.LittleEndian, float32(0)) // x
@@ -582,6 +584,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		log.Println("finished character login")
 
 		if ok {
+			// https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
 			resp := bytes.Buffer{}
 			respHeader, err := makeServerHeader(OP_SRV_TUTORIAL_FLAGS, 32)
 			if err != nil {
@@ -595,6 +598,68 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			}
 
 			log.Println("sent tutorial flags")
+
+			// https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
+			inner := bytes.Buffer{}
+			inner.Write([]byte{1, 0, 0, 0}) // number of objects
+
+			// nested object start
+			inner.WriteByte(3)        // update type: CREATE_OBJECT2
+			inner.Write([]byte{1, 1}) // packed guid
+			inner.WriteByte(ObjectTypePlayer)
+
+			// movement block start
+			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
+			inner.Write([]byte{0x1})                                    // object type: PLAYER
+			inner.Write([]byte{0, 0, 0, 0, 0, 0})                       // movement flags
+			inner.Write([]byte{0, 0, 0, 0})                             // timestamp
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // x
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // y
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // z
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // orientation
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // fall time
+			binary.Write(&inner, binary.LittleEndian, float32(1))       // walk speed
+			binary.Write(&inner, binary.LittleEndian, float32(70))      // run speed
+			binary.Write(&inner, binary.LittleEndian, float32(4.5))     // reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // swim speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // swim reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // flight speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // flight reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(3.14159)) // turn speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // pitch rate
+			// movement block end
+
+			// field mask start
+			inner.WriteByte(1) // only 1 uint32 mask is needed
+			mask := uint32(FieldMaskObjectGuid.Offset |
+				FieldMaskObjectType.Offset |
+				FieldMaskUnitHealth.Offset |
+				FieldMaskUnitBytes0.Offset)
+			binary.Write(&inner, binary.BigEndian, mask) // endian ??
+			inner.Write([]byte{1, 0, 0, 0, 0, 0, 0, 0})  // 8 byte GUID
+			binary.Write(&inner, binary.LittleEndian, uint32(ObjectTypePlayer))
+			inner.Write([]byte{100, 0, 0, 0}) // health
+			inner.WriteByte(char.Race)
+			inner.WriteByte(char.Class)
+			inner.WriteByte(char.Gender)
+			inner.WriteByte(getPowerTypeForClass(char.Class))
+			// field mask end
+
+			// nested object end
+
+			resp.Reset()
+			respHeader, err = makeServerHeader(OP_SRV_UPDATE_OBJECT, uint32(inner.Len()))
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.Write(inner.Bytes())
+
+			if _, err := c.conn.Write(resp.Bytes()); err != nil {
+				return err
+			}
+
+			log.Println("sent object update")
 		}
 
 		return nil
@@ -687,4 +752,18 @@ func makeServerHeader(opcode uint16, size uint32) ([]byte, error) {
 	}
 
 	return header, nil
+}
+
+func getPowerTypeForClass(c Class) PowerType {
+	switch c {
+	case ClassWarrior:
+		return PowerTypeRage
+	case ClassPaladin, ClassHunter, ClassPriest, ClassShaman, ClassMage, ClassWarlock, ClassDruid:
+		return PowerTypeMana
+	case ClassRogue:
+		return PowerTypeEnergy
+	default:
+		log.Println("getPowerTypeForClass: got unexpected class", c)
+		return PowerTypeMana
+	}
 }
