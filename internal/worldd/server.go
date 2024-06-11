@@ -585,7 +585,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			return err
 		}
 
-		log.Println("finished character login")
+		log.Println("sent verify world")
 
 		if ok {
 			// https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
@@ -603,8 +603,49 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			log.Println("sent tutorial flags")
 
-			// https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
+			// https://gtker.com/wow_messages/docs/smsg_feature_system_status.html#client-version-335
 			inner := bytes.Buffer{}
+			inner.WriteByte(2) // auto ignore?
+			inner.WriteByte(0) // voip enabled
+
+			resp = bytes.Buffer{}
+			respHeader, err = makeServerHeader(OP_SRV_SYSTEM_FEATURES, uint32(inner.Len()))
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.Write(inner.Bytes())
+
+			if _, err := c.conn.Write(resp.Bytes()); err != nil {
+				return err
+			}
+
+			log.Println("sent system features")
+
+			// https://gtker.com/wow_messages/docs/smsg_bindpointupdate.html#client-version-335
+			inner = bytes.Buffer{}
+			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // hearth x
+			binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // hearth y
+			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // hearth z
+			inner.Write([]byte{0, 0, 0, 0})                              // map: eastern kingdoms
+			inner.Write([]byte{12, 0, 0, 0})                             // area: elwynn forest
+
+			resp = bytes.Buffer{}
+			respHeader, err = makeServerHeader(OP_SRV_HEARTH_LOCATION, uint32(inner.Len()))
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.Write(inner.Bytes())
+
+			if _, err := c.conn.Write(resp.Bytes()); err != nil {
+				return err
+			}
+
+			log.Println("sent hearth location")
+
+			// https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
+			inner = bytes.Buffer{}
 			inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
 			// nested object start
@@ -666,6 +707,8 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			log.Println("sent object update")
 		}
+
+		log.Println("finished character login")
 
 		return nil
 
