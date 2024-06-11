@@ -304,8 +304,12 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		inner := bytes.Buffer{}
 		binary.Write(&inner, binary.LittleEndian, uint32(time.Now().Unix()))
-		inner.WriteByte(1)              // unknown, mangos uses 1
-		inner.Write([]byte{0, 0, 0, 0}) // mask(?)
+		inner.WriteByte(1)                 // activated (bool)
+		inner.Write([]byte{0, 0, 0, 0xFF}) // cache mask (all)
+		// cache times
+		for i := 0; i < 8; i++ {
+			inner.Write([]byte{0, 0, 0, 0})
+		}
 
 		resp := bytes.Buffer{}
 		respHeader, err := makeServerHeader(OP_SRV_ACCOUNT_DATA_TIMES, uint32(inner.Len()))
