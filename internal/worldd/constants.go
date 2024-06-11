@@ -16,6 +16,7 @@ const (
 	OP_SRV_TUTORIAL_FLAGS          uint16 = 0xFD
 	OP_SRV_SYSTEM_FEATURES         uint16 = 0x3C9
 	OP_SRV_HEARTH_LOCATION         uint16 = 0x155 // SMSG_BINDPOINTUPDATE
+	OP_SRV_PLAY_CINEMATIC          uint16 = 0xFA  // SMSG_TRIGGER_CINEMATIC
 )
 
 // Opcodes sent by the client

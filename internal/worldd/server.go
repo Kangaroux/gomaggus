@@ -250,10 +250,10 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		inner := bytes.Buffer{}
 		inner.WriteByte(RespCodeAuthOk)
-		inner.Write([]byte{0, 0, 0, 0})   // billing time
-		inner.WriteByte(0x0)              // billing flags
-		inner.Write([]byte{0, 0, 0, 0})   // billing rested
-		inner.WriteByte(ExpansionVanilla) // exp
+		inner.Write([]byte{0, 0, 0, 0}) // billing time
+		inner.WriteByte(0x0)            // billing flags
+		inner.Write([]byte{0, 0, 0, 0}) // billing rested
+		inner.WriteByte(ExpansionWrath) // exp
 
 		// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
 		resp := bytes.Buffer{}
@@ -644,6 +644,24 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			log.Println("sent hearth location")
 
+			// https://gtker.com/wow_messages/docs/smsg_trigger_cinematic.html
+			inner = bytes.Buffer{}
+			binary.Write(&inner, binary.LittleEndian, uint32(81)) // human
+
+			resp = bytes.Buffer{}
+			respHeader, err = makeServerHeader(OP_SRV_PLAY_CINEMATIC, uint32(inner.Len()))
+			if err != nil {
+				return err
+			}
+			resp.Write(c.crypto.Encrypt(respHeader))
+			resp.Write(inner.Bytes())
+
+			if _, err := c.conn.Write(resp.Bytes()); err != nil {
+				return err
+			}
+
+			log.Println("sent play cinematic")
+
 			// https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
 			inner = bytes.Buffer{}
 			inner.Write([]byte{1, 0, 0, 0}) // number of objects
@@ -654,23 +672,26 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			inner.WriteByte(ObjectTypePlayer)
 
 			// movement block start
-			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
-			inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
-			inner.Write([]byte{0, 0, 0, 0})                              // timestamp
-			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
-			binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
-			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // fall time
-			binary.Write(&inner, binary.LittleEndian, float32(1))        // walk speed
-			binary.Write(&inner, binary.LittleEndian, float32(70))       // run speed
-			binary.Write(&inner, binary.LittleEndian, float32(4.5))      // reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // swim speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // swim reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(3.14159))  // turn speed
-			binary.Write(&inner, binary.LittleEndian, float32(7))        // pitch rate
+			// inner.WriteByte()
+			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving|UpdateFlagHighGuid|UpdateFlagLowGuid)
+			inner.Write([]byte{0, 0, 0, 0, 0, 0})                           // movement flags
+			inner.Write([]byte{0, 0, 0, 0})                                 // timestamp
+			binary.Write(&inner, binary.LittleEndian, float32(-8949.95))    // x
+			binary.Write(&inner, binary.LittleEndian, float32(-132.493))    // y
+			binary.Write(&inner, binary.LittleEndian, float32(83.5312))     // z
+			binary.Write(&inner, binary.LittleEndian, float32(0))           // orientation
+			binary.Write(&inner, binary.LittleEndian, float32(0))           // fall time
+			binary.Write(&inner, binary.LittleEndian, float32(1))           // walk speed
+			binary.Write(&inner, binary.LittleEndian, float32(70))          // run speed
+			binary.Write(&inner, binary.LittleEndian, float32(4.5))         // reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))           // swim speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))           // swim reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))           // flight speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))           // flight reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(3.14159))     // turn speed
+			binary.Write(&inner, binary.LittleEndian, float32(7))           // pitch rate
+			binary.Write(&inner, binary.LittleEndian, uint32(0x1|0x8|0x10)) // high guid
+			binary.Write(&inner, binary.LittleEndian, uint32(char.Id))      // low guid
 			// movement block end
 
 			// field mask start
@@ -682,7 +703,8 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 				1<<FieldMaskUnitBytes0.Offset)
 			log.Printf("mask: %x\n", mask)
 			binary.Write(&inner, binary.LittleEndian, mask)
-			binary.Write(&inner, binary.LittleEndian, uint64(char.Id)) // 8 byte GUID (unpacked)
+			binary.Write(&inner, binary.LittleEndian, uint32(0x1|0x8|0x10)) // high guid
+			binary.Write(&inner, binary.LittleEndian, uint32(char.Id))      // low guid
 			binary.Write(&inner, binary.LittleEndian, uint32(ObjectTypePlayer))
 			inner.Write([]byte{100, 0, 0, 0}) // health
 			inner.WriteByte(char.Race)
