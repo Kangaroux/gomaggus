@@ -673,25 +673,22 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			// movement block start
 			// inner.WriteByte()
-			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving|UpdateFlagHighGuid|UpdateFlagLowGuid)
-			inner.Write([]byte{0, 0, 0, 0, 0, 0})                           // movement flags
-			inner.Write([]byte{0, 0, 0, 0})                                 // timestamp
-			binary.Write(&inner, binary.LittleEndian, float32(-8949.95))    // x
-			binary.Write(&inner, binary.LittleEndian, float32(-132.493))    // y
-			binary.Write(&inner, binary.LittleEndian, float32(83.5312))     // z
-			binary.Write(&inner, binary.LittleEndian, float32(0))           // orientation
-			binary.Write(&inner, binary.LittleEndian, float32(0))           // fall time
-			binary.Write(&inner, binary.LittleEndian, float32(1))           // walk speed
-			binary.Write(&inner, binary.LittleEndian, float32(70))          // run speed
-			binary.Write(&inner, binary.LittleEndian, float32(4.5))         // reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))           // swim speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))           // swim reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))           // flight speed
-			binary.Write(&inner, binary.LittleEndian, float32(0))           // flight reverse speed
-			binary.Write(&inner, binary.LittleEndian, float32(3.14159))     // turn speed
-			binary.Write(&inner, binary.LittleEndian, float32(7))           // pitch rate
-			binary.Write(&inner, binary.LittleEndian, uint32(0x1|0x8|0x10)) // high guid
-			binary.Write(&inner, binary.LittleEndian, uint32(char.Id))      // low guid
+			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
+			inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
+			inner.Write([]byte{0, 0, 0, 0})                              // timestamp
+			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
+			binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
+			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
+			binary.Write(&inner, binary.LittleEndian, float32(1))        // walk speed
+			binary.Write(&inner, binary.LittleEndian, float32(70))       // run speed
+			binary.Write(&inner, binary.LittleEndian, float32(4.5))      // reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // swim speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // swim reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // flight reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(3.14159))  // turn speed
+			binary.Write(&inner, binary.LittleEndian, float32(7))        // pitch rate
 			// movement block end
 
 			// field mask start
@@ -699,18 +696,17 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			mask := uint32(1<<FieldMaskObjectGuid.Offset |
 				1<<(FieldMaskObjectGuid.Offset+1) |
 				1<<FieldMaskObjectType.Offset |
-				1<<FieldMaskUnitHealth.Offset |
-				1<<FieldMaskUnitBytes0.Offset)
-			log.Printf("mask: %x\n", mask)
+				1<<FieldMaskUnitBytes0.Offset |
+				1<<FieldMaskUnitHealth.Offset)
 			binary.Write(&inner, binary.LittleEndian, mask)
 			binary.Write(&inner, binary.LittleEndian, uint32(0x1|0x8|0x10)) // high guid
 			binary.Write(&inner, binary.LittleEndian, uint32(char.Id))      // low guid
 			binary.Write(&inner, binary.LittleEndian, uint32(ObjectTypePlayer))
-			inner.Write([]byte{100, 0, 0, 0}) // health
 			inner.WriteByte(char.Race)
 			inner.WriteByte(char.Class)
 			inner.WriteByte(char.Gender)
 			inner.WriteByte(getPowerTypeForClass(char.Class))
+			inner.Write([]byte{100, 0, 0, 0}) // health
 			// field mask end
 
 			// nested object end
