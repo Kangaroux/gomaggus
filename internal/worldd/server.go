@@ -645,22 +645,22 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			log.Println("sent hearth location")
 
 			// https://gtker.com/wow_messages/docs/smsg_trigger_cinematic.html
-			inner = bytes.Buffer{}
-			binary.Write(&inner, binary.LittleEndian, uint32(81)) // human
+			// inner = bytes.Buffer{}
+			// binary.Write(&inner, binary.LittleEndian, uint32(81)) // human
 
-			resp = bytes.Buffer{}
-			respHeader, err = makeServerHeader(OP_SRV_PLAY_CINEMATIC, uint32(inner.Len()))
-			if err != nil {
-				return err
-			}
-			resp.Write(c.crypto.Encrypt(respHeader))
-			resp.Write(inner.Bytes())
+			// resp = bytes.Buffer{}
+			// respHeader, err = makeServerHeader(OP_SRV_PLAY_CINEMATIC, uint32(inner.Len()))
+			// if err != nil {
+			// 	return err
+			// }
+			// resp.Write(c.crypto.Encrypt(respHeader))
+			// resp.Write(inner.Bytes())
 
-			if _, err := c.conn.Write(resp.Bytes()); err != nil {
-				return err
-			}
+			// if _, err := c.conn.Write(resp.Bytes()); err != nil {
+			// 	return err
+			// }
 
-			log.Println("sent play cinematic")
+			// log.Println("sent play cinematic")
 
 			// https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
 			inner = bytes.Buffer{}
