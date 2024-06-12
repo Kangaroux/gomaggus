@@ -1,4 +1,4 @@
-package realmd
+package authd
 
 import "github.com/kangaroux/gomaggus/internal/models"
 

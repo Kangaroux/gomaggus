@@ -6,33 +6,13 @@ import (
 	"github.com/kangaroux/gomaggus/internal/models"
 )
 
-type ClientState int
-
-const (
-	// Initial state, waiting for the client to send an auth or reconnect challenge
-	StateAuthChallenge = iota
-
-	// We've responded to the auth challenge and are waiting for the client's proof
-	StateAuthProof
-
-	// Waiting for client to send proof in order to reconnect
-	StateReconnectProof
-
-	// Client has authenticated successfully
-	StateAuthenticated
-
-	// Client failed to authenticate or an error occurred, and the connection should be closed
-	StateInvalid
-)
-
 type Client struct {
-	conn            net.Conn
-	username        string
-	reconnectData   []byte
-	sessionKey      []byte
-	clientPublicKey []byte
-	serverPublicKey []byte
-	privateKey      []byte
-	state           ClientState
-	account         *models.Account
+	conn          net.Conn
+	serverSeed    [4]byte
+	authenticated bool
+	crypto        *WrathHeaderCrypto
+
+	account *models.Account
+	realm   *models.Realm
+	session *models.Session
 }

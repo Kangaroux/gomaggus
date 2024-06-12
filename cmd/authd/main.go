@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/internal/worldd"
+	"github.com/kangaroux/gomaggus/internal/authd"
 	_ "github.com/lib/pq"
 )
 
@@ -16,6 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := worldd.NewServer(db, worldd.DefaultPort)
+	server := authd.NewServer(db, authd.DefaultPort)
 	server.Start()
 }
