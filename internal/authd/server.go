@@ -11,12 +11,12 @@ import (
 	"log"
 	mrand "math/rand"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/internal/models"
+	"github.com/kangaroux/gomaggus/internal/packets"
 	"github.com/kangaroux/gomaggus/internal/srp"
 )
 
@@ -140,17 +140,13 @@ func (s *Server) handleLoginChallenge(c *Client, data []byte) error {
 	log.Println("Starting login challenge")
 
 	var err error
-	p := LoginChallengePacket{}
 
-	reader := bytes.NewReader(data)
-	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+	p := packets.AuthLoginChallenge{}
+	if err = p.Read(data); err != nil {
 		return err
 	}
-	usernameBytes := make([]byte, p.UsernameLength)
-	if _, err := reader.Read(usernameBytes); err != nil {
-		return err
-	}
-	c.username = strings.ToUpper(string(usernameBytes))
+	c.username = p.Username
+
 	log.Printf("client trying to login as '%s'\n", c.username)
 
 	c.account, err = s.accountsDb.Get(&models.AccountGetParams{Username: c.username})
@@ -222,10 +218,8 @@ func (s *Server) handleLoginProof(c *Client, data []byte) error {
 	authenticated := false
 
 	if c.account != nil {
-		p := LoginProofPacket{}
-
-		reader := bytes.NewReader(data)
-		if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+		p := packets.AuthLoginProof{}
+		if err := p.Read(data); err != nil {
 			return err
 		}
 
@@ -294,20 +288,13 @@ func (s *Server) handleReconnectChallenge(c *Client, data []byte) error {
 	log.Println("Starting reconnect challenge")
 
 	var err error
-	p := LoginChallengePacket{}
-
-	reader := bytes.NewReader(data)
-	if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+	p := packets.AuthLoginChallenge{}
+	if err = p.Read(data); err != nil {
 		return err
 	}
+	c.username = p.Username
 
-	usernameBytes := make([]byte, p.UsernameLength)
-	if _, err := reader.Read(usernameBytes); err != nil {
-		return err
-	}
-	c.username = strings.ToUpper(string(usernameBytes))
-
-	log.Printf("client trying to login as '%s'\n", c.username)
+	log.Printf("client trying to reconnect as '%s'\n", c.username)
 
 	c.account, err = s.accountsDb.Get(&models.AccountGetParams{Username: c.username})
 	if err != nil {
@@ -356,10 +343,9 @@ func (s *Server) handleReconnectProof(c *Client, data []byte) error {
 				return err
 			}
 			c.sessionKey = session.SessionKey()
-			p := ReconnectProofPacket{}
 
-			reader := bytes.NewReader(data)
-			if err := binary.Read(reader, binary.LittleEndian, &p); err != nil {
+			p := packets.ReconnectProof{}
+			if err := p.Read(data); err != nil {
 				return err
 			}
 
