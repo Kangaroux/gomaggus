@@ -316,7 +316,7 @@ const (
 // https://gtker.com/wow_messages/types/update-mask.html#version-335
 type FieldMask struct {
 	// Size is the number of uint32 blocks used for the field data.
-	Size uint8
+	Size int
 	// Offset is the bit number that is set to indicate this field is included.
 	Offset uint32
 }
@@ -387,7 +387,7 @@ var (
 	FieldMaskUnitPower5                            = FieldMask{Size: 1, Offset: 0x001D}
 	FieldMaskUnitPower6                            = FieldMask{Size: 1, Offset: 0x001E}
 	FieldMaskUnitPower7                            = FieldMask{Size: 1, Offset: 0x001F}
-	FieldMaskUnitMaxhealth                         = FieldMask{Size: 1, Offset: 0x0020}
+	FieldMaskUnitMaxHealth                         = FieldMask{Size: 1, Offset: 0x0020}
 	FieldMaskUnitMaxpower1                         = FieldMask{Size: 1, Offset: 0x0021}
 	FieldMaskUnitMaxpower2                         = FieldMask{Size: 1, Offset: 0x0022}
 	FieldMaskUnitMaxpower3                         = FieldMask{Size: 1, Offset: 0x0023}
@@ -398,7 +398,7 @@ var (
 	FieldMaskUnitPowerRegenFlatModifier            = FieldMask{Size: 7, Offset: 0x0028}
 	FieldMaskUnitPowerRegenInterruptedFlatModifier = FieldMask{Size: 7, Offset: 0x002F}
 	FieldMaskUnitLevel                             = FieldMask{Size: 1, Offset: 0x0036}
-	FieldMaskUnitFactiontemplate                   = FieldMask{Size: 1, Offset: 0x0037}
+	FieldMaskUnitFactionTemplate                   = FieldMask{Size: 1, Offset: 0x0037}
 	FieldMaskUnitVirtualItemSlotId                 = FieldMask{Size: 3, Offset: 0x0038}
 	FieldMaskUnitFlags                             = FieldMask{Size: 1, Offset: 0x003B}
 	FieldMaskUnitFlags2                            = FieldMask{Size: 1, Offset: 0x003C}
@@ -407,8 +407,8 @@ var (
 	FieldMaskUnitRangedattacktime                  = FieldMask{Size: 1, Offset: 0x0040}
 	FieldMaskUnitBoundingradius                    = FieldMask{Size: 1, Offset: 0x0041}
 	FieldMaskUnitCombatreach                       = FieldMask{Size: 1, Offset: 0x0042}
-	FieldMaskUnitDisplayid                         = FieldMask{Size: 1, Offset: 0x0043}
-	FieldMaskUnitNativedisplayid                   = FieldMask{Size: 1, Offset: 0x0044}
+	FieldMaskUnitDisplayId                         = FieldMask{Size: 1, Offset: 0x0043}
+	FieldMaskUnitNativeDisplayId                   = FieldMask{Size: 1, Offset: 0x0044}
 	FieldMaskUnitMountdisplayid                    = FieldMask{Size: 1, Offset: 0x0045}
 	FieldMaskUnitMindamage                         = FieldMask{Size: 1, Offset: 0x0046}
 	FieldMaskUnitMaxdamage                         = FieldMask{Size: 1, Offset: 0x0047}

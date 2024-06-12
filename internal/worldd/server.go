@@ -664,121 +664,79 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			// https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
 			inner = bytes.Buffer{}
+			inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
-			// example: https://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-emulator-servers/wow-emu-questions-requests/390468-smsg_update_object-documentation.html
-			inner.Write([]byte{
-				0x01, 0x00, 0x00, 0x00, //Block Count
+			// nested object start
+			inner.WriteByte(UpdateTypeCreateObject2) // update type: CREATE_OBJECT2
+			inner.Write(packGuid(uint64(char.Id)))   // packed guid
+			inner.WriteByte(ObjectTypePlayer)
 
-				//-----------------------------------------------------------
-				// Update Block #1
-				//-----------------------------------------------------------
-				0x03,                   // Update Type -> create new object
-				0x07, 0x01, 0x02, 0x03, // Packed GUID
-				0x04, // Object Type -> player
+			// movement block start
+			// inner.WriteByte()
+			binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
+			inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
+			inner.Write([]byte{0, 0, 0, 0})                              // timestamp
+			binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
+			binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
+			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
+			binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
+			inner.Write([]byte{0, 0, 0, 0})                              // fall time
 
-				//-----------------------------------------------------------
-				// Movement Update Block
-				//-----------------------------------------------------------
-				0x21, 0x00, // Update Flags -> Living | Self
-				0x00, 0x00, 0x00, 0x00, // Movement Flags
-				0x00, 0x00, // Extra Movement Flags
-				0x00, 0x00, 0x00, 0x00, // Fake Time Stamp
-				0xcd, 0xd7, 0x0b, 0xc6, // x
-				0x35, 0x7e, 0x04, 0xc3, // y
-				0xf9, 0x0f, 0xa7, 0x42, // z
-				0x00, 0x00, 0x00, 0x00, // o
-				0x00, 0x00, 0x00, 0x00, // Fall Time
+			binary.Write(&inner, binary.LittleEndian, float32(1))       // walk speed
+			binary.Write(&inner, binary.LittleEndian, float32(70))      // run speed
+			binary.Write(&inner, binary.LittleEndian, float32(4.5))     // reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // swim speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // swim reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // flight speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // flight reverse speed
+			binary.Write(&inner, binary.LittleEndian, float32(3.14159)) // turn speed
+			binary.Write(&inner, binary.LittleEndian, float32(0))       // pitch rate
+			// movement block end
 
-				0x00, 0x00, 0x80, 0x3f, // Walk Speed (1.0f)
-				0x00, 0x00, 0x8c, 0x42, // Run Speed (70.0f -> really fast ^^)
-				0x00, 0x00, 0x90, 0x40, // Run Back Speed (4.5f)
-				0x00, 0x00, 0x00, 0x00, // Swim Speed (swimming isn't enabled so we set this speed to 0)
-				0x00, 0x00, 0x00, 0x00, // Swim Back Speed (see Swim Speed)
-				0x00, 0x00, 0x00, 0x00, // Fly Speed (flying isn't enabled so we set this speed to 0)
-				0x00, 0x00, 0x00, 0x00, // Fly Back Speed (see Fly Speed)
-				0x00, 0x0f, 0x49, 0x40, // Turn Speed - how fast a character can turn around z axis (3.1415405f)
-				0x00, 0x00, 0x00, 0x00, // Pitch Rate (flying is disabled, so this is set to 0)
+			// field mask start
+			updateMask := NewUpdateMask()
+			valuesBuf := bytes.Buffer{}
 
-				//-----------------------------------------------------------
-				// Values Update Block
-				//-----------------------------------------------------------
-				0x2a, // Mask Size ((1326 + 31) / 32 = 42)
-				// Values Update Mask
-				0b00010111, 0x00, 0x80, 0x01, 0x01, 0x00, 0b11000000, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			updateMask.SetFieldMask(FieldMaskObjectGuid)
+			binary.Write(&valuesBuf, binary.LittleEndian, uint32(char.Id)) // low guid
+			binary.Write(&valuesBuf, binary.LittleEndian, uint32(0))       // high guid
 
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			updateMask.SetFieldMask(FieldMaskObjectType)
+			binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<ObjectTypeObject|1<<ObjectTypeUnit|1<<ObjectTypePlayer))
 
-				// Update Values:
-				0x01, 0x02, 0x03, 0x00, // OBJECT_FIELD_GUID Low GUID [Required]
-				0x00, 0x00, 0x00, 0x00, // OBJECT_FIELD_GUID High GUID [Required]
-				0x19, 0x00, 0x00, 0x00, // OBJECT_FIELD_TYPE -> unit | player | object
-				0x00, 0x00, 0x80, 0x3f, // OBJECT_FIELD_SCALE_X
-				0x01, 0x01, 0x01, 0x01, // UNIT_FIELD_BYTES_0 Race(Human), Class(Warrior), Gender(Female), PowerType(Rage)
-				0x3c, 0x00, 0x00, 0x00, // UNIT_FIELD_HEALTH
-				0x3c, 0x00, 0x00, 0x00, // UNIT_FIELD_MAXHEALTH
-				0x01, 0x00, 0x00, 0x00, // UNIT_FIELD_LEVEL
-				0x01, 0x00, 0x00, 0x00, // UNIT_FIELD_FACTIONTEMPLATE [Required]
-				0x0c, 0x4d, 0x00, 0x00, // UNIT_FIELD_DISPLAYID (Human Female = 19724) [Required]
-				0x0c, 0x4d, 0x00, 0x00, // UNIT_FIELD_NATIVEDISPLAYID (Human Female = 19724) [Required]
-			})
-			/*
-				inner.Write([]byte{1, 0, 0, 0}) // number of objects
+			updateMask.SetFieldMask(FieldMaskObjectScaleX)
+			valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
 
-				// nested object start
-				inner.WriteByte(UpdateTypeCreateObject2) // update type: CREATE_OBJECT2
-				inner.Write(packGuid(uint64(char.Id)))   // packed guid
-				inner.WriteByte(ObjectTypePlayer)
+			updateMask.SetFieldMask(FieldMaskUnitBytes0)
+			valuesBuf.WriteByte(char.Race)
+			valuesBuf.WriteByte(char.Class)
+			valuesBuf.WriteByte(char.Gender)
+			valuesBuf.WriteByte(getPowerTypeForClass(char.Class))
 
-				// movement block start
-				// inner.WriteByte()
-				binary.Write(&inner, binary.LittleEndian, UpdateFlagSelf|UpdateFlagLiving)
-				inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
-				inner.Write([]byte{0, 0, 0, 0})                              // timestamp
-				binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
-				binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
-				binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
-				binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
-				binary.Write(&inner, binary.LittleEndian, float32(1))        // walk speed
-				binary.Write(&inner, binary.LittleEndian, float32(70))       // run speed
-				binary.Write(&inner, binary.LittleEndian, float32(4.5))      // reverse speed
-				binary.Write(&inner, binary.LittleEndian, float32(0))        // swim speed
-				binary.Write(&inner, binary.LittleEndian, float32(0))        // swim reverse speed
-				binary.Write(&inner, binary.LittleEndian, float32(0))        // flight speed
-				binary.Write(&inner, binary.LittleEndian, float32(0))        // flight reverse speed
-				binary.Write(&inner, binary.LittleEndian, float32(3.14159))  // turn speed
-				binary.Write(&inner, binary.LittleEndian, float32(7))        // pitch rate
-				// movement block end
+			updateMask.SetFieldMask(FieldMaskUnitHealth)
+			valuesBuf.Write([]byte{100, 0, 0, 0})
 
-				// field mask start
-				inner.WriteByte(1) // only 1 uint32 mask is needed
-				mask := uint32(1<<FieldMaskObjectGuid.Offset |
-					1<<(FieldMaskObjectGuid.Offset+1) |
-					1<<FieldMaskObjectType.Offset |
-					1<<FieldMaskUnitBytes0.Offset |
-					1<<FieldMaskUnitHealth.Offset |
-					1<<FieldMaskUnitMaxhealth.Offset |
-					1<<FieldMaskUnitLevel.Offset)
-				binary.Write(&inner, binary.LittleEndian, mask)
-				binary.Write(&inner, binary.LittleEndian, uint32(0))       // high guid
-				binary.Write(&inner, binary.LittleEndian, uint32(char.Id)) // low guid
-				binary.Write(&inner, binary.LittleEndian, uint32(1<<ObjectTypeObject|1<<ObjectTypeUnit|1<<ObjectTypePlayer))
-				inner.WriteByte(char.Race)
-				inner.WriteByte(char.Class)
-				inner.WriteByte(char.Gender)
-				inner.WriteByte(getPowerTypeForClass(char.Class))
-				inner.Write([]byte{100, 0, 0, 0}) // health
-				inner.Write([]byte{100, 0, 0, 0}) // max health
-				inner.Write([]byte{1, 0, 0, 0})   // level
-				// field mask end
+			updateMask.SetFieldMask(FieldMaskUnitMaxHealth)
+			valuesBuf.Write([]byte{100, 0, 0, 0})
 
-			*/
+			updateMask.SetFieldMask(FieldMaskUnitLevel)
+			valuesBuf.Write([]byte{1, 0, 0, 0})
+
+			updateMask.SetFieldMask(FieldMaskUnitFactionTemplate)
+			valuesBuf.Write([]byte{char.Race, 0, 0, 0})
+
+			updateMask.SetFieldMask(FieldMaskUnitDisplayId)
+			valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
+
+			updateMask.SetFieldMask(FieldMaskUnitNativeDisplayId)
+			valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
+
+			mask := updateMask.Mask()
+			fmt.Printf("mask(%d): %x\n", len(mask), mask)
+			inner.WriteByte(byte(len(mask)))
+			binary.Write(&inner, binary.LittleEndian, mask)
+			inner.Write(valuesBuf.Bytes())
+			// field mask end
 
 			// nested object end
 
@@ -789,6 +747,8 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			}
 			resp.Write(c.crypto.Encrypt(respHeader))
 			resp.Write(inner.Bytes())
+
+			fmt.Printf("%x\n", resp.Bytes())
 
 			if _, err := c.conn.Write(resp.Bytes()); err != nil {
 				return err
@@ -920,7 +880,7 @@ func packGuid(val uint64) []byte {
 			result[0] |= 1 << i
 			// Add the byte to the result. The loop traverses the bytes from right-to-left but they
 			// are written to the result from left-to-right, which swaps it to little-endian.
-			result[n] = byte(val)
+			result[1] = byte(val)
 			n++
 		}
 		// Move to the next byte
@@ -928,4 +888,59 @@ func packGuid(val uint64) []byte {
 	}
 
 	return result[:n+1]
+}
+
+type UpdateMask struct {
+	largestBit int
+	mask       []uint32
+}
+
+func NewUpdateMask() *UpdateMask {
+	return &UpdateMask{mask: make([]uint32, 16)}
+}
+
+// Mask returns the smallest []uint32 to represent all of the mask bits that were set.
+func (m *UpdateMask) Mask() []uint32 {
+	largestBitIndex := m.largestBit / 32
+	return m.mask[:largestBitIndex+1]
+}
+
+// SetFieldMask sets all the bits necessary for the provided field mask.
+func (m *UpdateMask) SetFieldMask(fieldMask FieldMask) {
+	for i := 0; i < fieldMask.Size; i++ {
+		m.SetBit(int(fieldMask.Offset) + i)
+	}
+}
+
+// SetBit sets the nth bit in the update mask. The bit is zero-indexed with the first bit being zero.
+func (m *UpdateMask) SetBit(bit int) {
+	index := bit / 32
+	bitPos := bit % 32
+	m.resize(index)
+
+	if bit > m.largestBit {
+		m.largestBit = bit
+	}
+
+	m.mask[index] |= 1 << bitPos
+}
+
+// Resizes the mask to fit up to n uint32s.
+func (m *UpdateMask) resize(n int) {
+	if len(m.mask) > n {
+		return
+	}
+
+	// Grow the array exponentially
+	newSize := len(m.mask)
+	newSize *= newSize
+
+	// If it's still too small just use the desired size
+	if newSize < n {
+		newSize = n
+	}
+
+	oldMask := m.mask
+	m.mask = make([]uint32, newSize)
+	copy(m.mask, oldMask)
 }
