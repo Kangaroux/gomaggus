@@ -7,7 +7,7 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
-type authLoginChallengeFixed struct {
+type loginChallengeFixed struct {
 	Opcode         byte
 	Error          byte // unused
 	Size           uint16
@@ -22,14 +22,14 @@ type authLoginChallengeFixed struct {
 	UsernameLength uint8
 }
 
-type AuthLoginChallenge struct {
-	authLoginChallengeFixed
+type ClientLoginChallenge struct {
+	loginChallengeFixed
 	Username string
 }
 
-func (p *AuthLoginChallenge) Read(data []byte) error {
+func (p *ClientLoginChallenge) Read(data []byte) error {
 	reader := bytes.NewReader(data)
-	if err := binary.Read(reader, binary.LittleEndian, &p.authLoginChallengeFixed); err != nil {
+	if err := binary.Read(reader, binary.LittleEndian, &p.loginChallengeFixed); err != nil {
 		return err
 	}
 

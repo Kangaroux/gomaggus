@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/kangaroux/gomaggus/internal"
+	"github.com/kangaroux/gomaggus/internal/authd/packets"
 	"github.com/kangaroux/gomaggus/internal/models"
-	"github.com/kangaroux/gomaggus/internal/packets"
 	"github.com/kangaroux/gomaggus/internal/srp"
 )
 
@@ -21,7 +21,7 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 
 	var err error
 
-	p := packets.AuthLoginChallenge{}
+	p := packets.ClientLoginChallenge{}
 	if err = p.Read(data); err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func handleLoginProof(services *Services, c *Client, data []byte) error {
 	authenticated := false
 
 	if c.account != nil {
-		p := packets.AuthLoginProof{}
+		p := packets.ClientLoginProof{}
 		if err := p.Read(data); err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 	log.Println("Starting reconnect challenge")
 
 	var err error
-	p := packets.AuthLoginChallenge{}
+	p := packets.ClientLoginChallenge{}
 	if err = p.Read(data); err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 			}
 			c.sessionKey = session.SessionKey()
 
-			p := packets.ReconnectProof{}
+			p := packets.ClientReconnectProof{}
 			if err := p.Read(data); err != nil {
 				return err
 			}
