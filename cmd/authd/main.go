@@ -16,6 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := authd.NewServer(db, authd.DefaultPort)
+	server := authd.NewServer(db, authd.DefaultListenAddr)
 	server.Start()
 }

@@ -16,6 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := realmd.NewServer(db, realmd.DefaultPort)
+	server := realmd.NewServer(db, realmd.DefaultListenAddr)
 	server.Start()
 }

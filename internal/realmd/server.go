@@ -18,11 +18,11 @@ import (
 )
 
 const (
-	DefaultPort = 8085
+	DefaultListenAddr = ":8085"
 )
 
 type Server struct {
-	port int
+	listenAddr string
 
 	accountsDb models.AccountService
 	charsDb    models.CharacterService
@@ -30,9 +30,9 @@ type Server struct {
 	sessionsDb models.SessionService
 }
 
-func NewServer(db *sqlx.DB, port int) *Server {
+func NewServer(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
-		port:       port,
+		listenAddr: listenAddr,
 		accountsDb: models.NewDbAccountService(db),
 		charsDb:    models.NewDbCharacterervice(db),
 		realmsDb:   models.NewDbRealmService(db),
@@ -41,14 +41,14 @@ func NewServer(db *sqlx.DB, port int) *Server {
 }
 
 func (s *Server) Start() {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
+	listener, err := net.Listen("tcp4", s.listenAddr)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	defer listener.Close()
-	log.Printf("listening on port %d\n", s.port)
+	log.Printf("listening on %s\n", listener.Addr().String())
 
 	for {
 		conn, err := listener.Accept()
