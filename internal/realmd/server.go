@@ -74,12 +74,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
-	buf := make([]byte, 4096)
-
-	client := &Client{
-		conn:   conn,
-		crypto: NewWrathHeaderCrypto(nil /* TODO session key */),
-	}
+	client := &Client{conn: conn}
 	binary.BigEndian.PutUint32(client.serverSeed[:], mrand.Uint32())
 
 	// The server is the one who initiates the auth challenge here, unlike the login server where
@@ -89,6 +84,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		conn.Close()
 		return
 	}
+
+	buf := make([]byte, 4096)
 
 	for {
 		log.Println("waiting to read...")

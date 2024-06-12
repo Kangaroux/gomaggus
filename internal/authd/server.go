@@ -63,8 +63,16 @@ func (s *Server) Start() {
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
-		conn.Close()
+		if err := recover(); err != nil {
+			log.Printf("recovered from panic: %v", err)
+
+			if err := conn.Close(); err != nil {
+				log.Printf("error closing after recover: %v", err)
+			}
+		}
 	}()
+
+	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
 	client := &Client{
 		conn:          conn,
@@ -99,10 +107,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) handlePacket(c *Client, data []byte) error {
-	if len(data) == 0 {
-		return fmt.Errorf("handlePacket: packet is empty")
-	}
-
 	opcode := data[0]
 
 	switch c.state {
