@@ -35,6 +35,14 @@ type realm struct {
 }
 
 func RealmList(svc *authd.Service, c *authd.Client) error {
+	if c.State != authd.StateAuthenticated {
+		return &ErrWrongState{
+			Handler:  "RealmList",
+			Expected: authd.StateAuthenticated,
+			Actual:   c.State,
+		}
+	}
+
 	realmList, err := svc.Realms.List()
 	if err != nil {
 		return err

@@ -39,7 +39,7 @@ func (p *loginChallengeRequest) Read(data []byte) error {
 	}
 
 	if reader.Len() != 0 {
-		return &ErrPacketUnreadBytes{What: "LoginChallengePacket", Count: reader.Len()}
+		return &ErrPacketUnreadBytes{Handler: "LoginChallengePacket", UnreadCount: reader.Len()}
 	}
 
 	return nil
@@ -63,6 +63,14 @@ type loginChallengeResponse struct {
 }
 
 func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
+	if c.State != authd.StateAuthChallenge {
+		return &ErrWrongState{
+			Handler:  "LoginChallenge",
+			Expected: authd.StateAuthChallenge,
+			Actual:   c.State,
+		}
+	}
+
 	log.Println("Starting login challenge")
 
 	var err error

@@ -25,6 +25,14 @@ type reconnectChallengeResponse struct {
 }
 
 func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
+	if c.State != authd.StateAuthChallenge {
+		return &ErrWrongState{
+			Handler:  "RealmList",
+			Expected: authd.StateAuthChallenge,
+			Actual:   c.State,
+		}
+	}
+
 	log.Println("Starting reconnect challenge")
 
 	var err error

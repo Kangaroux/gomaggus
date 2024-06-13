@@ -106,30 +106,23 @@ func (s *Server) handleConnection(conn net.Conn) {
 func (s *Server) handlePacket(c *authd.Client, data []byte) error {
 	opcode := handler.Opcode(data[0])
 
-	switch c.State {
-	case authd.StateAuthChallenge:
-		if opcode == handler.OpLoginChallenge {
-			return handler.LoginChallenge(s.services, c, data)
-		} else if opcode == handler.OpReconnectChallenge {
-			return handler.ReconnectChallenge(s.services, c, data)
-		}
-	case authd.StateAuthProof:
-		if opcode == handler.OpLoginProof {
-			return handler.LoginProof(s.services, c, data)
-		}
-	case authd.StateReconnectProof:
-		if opcode == handler.OpReconnectProof {
-			return handler.ReconnectProof(s.services, c, data)
-		}
-	case authd.StateAuthenticated:
-		if opcode == handler.OpRealmList {
-			return handler.RealmList(s.services, c)
-		}
-	}
+	switch opcode {
+	case handler.OpLoginChallenge:
+		return handler.LoginChallenge(s.services, c, data)
 
-	return fmt.Errorf(
-		"handlePacket: opcode %d is not valid for current state (%d) or does not exist",
-		opcode,
-		c.State,
-	)
+	case handler.OpReconnectChallenge:
+		return handler.ReconnectChallenge(s.services, c, data)
+
+	case handler.OpLoginProof:
+		return handler.LoginProof(s.services, c, data)
+
+	case handler.OpReconnectProof:
+		return handler.ReconnectProof(s.services, c, data)
+
+	case handler.OpRealmList:
+		return handler.RealmList(s.services, c)
+
+	default:
+		return fmt.Errorf("handlePacket: unknown opcode %x", opcode)
+	}
 }

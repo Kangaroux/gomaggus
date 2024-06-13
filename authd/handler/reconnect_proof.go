@@ -35,6 +35,14 @@ type reconnectProofResponse struct {
 }
 
 func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
+	if c.State != authd.StateAuthProof {
+		return &ErrWrongState{
+			Handler:  "RealmList",
+			Expected: authd.StateAuthProof,
+			Actual:   c.State,
+		}
+	}
+
 	log.Println("Starting reconnect proof")
 
 	authenticated := false

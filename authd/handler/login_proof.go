@@ -44,6 +44,14 @@ type loginProofSuccess struct {
 }
 
 func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
+	if c.State != authd.StateAuthProof {
+		return &ErrWrongState{
+			Handler:  "LoginProof",
+			Expected: authd.StateAuthProof,
+			Actual:   c.State,
+		}
+	}
+
 	log.Println("Starting login proof")
 
 	var serverProof []byte
