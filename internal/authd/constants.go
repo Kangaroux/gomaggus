@@ -13,7 +13,7 @@ const (
 	WOW_FAIL_UNKNOWN_ACCOUNT byte = 4
 )
 
-type RealmFlag uint8
+type RealmFlag = uint8
 
 const (
 	REALMFLAG_NONE          RealmFlag = 0

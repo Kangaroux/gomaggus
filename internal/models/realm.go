@@ -14,7 +14,7 @@ type Realm struct {
 	Region RealmRegion
 }
 
-type RealmType uint8
+type RealmType = uint8
 
 const (
 	REALMTYPE_PVE   RealmType = 0
@@ -23,7 +23,7 @@ const (
 	REALMTYPE_RPPVP RealmType = 8
 )
 
-type RealmRegion uint8
+type RealmRegion = uint8
 
 const (
 	REALMREGION_DEV           RealmRegion = 1
