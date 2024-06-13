@@ -10,11 +10,14 @@ const (
 	SaltSize       = 32
 	VerifierSize   = 32
 	KeySize        = 32
+	LargePrimeSize = 32
 	SessionKeySize = 40
+
+	Generator = 7
 )
 
 var (
-	largeSafePrime = LargeSafePrime()
+	largeSafePrime = LargePrime()
 
 	xorHash = []byte{
 		0xDD, 0x7B, 0xB0, 0x3A, 0x38, 0xAC, 0x73, 0x11,
@@ -23,12 +26,12 @@ var (
 	}
 
 	n = BytesToInt(largeSafePrime)
-	g = big.NewInt(7)
+	g = big.NewInt(Generator)
 	k = big.NewInt(3)
 )
 
-// LargeSafePrime returns a little endian byte array.
-func LargeSafePrime() []byte {
+// LargePrime returns a little endian byte array.
+func LargePrime() []byte {
 	return internal.Reverse([]byte{
 		0x89, 0x4B, 0x64, 0x5E, 0x89, 0xE1, 0x53, 0x5B,
 		0xBD, 0xAD, 0x5B, 0x8B, 0x29, 0x06, 0x50, 0x53,

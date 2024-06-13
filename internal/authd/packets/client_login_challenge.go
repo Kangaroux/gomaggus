@@ -7,9 +7,10 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
+// FIELD ORDER MATTERS, DO NOT REORDER
 type loginChallengeFixed struct {
 	Opcode         byte
-	Error          byte // unused
+	Error          byte
 	Size           uint16
 	GameName       [4]byte
 	Version        [3]byte

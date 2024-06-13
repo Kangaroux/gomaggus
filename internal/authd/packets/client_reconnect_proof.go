@@ -6,12 +6,13 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_client.html
+// FIELD ORDER MATTERS, DO NOT REORDER
 type ClientReconnectProof struct {
-	Opcode         byte // 0x3
+	Opcode         byte
 	ProofData      [16]byte
 	ClientProof    [20]byte
-	ClientChecksum [20]byte // unused
-	KeyCount       byte     // unused
+	ClientChecksum [20]byte
+	KeyCount       byte
 }
 
 func (p *ClientReconnectProof) Read(data []byte) error {
