@@ -1,6 +1,6 @@
 package authd
 
-type Opcode = byte
+type Opcode byte
 
 const (
 	OpLoginChallenge     Opcode = 0x0
@@ -10,14 +10,14 @@ const (
 	OpRealmList          Opcode = 0x10
 )
 
-type ErrorCode = byte
+type ErrorCode byte
 
 const (
 	CodeSuccess            ErrorCode = 0x0
 	CodeFailUnknownAccount ErrorCode = 0x4
 )
 
-type RealmFlag = uint8
+type RealmFlag uint8
 
 const (
 	RealmFlagNone         RealmFlag = 0x0

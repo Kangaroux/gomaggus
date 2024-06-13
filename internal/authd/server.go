@@ -108,7 +108,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) handlePacket(c *Client, data []byte) error {
-	opcode := data[0]
+	opcode := Opcode(data[0])
 
 	switch c.state {
 	case StateAuthChallenge:
