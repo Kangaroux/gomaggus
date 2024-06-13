@@ -6,17 +6,16 @@ import (
 	"encoding/binary"
 	"log"
 	mrand "math/rand"
-	"strings"
 
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
-// FIELD ORDER MATTERS, DO NOT REORDER
-type loginChallengeFixed struct {
+type loginChallengeRequest struct {
 	Opcode         Opcode // OpLoginChallenge
 	Error          RespCode
 	Size           uint16
@@ -29,21 +28,13 @@ type loginChallengeFixed struct {
 	TimezoneBias   uint32
 	IP             [4]byte
 	UsernameLength uint8
+	Username       string `binary:"zstring"`
 }
 
-type ClientLoginChallenge struct {
-	loginChallengeFixed
-	Username string
-}
-
-func (p *ClientLoginChallenge) Read(data []byte) error {
+func (p *loginChallengeRequest) Read(data []byte) error {
 	reader := bytes.NewReader(data)
-	if err := binary.Read(reader, binary.LittleEndian, &p.loginChallengeFixed); err != nil {
-		return err
-	}
 
-	usernameBytes := make([]byte, p.UsernameLength)
-	if _, err := reader.Read(usernameBytes); err != nil {
+	if _, err := binarystruct.Read(reader, binarystruct.LittleEndian, p); err != nil {
 		return err
 	}
 
@@ -51,13 +42,11 @@ func (p *ClientLoginChallenge) Read(data []byte) error {
 		return &ErrPacketUnreadBytes{What: "LoginChallengePacket", Count: reader.Len()}
 	}
 
-	p.Username = strings.ToUpper(string(usernameBytes))
 	return nil
 }
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
-// FIELD ORDER MATTERS, DO NOT REORDER
-type ServerLoginChallenge struct {
+type loginChallengeResponse struct {
 	Opcode          Opcode
 	ProtocolVersion uint8
 	ErrorCode       RespCode
@@ -78,7 +67,7 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	var err error
 
-	p := ClientLoginChallenge{}
+	p := loginChallengeRequest{}
 	if err = p.Read(data); err != nil {
 		return err
 	}
@@ -121,7 +110,7 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 		salt = c.Account.Salt()
 	}
 
-	resp := ServerLoginChallenge{
+	resp := loginChallengeResponse{
 		Opcode: OpLoginChallenge,
 
 		// Protocol version is always zero for server responses

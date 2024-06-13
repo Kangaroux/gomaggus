@@ -10,19 +10,19 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/cmd_realm_list_server.html#protocol-version-8
-type ServerRealmListHeader struct {
+type realmListHeader struct {
 	Opcode Opcode // OpRealmList
 	Size   uint16
 }
 
-type ServerRealmListBody struct {
+type realmListBody struct {
 	_         [4]byte // header padding
 	NumRealms uint16
-	Realms    []ServerRealm `binary:"[NumRealms]Any"`
-	_         [2]byte       // footer padding
+	Realms    []realm `binary:"[NumRealms]Any"`
+	_         [2]byte // footer padding
 }
 
-type ServerRealm struct {
+type realm struct {
 	Type          model.RealmType
 	Locked        bool
 	Flags         model.RealmFlag
@@ -40,13 +40,13 @@ func RealmList(svc *authd.Service, c *authd.Client) error {
 		return err
 	}
 
-	respBody := ServerRealmListBody{
+	respBody := realmListBody{
 		NumRealms: uint16(len(realmList)),
-		Realms:    make([]ServerRealm, len(realmList)),
+		Realms:    make([]realm, len(realmList)),
 	}
 
 	for i, r := range realmList {
-		respBody.Realms[i] = ServerRealm{
+		respBody.Realms[i] = realm{
 			Type:          r.Type,
 			Locked:        false,
 			Flags:         model.RealmFlagNone,
@@ -64,7 +64,7 @@ func RealmList(svc *authd.Service, c *authd.Client) error {
 		return err
 	}
 
-	respHeader := ServerRealmListHeader{
+	respHeader := realmListHeader{
 		Opcode: OpRealmList,
 		Size:   uint16(len(bodyBytes)),
 	}

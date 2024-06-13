@@ -14,8 +14,7 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8
-// FIELD ORDER MATTERS, DO NOT REORDER
-type ClientLoginProof struct {
+type loginProofRequest struct {
 	Opcode           Opcode // OpLoginProof
 	ClientPublicKey  [srp.KeySize]byte
 	ClientProof      [srp.ProofSize]byte
@@ -23,19 +22,19 @@ type ClientLoginProof struct {
 	NumTelemetryKeys uint8
 }
 
-func (p *ClientLoginProof) Read(data []byte) error {
+func (p *loginProofRequest) Read(data []byte) error {
 	reader := bytes.NewReader(data)
 	return binary.Read(reader, binary.LittleEndian, p)
 }
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
-type ServerLoginProofFail struct {
+type loginProofFailed struct {
 	Opcode    Opcode // OpLoginProof
 	ErrorCode RespCode
 	_         [2]byte // padding
 }
 
-type ServerLoginProofSuccess struct {
+type loginProofSuccess struct {
 	Opcode           Opcode // OpLoginProof
 	ErrorCode        RespCode
 	Proof            [srp.ProofSize]byte
@@ -51,7 +50,7 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	authenticated := false
 
 	if c.Account != nil {
-		p := ClientLoginProof{}
+		p := loginProofRequest{}
 		if err := p.Read(data); err != nil {
 			return err
 		}
@@ -80,13 +79,13 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	respBuf := bytes.Buffer{}
 
 	if !authenticated {
-		resp := ServerLoginProofFail{
+		resp := loginProofFailed{
 			Opcode:    OpLoginProof,
 			ErrorCode: CodeFailUnknownAccount,
 		}
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	} else {
-		resp := ServerLoginProofSuccess{
+		resp := loginProofSuccess{
 			Opcode:           OpLoginProof,
 			ErrorCode:        CodeSuccess,
 			AccountFlags:     0,

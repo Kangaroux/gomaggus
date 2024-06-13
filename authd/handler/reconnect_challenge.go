@@ -14,8 +14,10 @@ const (
 	ReconnectDataLen = 16
 )
 
+type reconnectChallengeRequest = loginChallengeRequest
+
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
-type ServerReconnectChallenge struct {
+type reconnectChallengeResponse struct {
 	Opcode        Opcode // OpReconnectChallenge
 	ErrorCode     RespCode
 	ReconnectData [ReconnectDataLen]byte
@@ -26,7 +28,7 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 	log.Println("Starting reconnect challenge")
 
 	var err error
-	p := ClientLoginChallenge{}
+	p := reconnectChallengeRequest{}
 	if err = p.Read(data); err != nil {
 		return err
 	}
@@ -44,7 +46,7 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 		return err
 	}
 
-	resp := ServerReconnectChallenge{
+	resp := reconnectChallengeResponse{
 		Opcode: OpReconnectChallenge,
 
 		// Always return success to prevent a bad actor from mining usernames.

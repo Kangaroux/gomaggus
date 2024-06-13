@@ -14,8 +14,7 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_client.html
-// FIELD ORDER MATTERS, DO NOT REORDER
-type ClientReconnectProof struct {
+type reconnectProofRequest struct {
 	Opcode         Opcode // OpReconnectProof
 	ProofData      [srp.ProofDataSize]byte
 	ClientProof    [srp.ProofSize]byte
@@ -23,13 +22,13 @@ type ClientReconnectProof struct {
 	KeyCount       uint8
 }
 
-func (p *ClientReconnectProof) Read(data []byte) error {
+func (p *reconnectProofRequest) Read(data []byte) error {
 	reader := bytes.NewReader(data)
 	return binary.Read(reader, binary.LittleEndian, p)
 }
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_server.html#protocol-version-8
-type ServerReconnectProof struct {
+type reconnectProofResponse struct {
 	Opcode    Opcode
 	ErrorCode RespCode
 	_         [2]byte // padding
@@ -53,7 +52,7 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 			}
 			c.SessionKey = session.SessionKey()
 
-			p := ClientReconnectProof{}
+			p := reconnectProofRequest{}
 			if err := p.Read(data); err != nil {
 				return err
 			}
@@ -63,7 +62,7 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 		}
 	}
 
-	resp := ServerReconnectProof{Opcode: OpReconnectProof}
+	resp := reconnectProofResponse{Opcode: OpReconnectProof}
 
 	if !authenticated {
 		resp.ErrorCode = CodeFailUnknownAccount
