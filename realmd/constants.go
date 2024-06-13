@@ -26,7 +26,7 @@ const (
 	OpClientAuthSession              ClientOpcode = 0x1ED
 	OpClientRealmSplit               ClientOpcode = 0x38C
 	OpClientPing                     ClientOpcode = 0x1DC
-	OpClientCharEnum                 ClientOpcode = 0x37
+	OpClientCharList                 ClientOpcode = 0x37
 	OpClientCharCreate               ClientOpcode = 0x36
 	OpClientCharDelete               ClientOpcode = 0x38
 	OpClientPlayerLogin              ClientOpcode = 0x3D
