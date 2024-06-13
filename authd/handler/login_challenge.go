@@ -16,19 +16,19 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
 type loginChallengeRequest struct {
-	Opcode         Opcode // OpLoginChallenge
-	Error          RespCode
-	Size           uint16
-	GameName       [4]byte
-	Version        [3]byte
-	Build          uint16
-	OSArch         [4]byte
-	OS             [4]byte
-	Locale         [4]byte
-	TimezoneBias   uint32
-	IP             [4]byte
-	UsernameLength uint8
-	Username       string `binary:"zstring"`
+	Opcode          Opcode // OpLoginChallenge
+	ProtocolVersion uint8
+	Size            uint16
+	GameName        [4]byte
+	Version         [3]byte
+	Build           uint16
+	OSArch          [4]byte
+	OS              [4]byte
+	Locale          [4]byte
+	TimezoneBias    uint32
+	IP              [4]byte
+	UsernameLength  uint8
+	Username        string `binary:"string(UsernameLength)"`
 }
 
 func (p *loginChallengeRequest) Read(data []byte) error {
