@@ -123,7 +123,7 @@ func (s *Server) sendAuthChallenge(c *Client) error {
 	body.Write(seed) // seed, unused. This differs from the 4 byte server seed
 
 	resp := &bytes.Buffer{}
-	respHeader, err := makeServerHeader(OP_SRV_AUTH_CHALLENGE, uint32(body.Len()))
+	respHeader, err := makeServerHeader(OpServerAuthChallenge, uint32(body.Len()))
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func parseHeader(c *Client, data []byte) (*Header, error) {
 
 	h := &Header{
 		Size:   binary.BigEndian.Uint16(headerData[:2]),
-		Opcode: binary.LittleEndian.Uint32(headerData[2:6]),
+		Opcode: ClientOpcode(binary.LittleEndian.Uint32(headerData[2:6])),
 	}
 
 	return h, nil
@@ -192,7 +192,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	}
 
 	switch header.Opcode {
-	case OP_CL_AUTH_SESSION:
+	case OpClientAuthSession:
 		log.Println("starting auth session")
 
 		r := bytes.NewReader(data[6:])
@@ -246,15 +246,15 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		inner := bytes.Buffer{}
-		inner.WriteByte(RespCodeAuthOk)
-		inner.Write([]byte{0, 0, 0, 0}) // billing time
-		inner.WriteByte(0x0)            // billing flags
-		inner.Write([]byte{0, 0, 0, 0}) // billing rested
-		inner.WriteByte(ExpansionWrath) // exp
+		inner.WriteByte(byte(RespCodeAuthOk))
+		inner.Write([]byte{0, 0, 0, 0})       // billing time
+		inner.WriteByte(0x0)                  // billing flags
+		inner.Write([]byte{0, 0, 0, 0})       // billing rested
+		inner.WriteByte(byte(ExpansionWrath)) // exp
 
 		// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_AUTH_RESPONSE, uint32(inner.Len()))
+		respHeader, err := makeServerHeader(OpServerAuthResponse, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -268,7 +268,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		log.Println("sent auth response")
 
 		return nil
-	case OP_CL_PING:
+	case OpClientPing:
 		log.Println("starting ping")
 
 		r := bytes.NewReader(data[6:])
@@ -281,7 +281,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_PONG, 4)
+		respHeader, err := makeServerHeader(OpServerPong, 4)
 		if err != nil {
 			return err
 		}
@@ -296,7 +296,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
-	case OP_CL_READY_FOR_ACCOUNT_DATA_TIMES:
+	case OpClientReadyForAccountDataTimes:
 		log.Println("starting account data times")
 
 		inner := bytes.Buffer{}
@@ -309,7 +309,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_ACCOUNT_DATA_TIMES, uint32(inner.Len()))
+		respHeader, err := makeServerHeader(OpServerAccountDataTimes, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -324,7 +324,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
-	case OP_CL_CHAR_ENUM:
+	case OpClientCharEnum:
 		log.Println("starting character list")
 
 		accountChars, err := s.charsDb.List(&models.CharacterListParams{
@@ -381,7 +381,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_CHAR_ENUM, uint32(inner.Len()))
+		respHeader, err := makeServerHeader(OpServerCharEnum, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -396,7 +396,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
-	case OP_CL_REALM_SPLIT:
+	case OpClientRealmSplit:
 		log.Println("starting realm split")
 
 		r := bytes.NewReader(data[6:])
@@ -410,7 +410,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		inner.WriteString("01/01/01\x00") // send a bogus date (NUL-terminated)
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_REALM_SPLIT, uint32(inner.Len()))
+		respHeader, err := makeServerHeader(OpServerRealmSplit, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -425,7 +425,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
-	case OP_CL_CHAR_CREATE:
+	case OpClientCharCreate:
 		log.Println("starting character create")
 
 		// TODO: check if account is full
@@ -461,9 +461,9 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 				Name:       charName,
 				AccountId:  c.account.Id,
 				RealmId:    c.realm.Id,
-				Race:       p.Race,
-				Class:      p.Class,
-				Gender:     p.Gender,
+				Race:       p.Race,   // TODO
+				Class:      p.Class,  // TODO
+				Gender:     p.Gender, // TODO
 				SkinColor:  p.SkinColor,
 				Face:       p.Face,
 				HairStyle:  p.HairStyle,
@@ -478,16 +478,16 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_CHAR_CREATE, 1)
+		respHeader, err := makeServerHeader(OpServerCharCreate, 1)
 		if err != nil {
 			return err
 		}
 		resp.Write(c.crypto.Encrypt(respHeader))
 
 		if existing != nil {
-			resp.WriteByte(RespCodeCharCreateNameInUse)
+			resp.WriteByte(byte(RespCodeCharCreateNameInUse))
 		} else {
-			resp.WriteByte(RespCodeCharCreateSuccess)
+			resp.WriteByte(byte(RespCodeCharCreateSuccess))
 		}
 
 		if _, err := c.conn.Write(resp.Bytes()); err != nil {
@@ -498,7 +498,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
-	case OP_CL_CHAR_DELETE:
+	case OpClientCharDelete:
 		log.Println("start character delete")
 
 		r := bytes.NewReader(data[6:])
@@ -513,19 +513,19 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		}
 
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OP_SRV_CHAR_DELETE, 1)
+		respHeader, err := makeServerHeader(OpServerCharDelete, 1)
 		if err != nil {
 			return err
 		}
 		resp.Write(c.crypto.Encrypt(respHeader))
 
 		if char == nil || char.AccountId != c.account.Id || char.RealmId != c.realm.Id {
-			resp.WriteByte(RespCodeCharDeleteFailed)
+			resp.WriteByte(byte(RespCodeCharDeleteFailed))
 		} else {
 			if _, err := s.charsDb.Delete(char.Id); err != nil {
 				return err
 			}
-			resp.WriteByte(RespCodeCharDeleteSuccess)
+			resp.WriteByte(byte(RespCodeCharDeleteSuccess))
 		}
 
 		if _, err := c.conn.Write(resp.Bytes()); err != nil {
@@ -536,7 +536,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		return nil
 
-	case OP_CL_PLAYER_LOGIN:
+	case OpClientPlayerLogin:
 		log.Println("start character login")
 
 		r := bytes.NewReader(data[6:])
@@ -555,12 +555,12 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 		if !ok {
 			// https: gtker.com/wow_messages/docs/smsg_character_login_failed.html#client-version-335
-			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_FAILED, 1)
+			respHeader, err := makeServerHeader(OpServerCharLoginFailed, 1)
 			if err != nil {
 				return err
 			}
 			resp.Write(c.crypto.Encrypt(respHeader))
-			resp.WriteByte(RespCodeCharLoginFailed)
+			resp.WriteByte(byte(RespCodeCharLoginFailed))
 		} else {
 			// https://gtker.com/wow_messages/docs/smsg_login_verify_world.html
 			inner := bytes.Buffer{}
@@ -570,7 +570,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
 			binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
 
-			respHeader, err := makeServerHeader(OP_SRV_CHAR_LOGIN_VERIFY_WORLD, uint32(inner.Len()))
+			respHeader, err := makeServerHeader(OpServerCharLoginVerifyWorld, uint32(inner.Len()))
 			if err != nil {
 				return err
 			}
@@ -587,7 +587,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 		if ok {
 			// https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
 			resp := bytes.Buffer{}
-			respHeader, err := makeServerHeader(OP_SRV_TUTORIAL_FLAGS, 32)
+			respHeader, err := makeServerHeader(OpServerTutorialFlags, 32)
 			if err != nil {
 				return err
 			}
@@ -606,7 +606,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			inner.WriteByte(0) // voip enabled
 
 			resp = bytes.Buffer{}
-			respHeader, err = makeServerHeader(OP_SRV_SYSTEM_FEATURES, uint32(inner.Len()))
+			respHeader, err = makeServerHeader(OpServerSystemFeatures, uint32(inner.Len()))
 			if err != nil {
 				return err
 			}
@@ -628,7 +628,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			inner.Write([]byte{12, 0, 0, 0})                             // area: elwynn forest
 
 			resp = bytes.Buffer{}
-			respHeader, err = makeServerHeader(OP_SRV_HEARTH_LOCATION, uint32(inner.Len()))
+			respHeader, err = makeServerHeader(OpServerHearthLocation, uint32(inner.Len()))
 			if err != nil {
 				return err
 			}
@@ -664,9 +664,9 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
 			// nested object start
-			inner.WriteByte(UpdateTypeCreateObject2) // update type: CREATE_OBJECT2
-			inner.Write(packGuid(uint64(char.Id)))   // packed guid
-			inner.WriteByte(ObjectTypePlayer)
+			inner.WriteByte(byte(UpdateTypeCreateObject2)) // update type: CREATE_OBJECT2
+			inner.Write(packGuid(uint64(char.Id)))         // packed guid
+			inner.WriteByte(byte(ObjectTypePlayer))
 
 			// movement block start
 			// inner.WriteByte()
@@ -694,42 +694,51 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			updateMask := NewUpdateMask()
 			valuesBuf := bytes.Buffer{}
 
+			// Without this, client gets stuck on loading screen and floods server with 0x2CE opcode
 			updateMask.SetFieldMask(FieldMaskObjectGuid)
 			binary.Write(&valuesBuf, binary.LittleEndian, uint32(char.Id)) // low guid
 			binary.Write(&valuesBuf, binary.LittleEndian, uint32(0))       // high guid
 
-			updateMask.SetFieldMask(FieldMaskObjectType)
-			binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<ObjectTypeObject|1<<ObjectTypeUnit|1<<ObjectTypePlayer))
+			// // Character seems to load fine without this
+			// updateMask.SetFieldMask(FieldMaskObjectType)
+			// binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<ObjectTypeObject|1<<ObjectTypeUnit|1<<ObjectTypePlayer))
 
-			updateMask.SetFieldMask(FieldMaskObjectScaleX)
-			valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
+			// // Without this, character model scale is zero and camera starts in first person
+			// updateMask.SetFieldMask(FieldMaskObjectScaleX)
+			// valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
 
-			updateMask.SetFieldMask(FieldMaskUnitBytes0)
-			valuesBuf.WriteByte(char.Race)
-			valuesBuf.WriteByte(char.Class)
-			valuesBuf.WriteByte(char.Gender)
-			valuesBuf.WriteByte(getPowerTypeForClass(char.Class))
+			// // Without this, talent screen is blank
+			// updateMask.SetFieldMask(FieldMaskUnitBytes0)
+			// valuesBuf.WriteByte(char.Race)
+			// valuesBuf.WriteByte(char.Class)
+			// valuesBuf.WriteByte(char.Gender)
+			// valuesBuf.WriteByte(getPowerTypeForClass(char.Class))
 
-			updateMask.SetFieldMask(FieldMaskUnitHealth)
-			valuesBuf.Write([]byte{100, 0, 0, 0})
+			// // Without this, character spawns in as a corpse
+			// updateMask.SetFieldMask(FieldMaskUnitHealth)
+			// valuesBuf.Write([]byte{100, 0, 0, 0})
 
-			updateMask.SetFieldMask(FieldMaskUnitMaxHealth)
-			valuesBuf.Write([]byte{100, 0, 0, 0})
+			// // Without this, UI doesn't show max health
+			// updateMask.SetFieldMask(FieldMaskUnitMaxHealth)
+			// valuesBuf.Write([]byte{100, 0, 0, 0})
 
-			updateMask.SetFieldMask(FieldMaskUnitLevel)
-			valuesBuf.Write([]byte{1, 0, 0, 0})
+			// // Without this, character level appears as 0
+			// updateMask.SetFieldMask(FieldMaskUnitLevel)
+			// valuesBuf.Write([]byte{10, 0, 0, 0})
 
+			// Without this, client segfaults
 			updateMask.SetFieldMask(FieldMaskUnitFactionTemplate)
 			valuesBuf.Write([]byte{char.Race, 0, 0, 0})
 
+			// Without this, client segfaults
 			updateMask.SetFieldMask(FieldMaskUnitDisplayId)
 			valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
 
+			// Without this, client segfaults
 			updateMask.SetFieldMask(FieldMaskUnitNativeDisplayId)
 			valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
 
 			mask := updateMask.Mask()
-			fmt.Printf("mask(%d): %x\n", len(mask), mask)
 			inner.WriteByte(byte(len(mask)))
 			binary.Write(&inner, binary.LittleEndian, mask)
 			inner.Write(valuesBuf.Bytes())
@@ -738,13 +747,14 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			// nested object end
 
 			resp = bytes.Buffer{}
-			respHeader, err = makeServerHeader(OP_SRV_UPDATE_OBJECT, uint32(inner.Len()))
+			respHeader, err = makeServerHeader(OpServerUpdateObject, uint32(inner.Len()))
 			if err != nil {
 				return err
 			}
 			resp.Write(c.crypto.Encrypt(respHeader))
 			resp.Write(inner.Bytes())
 
+			fmt.Printf("%x\n", respHeader)
 			fmt.Printf("%x\n", resp.Bytes())
 
 			if _, err := c.conn.Write(resp.Bytes()); err != nil {
@@ -812,7 +822,7 @@ func (s *Server) authenticateClient(c *Client, p *AuthSessionPacket) (bool, erro
 	return true, nil
 }
 
-func makeServerHeader(opcode uint16, size uint32) ([]byte, error) {
+func makeServerHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	// Include the opcode in the size
 	size += 2
 

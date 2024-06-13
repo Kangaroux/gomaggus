@@ -1,40 +1,39 @@
 package realmd
 
-// Opcodes sent by the server
+type ServerOpcode uint16
+
 const (
-	OP_SRV_AUTH_CHALLENGE          uint16 = 0x1EC
-	OP_SRV_AUTH_RESPONSE           uint16 = 0x1EE
-	OP_SRV_PONG                    uint16 = 0x1DD
-	OP_SRV_ACCOUNT_DATA_TIMES      uint16 = 0x209
-	OP_SRV_CHAR_ENUM               uint16 = 0x3B
-	OP_SRV_REALM_SPLIT             uint16 = 0x38B
-	OP_SRV_CHAR_CREATE             uint16 = 0x3A
-	OP_SRV_CHAR_DELETE             uint16 = 0x3C
-	OP_SRV_CHAR_LOGIN_FAILED       uint16 = 0x41
-	OP_SRV_CHAR_LOGIN_VERIFY_WORLD uint16 = 0x236
-	OP_SRV_UPDATE_OBJECT           uint16 = 0xA9
-	OP_SRV_TUTORIAL_FLAGS          uint16 = 0xFD
-	OP_SRV_SYSTEM_FEATURES         uint16 = 0x3C9
-	OP_SRV_HEARTH_LOCATION         uint16 = 0x155 // SMSG_BINDPOINTUPDATE
-	OP_SRV_PLAY_CINEMATIC          uint16 = 0xFA  // SMSG_TRIGGER_CINEMATIC
+	OpServerAuthChallenge        ServerOpcode = 0x1EC
+	OpServerAuthResponse         ServerOpcode = 0x1EE
+	OpServerPong                 ServerOpcode = 0x1DD
+	OpServerAccountDataTimes     ServerOpcode = 0x209
+	OpServerCharEnum             ServerOpcode = 0x3B
+	OpServerRealmSplit           ServerOpcode = 0x38B
+	OpServerCharCreate           ServerOpcode = 0x3A
+	OpServerCharDelete           ServerOpcode = 0x3C
+	OpServerCharLoginFailed      ServerOpcode = 0x41
+	OpServerCharLoginVerifyWorld ServerOpcode = 0x236
+	OpServerUpdateObject         ServerOpcode = 0xA9
+	OpServerTutorialFlags        ServerOpcode = 0xFD
+	OpServerSystemFeatures       ServerOpcode = 0x3C9
+	OpServerHearthLocation       ServerOpcode = 0x155 // SMSG_BINDPOINTUPDATE
+	OpServerPlayCinematic        ServerOpcode = 0xFA  // SMSG_TRIGGER_CINEMATIC
 )
 
-// Opcodes sent by the client
-const (
-	OP_CL_AUTH_SESSION uint32 = 0x1ED
-	OP_CL_REALM_SPLIT  uint32 = 0x38C
-	OP_CL_PING         uint32 = 0x1DC
-	OP_CL_CHAR_ENUM    uint32 = 0x37
-	OP_CL_CHAR_CREATE  uint32 = 0x36
-	OP_CL_CHAR_DELETE  uint32 = 0x38
-	OP_CL_PLAYER_LOGIN uint32 = 0x3D
+type ClientOpcode uint32
 
-	// Client sent after receiving our OP_SRV_AUTH_RESPONSE. The packet is empty besides the header.
-	// Immediately after the client sends OP_CL_CHAR_ENUM.
-	OP_CL_READY_FOR_ACCOUNT_DATA_TIMES uint32 = 0x4FF
+const (
+	OpClientAuthSession              ClientOpcode = 0x1ED
+	OpClientRealmSplit               ClientOpcode = 0x38C
+	OpClientPing                     ClientOpcode = 0x1DC
+	OpClientCharEnum                 ClientOpcode = 0x37
+	OpClientCharCreate               ClientOpcode = 0x36
+	OpClientCharDelete               ClientOpcode = 0x38
+	OpClientPlayerLogin              ClientOpcode = 0x3D
+	OpClientReadyForAccountDataTimes ClientOpcode = 0x4FF
 )
 
-type ResponseCode = byte
+type ResponseCode byte
 
 const (
 	RespCodeResponseSuccess                                ResponseCode = 0x00
@@ -143,7 +142,7 @@ const (
 	RespCodeCharNameDeclensionDoesntMatchBaseName          ResponseCode = 0x67
 )
 
-type Expansion = byte
+type Expansion byte
 
 const (
 	ExpansionVanilla Expansion = 0x0
@@ -151,7 +150,7 @@ const (
 	ExpansionWrath   Expansion = 0x2
 )
 
-type RealmSplitState = uint32
+type RealmSplitState uint32
 
 const (
 	SplitNormal    = 0
@@ -159,7 +158,7 @@ const (
 	SplitPending   = 2
 )
 
-type PowerType = byte
+type PowerType byte
 
 const (
 	PowerTypeMana      PowerType = 0
@@ -169,7 +168,7 @@ const (
 	PowerTypeHappiness PowerType = 4
 )
 
-type Race = byte
+type Race byte
 
 const (
 	RaceHuman             Race = 1
@@ -195,7 +194,7 @@ const (
 	RaceIceTroll          Race = 21
 )
 
-type Class = byte
+type Class byte
 
 const (
 	ClassWarrior Class = 1
@@ -210,7 +209,7 @@ const (
 	ClassDruid   Class = 11
 )
 
-type Gender = byte
+type Gender byte
 
 const (
 	GenderMale   Gender = 0
@@ -218,7 +217,7 @@ const (
 	GenderNone   Gender = 2 // used by pets?
 )
 
-type ObjectType = byte
+type ObjectType byte
 
 const (
 	ObjectTypeObject        ObjectType = 0
@@ -231,7 +230,7 @@ const (
 	ObjectTypeCorpse        ObjectType = 7
 )
 
-type UpdateType = byte
+type UpdateType byte
 
 const (
 	UpdateTypePartial           UpdateType = 0
@@ -243,7 +242,7 @@ const (
 )
 
 // https://gtker.com/wow_messages/docs/updateflag.html#client-version-335
-type UpdateFlag = uint16
+type UpdateFlag uint16
 
 const (
 	UpdateFlagNone               UpdateFlag = 0x0000
@@ -260,7 +259,7 @@ const (
 )
 
 // This is encoded as 48 bits
-type MovementFlag = uint64
+type MovementFlag uint64
 
 const (
 	MovementFlagNone                 MovementFlag = 0x00000000

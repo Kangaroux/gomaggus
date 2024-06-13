@@ -2,7 +2,7 @@ package realmd
 
 type Header struct {
 	Size   uint16
-	Opcode uint32
+	Opcode ClientOpcode
 }
 
 // https://gtker.com/wow_messages/docs/cmsg_auth_session.html#client-version-335
