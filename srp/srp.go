@@ -4,8 +4,6 @@ import (
 	"crypto/sha1"
 	"math/big"
 	"strings"
-
-	"github.com/kangaroux/gomaggus/internal"
 )
 
 func CalculateX(username, password string, salt []byte) []byte {
@@ -70,49 +68,4 @@ func CalculateServerSessionKey(clientPublicKey, serverPublicKey, serverPrivateKe
 	u := CalculateU(clientPublicKey, serverPublicKey)
 	S := CalculateServerSKey(clientPublicKey, verifier, u, serverPrivateKey)
 	return CalculateInterleave(S)
-}
-
-func CalculateClientProof(
-	username string,
-	salt,
-	clientPublicKey,
-	serverPublicKey,
-	sessionKey []byte,
-) []byte {
-	hUsername := sha1.Sum([]byte(strings.ToUpper(username)))
-	h := sha1.New()
-	h.Write(xorHash)
-	h.Write(hUsername[:])
-	h.Write(salt)
-	h.Write(clientPublicKey)
-	h.Write(serverPublicKey)
-	h.Write(sessionKey)
-	return h.Sum(nil)
-}
-
-func CalculateServerProof(clientPublicKey, clientProof, sessionKey []byte) []byte {
-	h := sha1.New()
-	h.Write(clientPublicKey)
-	h.Write(clientProof)
-	h.Write(sessionKey)
-	return h.Sum(nil)
-}
-
-func CalculateReconnectProof(username string, clientData, serverData, sessionKey []byte) []byte {
-	h := sha1.New()
-	h.Write([]byte(strings.ToUpper(username)))
-	h.Write(clientData)
-	h.Write(serverData)
-	h.Write(sessionKey)
-	return h.Sum(nil)
-}
-
-// BytesToInt returns a little endian big integer from a big endian byte array.
-func BytesToInt(data []byte) *big.Int {
-	return big.NewInt(0).SetBytes(internal.Reverse(data))
-}
-
-// IntToBytes returns a big endian byte array from a little endian big integer.
-func IntToBytes(padding int, bi *big.Int) []byte {
-	return internal.Reverse(internal.Pad(padding, bi.Bytes()))
 }

@@ -4,8 +4,6 @@ import (
 	"crypto"
 	"crypto/hmac"
 	"crypto/rc4"
-	"crypto/sha1"
-	"strings"
 )
 
 const (
@@ -93,14 +91,4 @@ func (h *WrathHeaderCrypto) GenerateKey(fixedKey []byte) []byte {
 func drop1024(cipher *rc4.Cipher) {
 	var drop1024 [1024]byte
 	cipher.XORKeyStream(drop1024[:], drop1024[:])
-}
-
-func CalculateWorldProof(username string, clientSeed, serverSeed, sessionKey []byte) []byte {
-	h := sha1.New()
-	h.Write([]byte(strings.ToUpper(username)))
-	h.Write([]byte{0, 0, 0, 0})
-	h.Write(clientSeed)
-	h.Write(serverSeed)
-	h.Write(sessionKey)
-	return h.Sum(nil)
 }

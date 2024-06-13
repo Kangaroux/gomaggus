@@ -15,6 +15,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/srp"
 )
 
 const (
@@ -808,7 +809,7 @@ func (s *Server) authenticateClient(c *Client, p *AuthSessionPacket) (bool, erro
 		return false, err
 	}
 
-	proof := CalculateWorldProof(p.Username, p.ClientSeed[:], c.serverSeed[:], c.session.SessionKey())
+	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], c.serverSeed[:], c.session.SessionKey())
 
 	if !bytes.Equal(proof, p.ClientProof[:]) {
 		log.Println("proofs don't match")
