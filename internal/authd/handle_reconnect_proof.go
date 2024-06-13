@@ -8,7 +8,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/kangaroux/gomaggus/internal/authd/packets"
 	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/kangaroux/gomaggus/internal/srp"
 )
@@ -31,7 +30,7 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 			}
 			c.sessionKey = session.SessionKey()
 
-			p := packets.ClientReconnectProof{}
+			p := ClientReconnectProof{}
 			if err := p.Read(data); err != nil {
 				return err
 			}
@@ -41,7 +40,7 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 		}
 	}
 
-	resp := packets.ServerReconnectProof{Opcode: OpReconnectProof}
+	resp := ServerReconnectProof{Opcode: OpReconnectProof}
 
 	if !authenticated {
 		resp.ErrorCode = CodeFailUnknownAccount

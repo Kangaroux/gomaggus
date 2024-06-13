@@ -30,3 +30,7 @@ const (
 	RealmFlagNewServer    RealmFlag = 0x40 // Population: "New" in green text
 	RealmFlagFull         RealmFlag = 0x80 // Population: "Full" in red text
 )
+
+const (
+	ReconnectDataLen = 16
+)

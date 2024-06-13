@@ -8,7 +8,7 @@ import (
 	mrand "math/rand"
 
 	"github.com/kangaroux/gomaggus/internal"
-	"github.com/kangaroux/gomaggus/internal/authd/packets"
+
 	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/kangaroux/gomaggus/internal/srp"
 )
@@ -18,7 +18,7 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 
 	var err error
 
-	p := packets.ClientLoginChallenge{}
+	p := ClientLoginChallenge{}
 	if err = p.Read(data); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 		salt = c.account.Salt()
 	}
 
-	resp := packets.ServerLoginChallenge{
+	resp := ServerLoginChallenge{
 		Opcode: OpLoginChallenge,
 
 		// Protocol version is always zero for server responses

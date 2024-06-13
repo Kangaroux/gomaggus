@@ -8,7 +8,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/kangaroux/gomaggus/internal/authd/packets"
 	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/kangaroux/gomaggus/internal/srp"
 )
@@ -20,7 +19,7 @@ func handleLoginProof(services *Services, c *Client, data []byte) error {
 	authenticated := false
 
 	if c.account != nil {
-		p := packets.ClientLoginProof{}
+		p := ClientLoginProof{}
 		if err := p.Read(data); err != nil {
 			return err
 		}
@@ -49,13 +48,13 @@ func handleLoginProof(services *Services, c *Client, data []byte) error {
 	respBuf := bytes.Buffer{}
 
 	if !authenticated {
-		resp := packets.ServerLoginProofFail{
+		resp := ServerLoginProofFail{
 			Opcode:    OpLoginProof,
 			ErrorCode: CodeFailUnknownAccount,
 		}
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	} else {
-		resp := packets.ServerLoginProofSuccess{
+		resp := ServerLoginProofSuccess{
 			Opcode:           OpLoginProof,
 			ErrorCode:        CodeSuccess,
 			AccountFlags:     0,

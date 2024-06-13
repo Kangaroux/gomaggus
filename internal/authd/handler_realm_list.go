@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal/authd/packets"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -14,13 +13,13 @@ func handleRealmList(services *Services, c *Client) error {
 		return err
 	}
 
-	respBody := packets.ServerRealmListBody{
+	respBody := ServerRealmListBody{
 		NumRealms: uint16(len(realmList)),
-		Realms:    make([]packets.ServerRealm, len(realmList)),
+		Realms:    make([]ServerRealm, len(realmList)),
 	}
 
 	for i, r := range realmList {
-		respBody.Realms[i] = packets.ServerRealm{
+		respBody.Realms[i] = ServerRealm{
 			Type:          r.Type,
 			Locked:        false,
 			Flags:         RealmFlagNone,
@@ -38,7 +37,7 @@ func handleRealmList(services *Services, c *Client) error {
 		return err
 	}
 
-	respHeader := packets.ServerRealmListHeader{
+	respHeader := ServerRealmListHeader{
 		Opcode: OpRealmList,
 		Size:   uint16(len(bodyBytes)),
 	}

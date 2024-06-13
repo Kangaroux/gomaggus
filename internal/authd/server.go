@@ -8,7 +8,7 @@ import (
 	"net"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/internal/authd/packets"
+
 	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/kangaroux/gomaggus/internal/srp"
 )
@@ -77,7 +77,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	client := &Client{
 		conn:          conn,
-		reconnectData: make([]byte, packets.ReconnectDataLen),
+		reconnectData: make([]byte, ReconnectDataLen),
 		privateKey:    make([]byte, srp.KeySize),
 	}
 

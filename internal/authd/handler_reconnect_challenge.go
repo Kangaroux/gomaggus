@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal/authd/packets"
 	"github.com/kangaroux/gomaggus/internal/models"
 )
 
@@ -14,7 +13,7 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 	log.Println("Starting reconnect challenge")
 
 	var err error
-	p := packets.ClientLoginChallenge{}
+	p := ClientLoginChallenge{}
 	if err = p.Read(data); err != nil {
 		return err
 	}
@@ -32,7 +31,7 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 		return err
 	}
 
-	resp := packets.ServerReconnectChallenge{
+	resp := ServerReconnectChallenge{
 		Opcode: OpReconnectChallenge,
 
 		// Always return success to prevent a bad actor from mining usernames.
