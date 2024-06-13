@@ -9,8 +9,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/kangaroux/gomaggus/internal/models"
-	"github.com/kangaroux/gomaggus/internal/srp"
+	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/srp"
 )
 
 const (

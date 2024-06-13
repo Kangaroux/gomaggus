@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/kangaroux/gomaggus/internal/models"
-	"github.com/kangaroux/gomaggus/internal/srp"
+	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/srp"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8

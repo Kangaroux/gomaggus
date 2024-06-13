@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/kangaroux/gomaggus/internal/srp"
+	"github.com/kangaroux/gomaggus/srp"
 )
 
 type Account struct {

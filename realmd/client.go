@@ -3,7 +3,7 @@ package realmd
 import (
 	"net"
 
-	"github.com/kangaroux/gomaggus/internal/models"
+	"github.com/kangaroux/gomaggus/models"
 )
 
 type Client struct {

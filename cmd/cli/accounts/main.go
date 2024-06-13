@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/internal/models"
+	"github.com/kangaroux/gomaggus/models"
 	_ "github.com/lib/pq"
 )
 

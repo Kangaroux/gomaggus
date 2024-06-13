@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/internal/models"
+	"github.com/kangaroux/gomaggus/models"
 )
 
 const (

@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/internal/authd"
+	"github.com/kangaroux/gomaggus/authd"
 	_ "github.com/lib/pq"
 )
 

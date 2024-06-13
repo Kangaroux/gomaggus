@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal/models"
+	"github.com/kangaroux/gomaggus/models"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8

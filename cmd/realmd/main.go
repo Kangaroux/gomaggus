@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/internal/realmd"
+	"github.com/kangaroux/gomaggus/realmd"
 	_ "github.com/lib/pq"
 )
 
