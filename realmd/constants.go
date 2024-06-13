@@ -168,55 +168,6 @@ const (
 	PowerTypeHappiness PowerType = 4
 )
 
-type Race byte
-
-const (
-	RaceHuman             Race = 1
-	RaceOrc               Race = 2
-	RaceDwarf             Race = 3
-	RaceNightElf          Race = 4
-	RaceUndead            Race = 5
-	RaceTauren            Race = 6
-	RaceGnome             Race = 7
-	RaceTroll             Race = 8
-	RaceGoblin            Race = 9
-	RaceBlood_elf         Race = 10
-	RaceDraenei           Race = 11
-	RaceFelOrc            Race = 12
-	RaceNaga              Race = 13
-	RaceBroken            Race = 14
-	RaceSkeleton          Race = 15
-	RaceVrykul            Race = 16
-	RaceTuskarr           Race = 17
-	RaceForestTroll       Race = 18
-	RaceTaunka            Race = 19
-	RaceNorthrendSkeleton Race = 20
-	RaceIceTroll          Race = 21
-)
-
-type Class byte
-
-const (
-	ClassWarrior Class = 1
-	ClassPaladin Class = 2
-	ClassHunter  Class = 3
-	ClassRogue   Class = 4
-	ClassPriest  Class = 5
-	// ClassDeathKnight Class = 6
-	ClassShaman  Class = 7
-	ClassMage    Class = 8
-	ClassWarlock Class = 9
-	ClassDruid   Class = 11
-)
-
-type Gender byte
-
-const (
-	GenderMale   Gender = 0
-	GenderFemale Gender = 1
-	GenderNone   Gender = 2 // used by pets?
-)
-
 type ObjectType byte
 
 const (

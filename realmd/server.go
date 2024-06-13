@@ -343,9 +343,9 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			binary.Write(&inner, binary.LittleEndian, uint64(char.Id))
 			inner.WriteString(char.Name)
 			inner.WriteByte(0) // NUL-terminated
-			inner.WriteByte(char.Race)
-			inner.WriteByte(char.Class)
-			inner.WriteByte(char.Gender)
+			inner.WriteByte(byte(char.Race))
+			inner.WriteByte(byte(char.Class))
+			inner.WriteByte(byte(char.Gender))
 			inner.WriteByte(char.SkinColor)
 			inner.WriteByte(char.Face)
 			inner.WriteByte(char.HairStyle)
@@ -728,7 +728,7 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 			// Without this, client segfaults
 			updateMask.SetFieldMask(FieldMaskUnitFactionTemplate)
-			valuesBuf.Write([]byte{char.Race, 0, 0, 0})
+			valuesBuf.Write([]byte{byte(char.Race), 0, 0, 0})
 
 			// Without this, client segfaults
 			updateMask.SetFieldMask(FieldMaskUnitDisplayId)
@@ -858,14 +858,23 @@ func makeServerHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	return header, nil
 }
 
-func getPowerTypeForClass(c Class) PowerType {
+func getPowerTypeForClass(c models.Class) PowerType {
 	switch c {
-	case ClassWarrior:
+	case models.ClassWarrior:
 		return PowerTypeRage
-	case ClassPaladin, ClassHunter, ClassPriest, ClassShaman, ClassMage, ClassWarlock, ClassDruid:
+
+	case models.ClassPaladin,
+		models.ClassHunter,
+		models.ClassPriest,
+		models.ClassShaman,
+		models.ClassMage,
+		models.ClassWarlock,
+		models.ClassDruid:
 		return PowerTypeMana
-	case ClassRogue:
+
+	case models.ClassRogue:
 		return PowerTypeEnergy
+
 	default:
 		log.Println("getPowerTypeForClass: got unexpected class", c)
 		return PowerTypeMana

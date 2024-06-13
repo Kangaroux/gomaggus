@@ -1,5 +1,7 @@
 package realmd
 
+import "github.com/kangaroux/gomaggus/models"
+
 type Header struct {
 	Size   uint16
 	Opcode ClientOpcode
@@ -34,9 +36,9 @@ type RealmSplitPacket struct {
 // https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
 type CharCreatePacket struct {
 	// Name string
-	Race       Race
-	Class      Class
-	Gender     Gender
+	Race       models.Race
+	Class      models.Class
+	Gender     models.Gender
 	SkinColor  byte
 	Face       byte
 	HairStyle  byte
