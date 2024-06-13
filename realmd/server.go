@@ -699,32 +699,32 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 			binary.Write(&valuesBuf, binary.LittleEndian, uint32(char.Id)) // low guid
 			binary.Write(&valuesBuf, binary.LittleEndian, uint32(0))       // high guid
 
-			// // Character seems to load fine without this
-			// updateMask.SetFieldMask(FieldMaskObjectType)
-			// binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<ObjectTypeObject|1<<ObjectTypeUnit|1<<ObjectTypePlayer))
+			// Character seems to load fine without this
+			updateMask.SetFieldMask(FieldMaskObjectType)
+			binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<ObjectTypeObject|1<<ObjectTypeUnit|1<<ObjectTypePlayer))
 
-			// // Without this, character model scale is zero and camera starts in first person
-			// updateMask.SetFieldMask(FieldMaskObjectScaleX)
-			// valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
+			// Without this, character model scale is zero and camera starts in first person
+			updateMask.SetFieldMask(FieldMaskObjectScaleX)
+			valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
 
-			// // Without this, talent screen is blank
-			// updateMask.SetFieldMask(FieldMaskUnitBytes0)
-			// valuesBuf.WriteByte(char.Race)
-			// valuesBuf.WriteByte(char.Class)
-			// valuesBuf.WriteByte(char.Gender)
-			// valuesBuf.WriteByte(getPowerTypeForClass(char.Class))
+			// Without this, talent screen is blank
+			updateMask.SetFieldMask(FieldMaskUnitBytes0)
+			valuesBuf.WriteByte(byte(char.Race))
+			valuesBuf.WriteByte(byte(char.Class))
+			valuesBuf.WriteByte(byte(char.Gender))
+			valuesBuf.WriteByte(byte(getPowerTypeForClass(char.Class)))
 
-			// // Without this, character spawns in as a corpse
-			// updateMask.SetFieldMask(FieldMaskUnitHealth)
-			// valuesBuf.Write([]byte{100, 0, 0, 0})
+			// Without this, character spawns in as a corpse
+			updateMask.SetFieldMask(FieldMaskUnitHealth)
+			valuesBuf.Write([]byte{100, 0, 0, 0})
 
-			// // Without this, UI doesn't show max health
-			// updateMask.SetFieldMask(FieldMaskUnitMaxHealth)
-			// valuesBuf.Write([]byte{100, 0, 0, 0})
+			// Without this, UI doesn't show max health
+			updateMask.SetFieldMask(FieldMaskUnitMaxHealth)
+			valuesBuf.Write([]byte{100, 0, 0, 0})
 
-			// // Without this, character level appears as 0
-			// updateMask.SetFieldMask(FieldMaskUnitLevel)
-			// valuesBuf.Write([]byte{10, 0, 0, 0})
+			// Without this, character level appears as 0
+			updateMask.SetFieldMask(FieldMaskUnitLevel)
+			valuesBuf.Write([]byte{10, 0, 0, 0})
 
 			// Without this, client segfaults
 			updateMask.SetFieldMask(FieldMaskUnitFactionTemplate)
