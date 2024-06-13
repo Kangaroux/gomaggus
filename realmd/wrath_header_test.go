@@ -10,7 +10,7 @@ import (
 )
 
 func TestGenerateKey(t *testing.T) {
-	rows := internal.LoadTestData("../../test_data/header/wrath_generate_key.csv")
+	rows := internal.LoadTestData("../test_data/header/wrath_generate_key.csv")
 
 	for _, row := range rows {
 		expected := internal.DecodeHex(row[2])
