@@ -15,9 +15,9 @@ import (
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8
 // FIELD ORDER MATTERS, DO NOT REORDER
 type ClientLoginProof struct {
-	Opcode           byte
-	ClientPublicKey  [32]byte
-	ClientProof      [20]byte
+	Opcode           Opcode // OpLoginProof
+	ClientPublicKey  [srp.KeySize]byte
+	ClientProof      [srp.ProofSize]byte
 	CRCHash          [20]byte
 	NumTelemetryKeys uint8
 }
@@ -29,15 +29,15 @@ func (p *ClientLoginProof) Read(data []byte) error {
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
 type ServerLoginProofFail struct {
-	Opcode    byte
-	ErrorCode byte
+	Opcode    Opcode // OpLoginProof
+	ErrorCode ErrorCode
 	_         [2]byte // padding
 }
 
 type ServerLoginProofSuccess struct {
-	Opcode           byte
-	ErrorCode        byte
-	Proof            [20]byte
+	Opcode           Opcode // OpLoginProof
+	ErrorCode        ErrorCode
+	Proof            [srp.ProofSize]byte
 	AccountFlags     uint32
 	HardwareSurveyId uint32
 	_                [2]byte // padding

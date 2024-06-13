@@ -4,20 +4,14 @@ import (
 	"bytes"
 	"log"
 
+	"github.com/kangaroux/gomaggus/internal/models"
 	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_realm_list_server.html#protocol-version-8
-type ServerRealm struct {
-	Type          byte
-	Locked        bool
-	Flags         byte
-	Name          string `binary:"zstring"`
-	Host          string `binary:"zstring"`
-	Population    float32
-	NumCharacters byte
-	Region        byte
-	Id            byte
+type ServerRealmListHeader struct {
+	Opcode Opcode // OpRealmList
+	Size   uint16
 }
 
 type ServerRealmListBody struct {
@@ -27,9 +21,16 @@ type ServerRealmListBody struct {
 	_         [2]byte       // footer padding
 }
 
-type ServerRealmListHeader struct {
-	Opcode byte
-	Size   uint16
+type ServerRealm struct {
+	Type          models.RealmType
+	Locked        bool
+	Flags         RealmFlag
+	Name          string `binary:"zstring"`
+	Host          string `binary:"zstring"`
+	Population    float32
+	NumCharacters uint8
+	Region        models.RealmRegion
+	Id            uint8
 }
 
 func handleRealmList(services *Services, c *Client) error {

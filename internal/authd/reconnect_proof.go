@@ -15,11 +15,11 @@ import (
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_client.html
 // FIELD ORDER MATTERS, DO NOT REORDER
 type ClientReconnectProof struct {
-	Opcode         byte
-	ProofData      [16]byte
-	ClientProof    [20]byte
+	Opcode         Opcode // OpReconnectProof
+	ProofData      [srp.ProofDataSize]byte
+	ClientProof    [srp.ProofSize]byte
 	ClientChecksum [20]byte
-	KeyCount       byte
+	KeyCount       uint8
 }
 
 func (p *ClientReconnectProof) Read(data []byte) error {
@@ -29,8 +29,8 @@ func (p *ClientReconnectProof) Read(data []byte) error {
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_server.html#protocol-version-8
 type ServerReconnectProof struct {
-	Opcode    byte
-	ErrorCode byte
+	Opcode    Opcode
+	ErrorCode ErrorCode
 	_         [2]byte // padding
 }
 

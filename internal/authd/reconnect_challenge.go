@@ -11,8 +11,8 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
 type ServerReconnectChallenge struct {
-	Opcode        byte
-	ErrorCode     byte
+	Opcode        Opcode // OpReconnectChallenge
+	ErrorCode     ErrorCode
 	ReconnectData [ReconnectDataLen]byte
 	ChecksumSalt  [16]byte
 }

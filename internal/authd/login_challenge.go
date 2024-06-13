@@ -16,8 +16,8 @@ import (
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
 // FIELD ORDER MATTERS, DO NOT REORDER
 type loginChallengeFixed struct {
-	Opcode         byte
-	Error          byte
+	Opcode         Opcode // OpLoginChallenge
+	Error          ErrorCode
 	Size           uint16
 	GameName       [4]byte
 	Version        [3]byte
@@ -57,13 +57,13 @@ func (p *ClientLoginChallenge) Read(data []byte) error {
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 // FIELD ORDER MATTERS, DO NOT REORDER
 type ServerLoginChallenge struct {
-	Opcode          byte
-	ProtocolVersion byte
-	ErrorCode       byte
+	Opcode          Opcode
+	ProtocolVersion uint8
+	ErrorCode       ErrorCode
 	PublicKey       [srp.KeySize]byte
-	GeneratorSize   byte
-	Generator       byte
-	LargePrimeSize  byte
+	GeneratorSize   uint8
+	Generator       uint8
+	LargePrimeSize  uint8
 	LargePrime      [srp.LargePrimeSize]byte
 	Salt            [srp.SaltSize]byte
 	CrcHash         [16]byte

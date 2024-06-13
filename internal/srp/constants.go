@@ -7,6 +7,8 @@ import (
 )
 
 const (
+	ProofDataSize  = 16
+	ProofSize      = 20
 	SaltSize       = 32
 	VerifierSize   = 32
 	KeySize        = 32
