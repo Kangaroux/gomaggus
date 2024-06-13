@@ -1,4 +1,4 @@
-package authd
+package handler
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
@@ -30,49 +31,49 @@ func (p *ClientLoginProof) Read(data []byte) error {
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
 type ServerLoginProofFail struct {
 	Opcode    Opcode // OpLoginProof
-	ErrorCode ErrorCode
+	ErrorCode RespCode
 	_         [2]byte // padding
 }
 
 type ServerLoginProofSuccess struct {
 	Opcode           Opcode // OpLoginProof
-	ErrorCode        ErrorCode
+	ErrorCode        RespCode
 	Proof            [srp.ProofSize]byte
 	AccountFlags     uint32
 	HardwareSurveyId uint32
 	_                [2]byte // padding
 }
 
-func handleLoginProof(services *Services, c *Client, data []byte) error {
+func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	log.Println("Starting login proof")
 
 	var serverProof []byte
 	authenticated := false
 
-	if c.account != nil {
+	if c.Account != nil {
 		p := ClientLoginProof{}
 		if err := p.Read(data); err != nil {
 			return err
 		}
 
-		c.clientPublicKey = p.ClientPublicKey[:]
-		c.sessionKey = srp.CalculateServerSessionKey(
-			c.clientPublicKey,
-			c.serverPublicKey,
-			c.privateKey,
-			c.account.Verifier(),
+		c.ClientPublicKey = p.ClientPublicKey[:]
+		c.SessionKey = srp.CalculateServerSessionKey(
+			c.ClientPublicKey,
+			c.ServerPublicKey,
+			c.PrivateKey,
+			c.Account.Verifier(),
 		)
 		calculatedClientProof := srp.CalculateClientProof(
-			c.account.Username,
-			c.account.Salt(),
-			c.clientPublicKey,
-			c.serverPublicKey,
-			c.sessionKey,
+			c.Account.Username,
+			c.Account.Salt(),
+			c.ClientPublicKey,
+			c.ServerPublicKey,
+			c.SessionKey,
 		)
 		authenticated = bytes.Equal(calculatedClientProof, p.ClientProof[:])
 
 		if authenticated {
-			serverProof = srp.CalculateServerProof(c.clientPublicKey, p.ClientProof[:], c.sessionKey)
+			serverProof = srp.CalculateServerProof(c.ClientPublicKey, p.ClientProof[:], c.SessionKey)
 		}
 	}
 
@@ -95,16 +96,16 @@ func handleLoginProof(services *Services, c *Client, data []byte) error {
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	}
 
-	if _, err := c.conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to login proof")
 
 	if authenticated {
-		err := services.sessions.UpdateOrCreate(&model.Session{
-			AccountId:     c.account.Id,
-			SessionKeyHex: hex.EncodeToString(c.sessionKey),
+		err := svc.Sessions.UpdateOrCreate(&model.Session{
+			AccountId:     c.Account.Id,
+			SessionKeyHex: hex.EncodeToString(c.SessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		})
@@ -112,9 +113,9 @@ func handleLoginProof(services *Services, c *Client, data []byte) error {
 			return err
 		}
 
-		c.state = StateAuthenticated
+		c.State = authd.StateAuthenticated
 	} else {
-		c.state = StateInvalid
+		c.State = authd.StateInvalid
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-package authd
+package handler
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
@@ -30,17 +31,17 @@ func (p *ClientReconnectProof) Read(data []byte) error {
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_server.html#protocol-version-8
 type ServerReconnectProof struct {
 	Opcode    Opcode
-	ErrorCode ErrorCode
+	ErrorCode RespCode
 	_         [2]byte // padding
 }
 
-func handleReconnectProof(services *Services, c *Client, data []byte) error {
+func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	log.Println("Starting reconnect proof")
 
 	authenticated := false
 
-	if c.account != nil {
-		session, err := services.sessions.Get(c.account.Id)
+	if c.Account != nil {
+		session, err := svc.Sessions.Get(c.Account.Id)
 		if err != nil {
 			return err
 		}
@@ -50,14 +51,14 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 			if err := session.Decode(); err != nil {
 				return err
 			}
-			c.sessionKey = session.SessionKey()
+			c.SessionKey = session.SessionKey()
 
 			p := ClientReconnectProof{}
 			if err := p.Read(data); err != nil {
 				return err
 			}
 
-			serverProof := srp.CalculateReconnectProof(c.username, p.ProofData[:], c.reconnectData, c.sessionKey)
+			serverProof := srp.CalculateReconnectProof(c.Username, p.ProofData[:], c.ReconnectData, c.SessionKey)
 			authenticated = bytes.Equal(serverProof, p.ClientProof[:])
 		}
 	}
@@ -73,25 +74,25 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 	respBuf := bytes.Buffer{}
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := c.conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to reconnect proof")
 
 	if authenticated {
-		err := services.sessions.UpdateOrCreate(&model.Session{
-			AccountId:     c.account.Id,
-			SessionKeyHex: hex.EncodeToString(c.sessionKey),
+		err := svc.Sessions.UpdateOrCreate(&model.Session{
+			AccountId:     c.Account.Id,
+			SessionKeyHex: hex.EncodeToString(c.SessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		})
 		if err != nil {
 			return err
 		}
-		c.state = StateAuthenticated
+		c.State = authd.StateAuthenticated
 	} else {
-		c.state = StateInvalid
+		c.State = authd.StateInvalid
 	}
 
 	return nil

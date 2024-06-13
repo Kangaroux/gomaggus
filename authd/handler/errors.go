@@ -1,4 +1,4 @@
-package authd
+package handler
 
 import (
 	"fmt"

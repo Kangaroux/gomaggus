@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/authd"
+	"github.com/kangaroux/gomaggus/authd/server"
 	_ "github.com/lib/pq"
 )
 
@@ -16,6 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := authd.NewServer(db, authd.DefaultListenAddr)
+	server := server.New(db, server.DefaultListenAddr)
 	server.Start()
 }

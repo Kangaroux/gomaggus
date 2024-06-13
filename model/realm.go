@@ -14,6 +14,20 @@ type Realm struct {
 	Region RealmRegion
 }
 
+type RealmFlag uint8
+
+const (
+	RealmFlagNone         RealmFlag = 0x0
+	RealmFlagInvalid      RealmFlag = 0x1 // Realm is greyed out and can't be selected
+	RealmFlagOffline      RealmFlag = 0x2 // Population: "Offline" and can't be selected
+	RealmFlagSpecifyBuild RealmFlag = 0x4 // Includes version in realm name
+	RealmFlagUnknown1     RealmFlag = 0x8
+	RealmFlagUnknown2     RealmFlag = 0x10
+	RealmFlagNewPlayers   RealmFlag = 0x20 // Population: "New Players" in blue text
+	RealmFlagNewServer    RealmFlag = 0x40 // Population: "New" in green text
+	RealmFlagFull         RealmFlag = 0x80 // Population: "Full" in red text
+)
+
 type RealmType = uint8
 
 const (

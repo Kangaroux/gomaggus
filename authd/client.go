@@ -26,13 +26,13 @@ const (
 )
 
 type Client struct {
-	conn            net.Conn
-	username        string
-	reconnectData   []byte
-	sessionKey      []byte
-	clientPublicKey []byte
-	serverPublicKey []byte
-	privateKey      []byte
-	state           ClientState
-	account         *model.Account
+	Conn            net.Conn
+	Username        string
+	ReconnectData   []byte
+	SessionKey      []byte
+	ClientPublicKey []byte
+	ServerPublicKey []byte
+	PrivateKey      []byte
+	State           ClientState
+	Account         *model.Account
 }

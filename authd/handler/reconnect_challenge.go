@@ -1,4 +1,4 @@
-package authd
+package handler
 
 import (
 	"bytes"
@@ -6,18 +6,23 @@ import (
 	"encoding/binary"
 	"log"
 
+	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
+)
+
+const (
+	ReconnectDataLen = 16
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
 type ServerReconnectChallenge struct {
 	Opcode        Opcode // OpReconnectChallenge
-	ErrorCode     ErrorCode
+	ErrorCode     RespCode
 	ReconnectData [ReconnectDataLen]byte
 	ChecksumSalt  [16]byte
 }
 
-func handleReconnectChallenge(services *Services, c *Client, data []byte) error {
+func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 	log.Println("Starting reconnect challenge")
 
 	var err error
@@ -25,17 +30,17 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 	if err = p.Read(data); err != nil {
 		return err
 	}
-	c.username = p.Username
+	c.Username = p.Username
 
-	log.Printf("client trying to reconnect as '%s'\n", c.username)
+	log.Printf("client trying to reconnect as '%s'\n", c.Username)
 
-	c.account, err = services.accounts.Get(&model.AccountGetParams{Username: c.username})
+	c.Account, err = svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
 	if err != nil {
 		return err
 	}
 
 	// Generate random data that will be used for the reconnect proof
-	if _, err := rand.Read(c.reconnectData); err != nil {
+	if _, err := rand.Read(c.ReconnectData); err != nil {
 		return err
 	}
 
@@ -46,18 +51,18 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 		ErrorCode:    CodeSuccess,
 		ChecksumSalt: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
-	copy(resp.ReconnectData[:], c.reconnectData)
+	copy(resp.ReconnectData[:], c.ReconnectData)
 
 	respBuf := bytes.Buffer{}
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := c.conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to reconnect challenge")
 
-	c.state = StateReconnectProof
+	c.State = authd.StateReconnectProof
 
 	return nil
 }

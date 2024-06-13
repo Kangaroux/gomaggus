@@ -1,4 +1,4 @@
-package authd
+package server
 
 import (
 	"crypto/rand"
@@ -9,6 +9,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/kangaroux/gomaggus/authd"
+	"github.com/kangaroux/gomaggus/authd/handler"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
@@ -17,24 +19,18 @@ const (
 	DefaultListenAddr = ":3724"
 )
 
-type Services struct {
-	accounts model.AccountService
-	realms   model.RealmService
-	sessions model.SessionService
-}
-
 type Server struct {
 	listenAddr string
-	services   *Services
+	services   *authd.Service
 }
 
-func NewServer(db *sqlx.DB, listenAddr string) *Server {
+func New(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
-		services: &Services{
-			accounts: model.NewDbAccountService(db),
-			realms:   model.NewDbRealmService(db),
-			sessions: model.NewDbSessionService(db),
+		services: &authd.Service{
+			Accounts: model.NewDbAccountService(db),
+			Realms:   model.NewDbRealmService(db),
+			Sessions: model.NewDbSessionService(db),
 		},
 	}
 }
@@ -75,20 +71,20 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
-	client := &Client{
-		conn:          conn,
-		reconnectData: make([]byte, ReconnectDataLen),
-		privateKey:    make([]byte, srp.KeySize),
+	c := &authd.Client{
+		Conn:          conn,
+		ReconnectData: make([]byte, handler.ReconnectDataLen),
+		PrivateKey:    make([]byte, srp.KeySize),
 	}
 
-	if _, err := rand.Read(client.privateKey); err != nil {
+	if _, err := rand.Read(c.PrivateKey); err != nil {
 		return
 	}
 
 	buf := make([]byte, 4096)
 
 	for {
-		n, err := client.conn.Read(buf)
+		n, err := c.Conn.Read(buf)
 
 		if err == io.EOF {
 			log.Println("client disconnected (closed by client)")
@@ -100,40 +96,40 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 		log.Printf("read %d bytes\n", n)
 
-		if err := s.handlePacket(client, buf[:n]); err != nil {
+		if err := s.handlePacket(c, buf[:n]); err != nil {
 			log.Println(err)
 			return
 		}
 	}
 }
 
-func (s *Server) handlePacket(c *Client, data []byte) error {
-	opcode := Opcode(data[0])
+func (s *Server) handlePacket(c *authd.Client, data []byte) error {
+	opcode := handler.Opcode(data[0])
 
-	switch c.state {
-	case StateAuthChallenge:
-		if opcode == OpLoginChallenge {
-			return handleLoginChallenge(s.services, c, data)
-		} else if opcode == OpReconnectChallenge {
-			return handleReconnectChallenge(s.services, c, data)
+	switch c.State {
+	case authd.StateAuthChallenge:
+		if opcode == handler.OpLoginChallenge {
+			return handler.LoginChallenge(s.services, c, data)
+		} else if opcode == handler.OpReconnectChallenge {
+			return handler.ReconnectChallenge(s.services, c, data)
 		}
-	case StateAuthProof:
-		if opcode == OpLoginProof {
-			return handleLoginProof(s.services, c, data)
+	case authd.StateAuthProof:
+		if opcode == handler.OpLoginProof {
+			return handler.LoginProof(s.services, c, data)
 		}
-	case StateReconnectProof:
-		if opcode == OpReconnectProof {
-			return handleReconnectProof(s.services, c, data)
+	case authd.StateReconnectProof:
+		if opcode == handler.OpReconnectProof {
+			return handler.ReconnectProof(s.services, c, data)
 		}
-	case StateAuthenticated:
-		if opcode == OpRealmList {
-			return handleRealmList(s.services, c)
+	case authd.StateAuthenticated:
+		if opcode == handler.OpRealmList {
+			return handler.RealmList(s.services, c)
 		}
 	}
 
 	return fmt.Errorf(
 		"handlePacket: opcode %d is not valid for current state (%d) or does not exist",
 		opcode,
-		c.state,
+		c.State,
 	)
 }

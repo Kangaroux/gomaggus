@@ -1,9 +1,10 @@
-package authd
+package handler
 
 import (
 	"bytes"
 	"log"
 
+	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/mixcode/binarystruct"
 )
@@ -24,7 +25,7 @@ type ServerRealmListBody struct {
 type ServerRealm struct {
 	Type          model.RealmType
 	Locked        bool
-	Flags         RealmFlag
+	Flags         model.RealmFlag
 	Name          string `binary:"zstring"`
 	Host          string `binary:"zstring"`
 	Population    float32
@@ -33,8 +34,8 @@ type ServerRealm struct {
 	Id            uint8
 }
 
-func handleRealmList(services *Services, c *Client) error {
-	realmList, err := services.realms.List()
+func RealmList(svc *authd.Service, c *authd.Client) error {
+	realmList, err := svc.Realms.List()
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func handleRealmList(services *Services, c *Client) error {
 		respBody.Realms[i] = ServerRealm{
 			Type:          r.Type,
 			Locked:        false,
-			Flags:         RealmFlagNone,
+			Flags:         model.RealmFlagNone,
 			Name:          r.Name,
 			Host:          r.Host,
 			Population:    0, // TODO
@@ -77,7 +78,7 @@ func handleRealmList(services *Services, c *Client) error {
 	respBuf.Write(headerBytes)
 	respBuf.Write(bodyBytes)
 
-	if _, err := c.conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 

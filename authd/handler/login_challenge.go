@@ -1,4 +1,4 @@
-package authd
+package handler
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	mrand "math/rand"
 	"strings"
 
+	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
@@ -17,7 +18,7 @@ import (
 // FIELD ORDER MATTERS, DO NOT REORDER
 type loginChallengeFixed struct {
 	Opcode         Opcode // OpLoginChallenge
-	Error          ErrorCode
+	Error          RespCode
 	Size           uint16
 	GameName       [4]byte
 	Version        [3]byte
@@ -59,7 +60,7 @@ func (p *ClientLoginChallenge) Read(data []byte) error {
 type ServerLoginChallenge struct {
 	Opcode          Opcode
 	ProtocolVersion uint8
-	ErrorCode       ErrorCode
+	ErrorCode       RespCode
 	PublicKey       [srp.KeySize]byte
 	GeneratorSize   uint8
 	Generator       uint8
@@ -72,7 +73,7 @@ type ServerLoginChallenge struct {
 	SecurityFlags byte
 }
 
-func handleLoginChallenge(services *Services, c *Client, data []byte) error {
+func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 	log.Println("Starting login challenge")
 
 	var err error
@@ -81,11 +82,11 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 	if err = p.Read(data); err != nil {
 		return err
 	}
-	c.username = p.Username
+	c.Username = p.Username
 
-	log.Printf("client trying to login as '%s'\n", c.username)
+	log.Printf("client trying to login as '%s'\n", c.Username)
 
-	c.account, err = services.accounts.Get(&model.AccountGetParams{Username: c.username})
+	c.Account, err = svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
 	if err != nil {
 		return err
 	}
@@ -93,7 +94,7 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 	var publicKey []byte
 	var salt []byte
 
-	if c.account == nil {
+	if c.Account == nil {
 		publicKey = make([]byte, srp.KeySize)
 		if _, err := rand.Read(publicKey); err != nil {
 			return err
@@ -106,18 +107,18 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 		// If we didn't do this, a bad actor could send two challenges with the same username and compare
 		// the salts. The salts would be the same for real accounts and different for fake accounts.
 		// This would allow someone to mine usernames and start building an attack vector.
-		seededRand := mrand.New(mrand.NewSource(internal.FastHash(c.username)))
+		seededRand := mrand.New(mrand.NewSource(internal.FastHash(c.Username)))
 		salt = make([]byte, srp.SaltSize)
 		if _, err := seededRand.Read(salt); err != nil {
 			return err
 		}
 	} else {
-		if err = c.account.DecodeSrp(); err != nil {
+		if err = c.Account.DecodeSrp(); err != nil {
 			return err
 		}
-		publicKey = srp.CalculateServerPublicKey(c.account.Verifier(), c.privateKey)
-		c.serverPublicKey = publicKey
-		salt = c.account.Salt()
+		publicKey = srp.CalculateServerPublicKey(c.Account.Verifier(), c.PrivateKey)
+		c.ServerPublicKey = publicKey
+		salt = c.Account.Salt()
 	}
 
 	resp := ServerLoginChallenge{
@@ -143,12 +144,12 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 	// The byte arrays are already little endian so the buffer can be used as-is
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := c.conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to login challenge")
-	c.state = StateAuthProof
+	c.State = authd.StateAuthProof
 
 	return nil
 }
