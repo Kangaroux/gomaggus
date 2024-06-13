@@ -3,7 +3,7 @@ package realmd
 import (
 	"net"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 )
 
 type Client struct {
@@ -12,7 +12,7 @@ type Client struct {
 	authenticated bool
 	crypto        *WrathHeaderCrypto
 
-	account *models.Account
-	realm   *models.Realm
-	session *models.Session
+	account *model.Account
+	realm   *model.Realm
+	session *model.Session
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func TestClientProof(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_client_proof.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_client_proof.csv")
 
 	t.Run("generated test data", func(t *testing.T) {
 		for _, row := range rows {
@@ -41,7 +41,7 @@ func TestClientProof(t *testing.T) {
 }
 
 func TestServerProof(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_server_proof.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_server_proof.csv")
 
 	for _, row := range rows {
 		clientPublic := internal.DecodeHex(row[0])
@@ -54,7 +54,7 @@ func TestServerProof(t *testing.T) {
 }
 
 func TestReconnectProof(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_reconnect_proof.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_reconnect_proof.csv")
 
 	t.Run("generated test data", func(t *testing.T) {
 		for _, row := range rows {

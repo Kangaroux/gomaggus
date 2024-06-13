@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 )
 
 const (
@@ -21,10 +21,10 @@ const (
 )
 
 type Services struct {
-	accounts models.AccountService
-	chars    models.CharacterService
-	realms   models.RealmService
-	sessions models.SessionService
+	accounts model.AccountService
+	chars    model.CharacterService
+	realms   model.RealmService
+	sessions model.SessionService
 }
 
 type Server struct {
@@ -37,10 +37,10 @@ func NewServer(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		services: &Services{
-			accounts: models.NewDbAccountService(db),
-			chars:    models.NewDbCharacterervice(db),
-			realms:   models.NewDbRealmService(db),
-			sessions: models.NewDbSessionService(db),
+			accounts: model.NewDbAccountService(db),
+			chars:    model.NewDbCharacterervice(db),
+			realms:   model.NewDbRealmService(db),
+			sessions: model.NewDbSessionService(db),
 		},
 	}
 }
@@ -264,21 +264,21 @@ func makeServerHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	return header, nil
 }
 
-func getPowerTypeForClass(c models.Class) PowerType {
+func getPowerTypeForClass(c model.Class) PowerType {
 	switch c {
-	case models.ClassWarrior:
+	case model.ClassWarrior:
 		return PowerTypeRage
 
-	case models.ClassPaladin,
-		models.ClassHunter,
-		models.ClassPriest,
-		models.ClassShaman,
-		models.ClassMage,
-		models.ClassWarlock,
-		models.ClassDruid:
+	case model.ClassPaladin,
+		model.ClassHunter,
+		model.ClassPriest,
+		model.ClassShaman,
+		model.ClassMage,
+		model.ClassWarlock,
+		model.ClassDruid:
 		return PowerTypeMana
 
-	case models.ClassRogue:
+	case model.ClassRogue:
 		return PowerTypeEnergy
 
 	default:

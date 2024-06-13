@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"log"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -22,14 +22,14 @@ type ServerRealmListBody struct {
 }
 
 type ServerRealm struct {
-	Type          models.RealmType
+	Type          model.RealmType
 	Locked        bool
 	Flags         RealmFlag
 	Name          string `binary:"zstring"`
 	Host          string `binary:"zstring"`
 	Population    float32
 	NumCharacters uint8
-	Region        models.RealmRegion
+	Region        model.RealmRegion
 	Id            uint8
 }
 

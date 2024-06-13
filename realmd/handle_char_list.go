@@ -5,13 +5,13 @@ import (
 	"encoding/binary"
 	"log"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 )
 
 func handleCharList(services *Services, client *Client) error {
 	log.Println("starting character list")
 
-	accountChars, err := services.chars.List(&models.CharacterListParams{
+	accountChars, err := services.chars.List(&model.CharacterListParams{
 		AccountId: client.account.Id,
 		RealmId:   client.realm.Id,
 	})

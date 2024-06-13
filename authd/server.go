@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -18,9 +18,9 @@ const (
 )
 
 type Services struct {
-	accounts models.AccountService
-	realms   models.RealmService
-	sessions models.SessionService
+	accounts model.AccountService
+	realms   model.RealmService
+	sessions model.SessionService
 }
 
 type Server struct {
@@ -32,9 +32,9 @@ func NewServer(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		services: &Services{
-			accounts: models.NewDbAccountService(db),
-			realms:   models.NewDbRealmService(db),
-			sessions: models.NewDbSessionService(db),
+			accounts: model.NewDbAccountService(db),
+			realms:   model.NewDbRealmService(db),
+			sessions: model.NewDbSessionService(db),
 		},
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/kangaroux/gomaggus/internal"
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -85,7 +85,7 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 
 	log.Printf("client trying to login as '%s'\n", c.username)
 
-	c.account, err = services.accounts.Get(&models.AccountGetParams{Username: c.username})
+	c.account, err = services.accounts.Get(&model.AccountGetParams{Username: c.username})
 	if err != nil {
 		return err
 	}

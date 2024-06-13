@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 	_ "github.com/lib/pq"
 )
 
@@ -38,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	accountsDb := models.NewDbAccountService(db)
+	accountsDb := model.NewDbAccountService(db)
 
 	if len(os.Args) == 1 {
 		usage()
@@ -69,7 +69,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		existingAccount, err := accountsDb.Get(&models.AccountGetParams{
+		existingAccount, err := accountsDb.Get(&model.AccountGetParams{
 			Email:    email,
 			Username: username,
 		})
@@ -81,7 +81,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		account := &models.Account{
+		account := &model.Account{
 			Username: username,
 			Email:    email,
 		}
@@ -113,7 +113,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		account, err := accountsDb.Get(&models.AccountGetParams{Username: username})
+		account, err := accountsDb.Get(&model.AccountGetParams{Username: username})
 		if err != nil {
 			fmt.Println("failed to get account:", err)
 			os.Exit(1)

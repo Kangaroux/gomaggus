@@ -9,7 +9,7 @@ import (
 )
 
 func TestX(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_x.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_x.csv")
 
 	t.Run("generated test data", func(t *testing.T) {
 		for _, row := range rows {
@@ -36,7 +36,7 @@ func TestX(t *testing.T) {
 }
 
 func TestVerifier(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_verifier.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_verifier.csv")
 
 	t.Run("generated test data", func(t *testing.T) {
 		for _, row := range rows {
@@ -63,7 +63,7 @@ func TestVerifier(t *testing.T) {
 }
 
 func TestServerPublicKey(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_server_public_key.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_server_public_key.csv")
 
 	for _, row := range rows {
 		verifier := internal.DecodeHex(row[0])
@@ -75,7 +75,7 @@ func TestServerPublicKey(t *testing.T) {
 }
 
 func TestCalculateU(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_u.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_u.csv")
 
 	for _, row := range rows {
 		clientPublic := internal.DecodeHex(row[0])
@@ -87,7 +87,7 @@ func TestCalculateU(t *testing.T) {
 }
 
 func TestServerSKey(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_server_s.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_server_s.csv")
 
 	for _, row := range rows {
 		clientPublic := internal.DecodeHex(row[0])
@@ -101,7 +101,7 @@ func TestServerSKey(t *testing.T) {
 }
 
 func TestInterleave(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_interleaved.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_interleaved.csv")
 
 	for _, row := range rows {
 		s := internal.DecodeHex(row[0])
@@ -112,7 +112,7 @@ func TestInterleave(t *testing.T) {
 }
 
 func TestServerSessionKey(t *testing.T) {
-	rows := internal.LoadTestData("../test_data/srp/calculate_server_session_key.csv")
+	rows := internal.LoadTestData("../testdata/srp/calculate_server_session_key.csv")
 
 	for _, row := range rows {
 		clientPublic := internal.DecodeHex(row[0])

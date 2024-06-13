@@ -8,7 +8,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -80,7 +80,7 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 	log.Println("Replied to reconnect proof")
 
 	if authenticated {
-		err := services.sessions.UpdateOrCreate(&models.Session{
+		err := services.sessions.UpdateOrCreate(&model.Session{
 			AccountId:     c.account.Id,
 			SessionKeyHex: hex.EncodeToString(c.sessionKey),
 			Connected:     1,

@@ -11,13 +11,13 @@ SQL migrations are managed using [goose](https://github.com/pressly/goose). A li
 Apply migrations:
 
 ```bash
-$ bin/goose -dir migrations postgres 'postgres://gomaggus:password@localhost:5432/gomaggus?sslmode=disable' up
+$ bin/goose -dir migration postgres 'postgres://gomaggus:password@localhost:5432/gomaggus?sslmode=disable' up
 ```
 
 Create a new migration:
 
 ```bash
-$ bin/goose -dir migrations -s create MIGRATION_NAME sql
+$ bin/goose -dir migration -s create MIGRATION_NAME sql
 ```
 
 ## Resources

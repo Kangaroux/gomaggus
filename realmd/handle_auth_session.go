@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
 )
 
@@ -92,7 +92,7 @@ func handleAuthSession(services *Services, client *Client, data []byte) error {
 func authenticateClient(services *Services, client *Client, p *AuthSessionPacket) (bool, error) {
 	var err error
 
-	client.account, err = services.accounts.Get(&models.AccountGetParams{Username: p.Username})
+	client.account, err = services.accounts.Get(&model.AccountGetParams{Username: p.Username})
 	if err != nil {
 		return false, err
 	} else if client.account == nil {

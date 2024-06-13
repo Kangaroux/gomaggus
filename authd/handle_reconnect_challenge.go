@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"log"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
@@ -29,7 +29,7 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 
 	log.Printf("client trying to reconnect as '%s'\n", c.username)
 
-	c.account, err = services.accounts.Get(&models.AccountGetParams{Username: c.username})
+	c.account, err = services.accounts.Get(&model.AccountGetParams{Username: c.username})
 	if err != nil {
 		return err
 	}

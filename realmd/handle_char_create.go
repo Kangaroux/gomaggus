@@ -6,14 +6,14 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 )
 
 func handleCharCreate(services *Services, client *Client, data []byte) error {
 	log.Println("starting character create")
 
 	// TODO: check if account is full
-	// accountChars, err := s.charsDb.List(&models.CharacterListParams{
+	// accountChars, err := s.charsDb.List(&model.CharacterListParams{
 	// 	AccountId: c.account.Id,
 	// 	RealmId:   c.realm.Id,
 	// })
@@ -41,7 +41,7 @@ func handleCharCreate(services *Services, client *Client, data []byte) error {
 	}
 
 	if existing == nil {
-		char := &models.Character{
+		char := &model.Character{
 			Name:       charName,
 			AccountId:  client.account.Id,
 			RealmId:    client.realm.Id,

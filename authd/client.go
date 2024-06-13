@@ -3,7 +3,7 @@ package authd
 import (
 	"net"
 
-	"github.com/kangaroux/gomaggus/models"
+	"github.com/kangaroux/gomaggus/model"
 )
 
 type ClientState int
@@ -34,5 +34,5 @@ type Client struct {
 	serverPublicKey []byte
 	privateKey      []byte
 	state           ClientState
-	account         *models.Account
+	account         *model.Account
 }
