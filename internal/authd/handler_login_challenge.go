@@ -62,14 +62,14 @@ func handleLoginChallenge(services *Services, c *Client, data []byte) error {
 	}
 
 	resp := packets.ServerLoginChallenge{
-		Opcode: OP_LOGIN_CHALLENGE,
+		Opcode: OpLoginChallenge,
 
 		// Protocol version is always zero for server responses
 		ProtocolVersion: 0,
 
 		// Always return success to prevent a bad actor from mining usernames. See above for how
 		// fake data is generated when the username doesn't exist
-		ErrorCode:      WOW_SUCCESS,
+		ErrorCode:      CodeSuccess,
 		GeneratorSize:  1,
 		Generator:      srp.Generator,
 		LargePrimeSize: srp.LargePrimeSize,

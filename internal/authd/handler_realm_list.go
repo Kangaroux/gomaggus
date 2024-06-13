@@ -23,7 +23,7 @@ func handleRealmList(services *Services, c *Client) error {
 		respBody.Realms[i] = packets.ServerRealm{
 			Type:          r.Type,
 			Locked:        false,
-			Flags:         REALMFLAG_NONE,
+			Flags:         RealmFlagNone,
 			Name:          r.Name,
 			Host:          r.Host,
 			Population:    0, // TODO
@@ -39,7 +39,7 @@ func handleRealmList(services *Services, c *Client) error {
 	}
 
 	respHeader := packets.ServerRealmListHeader{
-		Opcode: OP_REALM_LIST,
+		Opcode: OpRealmList,
 		Size:   uint16(len(bodyBytes)),
 	}
 

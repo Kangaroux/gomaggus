@@ -112,21 +112,21 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 
 	switch c.state {
 	case StateAuthChallenge:
-		if opcode == OP_LOGIN_CHALLENGE {
+		if opcode == OpLoginChallenge {
 			return handleLoginChallenge(s.services, c, data)
-		} else if opcode == OP_RECONNECT_CHALLENGE {
+		} else if opcode == OpReconnectChallenge {
 			return handleReconnectChallenge(s.services, c, data)
 		}
 	case StateAuthProof:
-		if opcode == OP_LOGIN_PROOF {
+		if opcode == OpLoginProof {
 			return handleLoginProof(s.services, c, data)
 		}
 	case StateReconnectProof:
-		if opcode == OP_RECONNECT_PROOF {
+		if opcode == OpReconnectProof {
 			return handleReconnectProof(s.services, c, data)
 		}
 	case StateAuthenticated:
-		if opcode == OP_REALM_LIST {
+		if opcode == OpRealmList {
 			return handleRealmList(s.services, c)
 		}
 	}

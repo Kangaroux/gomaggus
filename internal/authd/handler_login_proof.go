@@ -50,14 +50,14 @@ func handleLoginProof(services *Services, c *Client, data []byte) error {
 
 	if !authenticated {
 		resp := packets.ServerLoginProofFail{
-			Opcode:    OP_LOGIN_PROOF,
-			ErrorCode: WOW_FAIL_UNKNOWN_ACCOUNT,
+			Opcode:    OpLoginProof,
+			ErrorCode: CodeFailUnknownAccount,
 		}
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	} else {
 		resp := packets.ServerLoginProofSuccess{
-			Opcode:           OP_LOGIN_PROOF,
-			ErrorCode:        WOW_SUCCESS,
+			Opcode:           OpLoginProof,
+			ErrorCode:        CodeSuccess,
 			AccountFlags:     0,
 			HardwareSurveyId: 0,
 		}

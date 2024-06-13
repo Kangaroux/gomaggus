@@ -41,12 +41,12 @@ func handleReconnectProof(services *Services, c *Client, data []byte) error {
 		}
 	}
 
-	resp := packets.ServerReconnectProof{Opcode: OP_RECONNECT_PROOF}
+	resp := packets.ServerReconnectProof{Opcode: OpReconnectProof}
 
 	if !authenticated {
-		resp.ErrorCode = WOW_FAIL_UNKNOWN_ACCOUNT
+		resp.ErrorCode = CodeFailUnknownAccount
 	} else {
-		resp.ErrorCode = WOW_SUCCESS
+		resp.ErrorCode = CodeSuccess
 	}
 
 	respBuf := bytes.Buffer{}

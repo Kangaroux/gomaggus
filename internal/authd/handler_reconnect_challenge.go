@@ -33,10 +33,10 @@ func handleReconnectChallenge(services *Services, c *Client, data []byte) error 
 	}
 
 	resp := packets.ServerReconnectChallenge{
-		Opcode: OP_RECONNECT_CHALLENGE,
+		Opcode: OpReconnectChallenge,
 
 		// Always return success to prevent a bad actor from mining usernames.
-		ErrorCode:    WOW_SUCCESS,
+		ErrorCode:    CodeSuccess,
 		ChecksumSalt: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	copy(resp.ReconnectData[:], c.reconnectData)
