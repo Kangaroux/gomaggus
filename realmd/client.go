@@ -7,12 +7,12 @@ import (
 )
 
 type Client struct {
-	conn          net.Conn
-	serverSeed    [4]byte
-	authenticated bool
-	crypto        *WrathHeaderCrypto
+	Conn          net.Conn
+	ServerSeed    [4]byte
+	Authenticated bool
+	Crypto        *HeaderCrypto
 
-	account *model.Account
-	realm   *model.Realm
-	session *model.Session
+	Account *model.Account
+	Realm   *model.Realm
+	Session *model.Session
 }

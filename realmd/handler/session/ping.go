@@ -1,4 +1,4 @@
-package realmd
+package session
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ func handlePing(client *Client, data []byte) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerPong, 4)
+	respHeader, err := realmd.BuildHeader(OpServerPong, 4)
 	if err != nil {
 		return err
 	}

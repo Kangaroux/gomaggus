@@ -1,4 +1,4 @@
-package realmd
+package session
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func handleAccountDataTimes(client *Client) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerAccountDataTimes, uint32(inner.Len()))
+	respHeader, err := realmd.BuildHeader(OpServerAccountDataTimes, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}

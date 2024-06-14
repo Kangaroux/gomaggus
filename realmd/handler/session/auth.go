@@ -1,4 +1,4 @@
-package realmd
+package session
 
 import (
 	"bytes"
@@ -73,7 +73,7 @@ func handleAuthSession(services *Services, client *Client, data []byte) error {
 
 	// https://gtker.com/wow_messages/docs/smsg_auth_response.html#client-version-335
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerAuthResponse, uint32(inner.Len()))
+	respHeader, err := realmd.BuildHeader(OpServerAuthResponse, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func authenticateClient(services *Services, client *Client, p *AuthSessionPacket
 		return false, err
 	}
 
-	client.crypto = NewWrathHeaderCrypto(client.session.SessionKey())
+	client.crypto = NewHeaderCrypto(client.session.SessionKey())
 	if err := client.crypto.Init(); err != nil {
 		return false, err
 	}

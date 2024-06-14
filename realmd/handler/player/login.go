@@ -1,4 +1,4 @@
-package realmd
+package player
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func handlePlayerLogin(services *Services, client *Client, data []byte) error {
+func handlePlayerLogin(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	log.Println("start character login")
 
 	r := bytes.NewReader(data[6:])
@@ -16,7 +16,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 		return err
 	}
 
-	char, err := services.chars.Get(uint32(p.CharacterId))
+	char, err := svc.chars.Get(uint32(p.CharacterId))
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 
 	if !ok {
 		// https: gtker.com/wow_messages/docs/smsg_character_login_failed.html#client-version-335
-		respHeader, err := makeServerHeader(OpServerCharLoginFailed, 1)
+		respHeader, err := realmd.BuildHeader(OpServerCharLoginFailed, 1)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 		binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
 		binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
 
-		respHeader, err := makeServerHeader(OpServerCharLoginVerifyWorld, uint32(inner.Len()))
+		respHeader, err := realmd.BuildHeader(OpServerCharLoginVerifyWorld, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 	if ok {
 		// https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
 		resp := bytes.Buffer{}
-		respHeader, err := makeServerHeader(OpServerTutorialFlags, 32)
+		respHeader, err := realmd.BuildHeader(OpServerTutorialFlags, 32)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 		inner.WriteByte(0) // voip enabled
 
 		resp = bytes.Buffer{}
-		respHeader, err = makeServerHeader(OpServerSystemFeatures, uint32(inner.Len()))
+		respHeader, err = realmd.BuildHeader(OpServerSystemFeatures, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 		inner.Write([]byte{12, 0, 0, 0})                             // area: elwynn forest
 
 		resp = bytes.Buffer{}
-		respHeader, err = makeServerHeader(OpServerHearthLocation, uint32(inner.Len()))
+		respHeader, err = realmd.BuildHeader(OpServerHearthLocation, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 		// binary.Write(&inner, binary.LittleEndian, uint32(81)) // human
 
 		// resp = bytes.Buffer{}
-		// respHeader, err = makeServerHeader(OP_SRV_PLAY_CINEMATIC, uint32(inner.Len()))
+		// respHeader, err = realmd.BuildHeader(OP_SRV_PLAY_CINEMATIC, uint32(inner.Len()))
 		// if err != nil {
 		// 	return err
 		// }
@@ -218,7 +218,7 @@ func handlePlayerLogin(services *Services, client *Client, data []byte) error {
 		// nested object end
 
 		resp = bytes.Buffer{}
-		respHeader, err = makeServerHeader(OpServerUpdateObject, uint32(inner.Len()))
+		respHeader, err = realmd.BuildHeader(OpServerUpdateObject, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}

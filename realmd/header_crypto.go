@@ -28,21 +28,21 @@ var (
 	}
 )
 
-type WrathHeaderCrypto struct {
+type HeaderCrypto struct {
 	decryptCipher *rc4.Cipher
 	encryptCipher *rc4.Cipher
 	sessionKey    []byte
 }
 
-func NewWrathHeaderCrypto(sessionKey []byte) *WrathHeaderCrypto {
-	return &WrathHeaderCrypto{sessionKey: sessionKey}
+func NewHeaderCrypto(sessionKey []byte) *HeaderCrypto {
+	return &HeaderCrypto{sessionKey: sessionKey}
 }
 
-func (h *WrathHeaderCrypto) Init() error {
+func (h *HeaderCrypto) Init() error {
 	return h.InitKeys(fixedDecryptKey, fixedEncryptKey)
 }
 
-func (h *WrathHeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
+func (h *HeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
 	var err error
 
 	h.decryptCipher, err = rc4.NewCipher(h.GenerateKey(decryptKey))
@@ -60,7 +60,7 @@ func (h *WrathHeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
 	return nil
 }
 
-func (h *WrathHeaderCrypto) Decrypt(data []byte) []byte {
+func (h *HeaderCrypto) Decrypt(data []byte) []byte {
 	if h.decryptCipher == nil {
 		panic("decrypt: cipher has not been initialized, call Init() first")
 	}
@@ -71,7 +71,7 @@ func (h *WrathHeaderCrypto) Decrypt(data []byte) []byte {
 	return dataCopy
 }
 
-func (h *WrathHeaderCrypto) Encrypt(data []byte) []byte {
+func (h *HeaderCrypto) Encrypt(data []byte) []byte {
 	if h.encryptCipher == nil {
 		panic("encrypt: cipher has not been initialized, call Init() first")
 	}
@@ -82,7 +82,7 @@ func (h *WrathHeaderCrypto) Encrypt(data []byte) []byte {
 	return dataCopy
 }
 
-func (h *WrathHeaderCrypto) GenerateKey(fixedKey []byte) []byte {
+func (h *HeaderCrypto) GenerateKey(fixedKey []byte) []byte {
 	hash := hmac.New(crypto.SHA1.New, fixedKey)
 	hash.Write(h.sessionKey)
 	return hash.Sum(nil)

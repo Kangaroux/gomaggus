@@ -1,4 +1,4 @@
-package realmd
+package realm
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func handleRealmSplit(client *Client, data []byte) error {
 	inner.WriteString("01/01/01\x00") // send a bogus date (NUL-terminated)
 
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerRealmSplit, uint32(inner.Len()))
+	respHeader, err := realmd.BuildHeader(OpServerRealmSplit, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}

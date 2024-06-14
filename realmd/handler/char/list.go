@@ -1,4 +1,4 @@
-package realmd
+package char
 
 import (
 	"bytes"
@@ -65,7 +65,7 @@ func handleCharList(services *Services, client *Client) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerCharEnum, uint32(inner.Len()))
+	respHeader, err := realmd.BuildHeader(OpServerCharEnum, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}

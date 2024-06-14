@@ -1,4 +1,4 @@
-package realmd
+package char
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ func handleCharDelete(services *Services, client *Client, data []byte) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerCharDelete, 1)
+	respHeader, err := realmd.BuildHeader(OpServerCharDelete, 1)
 	if err != nil {
 		return err
 	}

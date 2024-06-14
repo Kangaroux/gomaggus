@@ -15,7 +15,7 @@ func TestGenerateKey(t *testing.T) {
 		expected := internal.DecodeHex(row[2])
 		sessionKey := internal.DecodeHex(row[0])
 		fixedKey := internal.DecodeHex(row[1])
-		wrath := &WrathHeaderCrypto{sessionKey: sessionKey}
+		wrath := &HeaderCrypto{sessionKey: sessionKey}
 		assert.Equal(t, expected, wrath.GenerateKey(fixedKey))
 	}
 }
@@ -44,7 +44,7 @@ func TestEncryptDecrypt(t *testing.T) {
 	expectedDecrypt := internal.Reverse(internal.DecodeHex("4657BB6ECEDE761D6780D2A83F3DAA0C780F50E938BDF37874366F4F9DBC5D8D315407127949A3C7CE2DF11AE1E369CEC828"))
 	expectedEncrypt := internal.Reverse(internal.DecodeHex("462D681786E2CF7266F7AFF9786F30B17646F740FDEBDD9C592CFEDA3614D5533A7ABFCC03E33DC2AF8DB1252C8B3AFE1A41"))
 
-	h := NewWrathHeaderCrypto(sessionKey)
+	h := NewHeaderCrypto(sessionKey)
 	h.Init()
 	assert.Equal(t, expectedDecrypt, h.Decrypt(data))
 	assert.Equal(t, expectedEncrypt, h.Encrypt(data))

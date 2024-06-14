@@ -14,33 +14,27 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/model"
+	"github.com/kangaroux/gomaggus/realmd"
 )
 
 const (
 	DefaultListenAddr = ":8085"
 )
 
-type Services struct {
-	accounts model.AccountService
-	chars    model.CharacterService
-	realms   model.RealmService
-	sessions model.SessionService
-}
-
 type Server struct {
 	listenAddr string
 
-	services *Services
+	services *realmd.Service
 }
 
 func NewServer(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
-		services: &Services{
-			accounts: model.NewDbAccountService(db),
-			chars:    model.NewDbCharacterervice(db),
-			realms:   model.NewDbRealmService(db),
-			sessions: model.NewDbSessionService(db),
+		services: &realmd.Service{
+			Accounts: model.NewDbAccountService(db),
+			Chars:    model.NewDbCharacterervice(db),
+			Realms:   model.NewDbRealmService(db),
+			Sessions: model.NewDbSessionService(db),
 		},
 	}
 }
@@ -79,8 +73,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
-	client := &Client{conn: conn}
-	binary.BigEndian.PutUint32(client.serverSeed[:], mrand.Uint32())
+	client := &realmd.Client{Conn: conn}
+	binary.BigEndian.PutUint32(client.ServerSeed[:], mrand.Uint32())
 
 	// The server is the one who initiates the auth challenge here, unlike the login server where
 	// the client is the one who initiates it
@@ -116,10 +110,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 // https://gtker.com/wow_messages/docs/smsg_auth_challenge.html#client-version-335
-func (s *Server) sendAuthChallenge(c *Client) error {
+func (s *Server) sendAuthChallenge(c *realmd.Client) error {
 	body := &bytes.Buffer{}
 	body.Write([]byte{1, 0, 0, 0}) // unknown
-	binary.Write(body, binary.BigEndian, c.serverSeed)
+	binary.Write(body, binary.BigEndian, c.ServerSeed)
 
 	seed := make([]byte, 32)
 	if _, err := rand.Read(seed); err != nil {
@@ -128,14 +122,14 @@ func (s *Server) sendAuthChallenge(c *Client) error {
 	body.Write(seed) // seed, unused. This differs from the 4 byte server seed
 
 	resp := &bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerAuthChallenge, uint32(body.Len()))
+	respHeader, err := realmd.BuildHeader(OpServerAuthChallenge, uint32(body.Len()))
 	if err != nil {
 		return err
 	}
 	resp.Write(respHeader)
 	resp.Write(body.Bytes())
 
-	if _, err := c.conn.Write(resp.Bytes()); err != nil {
+	if _, err := c.Conn.Write(resp.Bytes()); err != nil {
 		return err
 	}
 
@@ -143,19 +137,19 @@ func (s *Server) sendAuthChallenge(c *Client) error {
 	return nil
 }
 
-func parseHeader(c *Client, data []byte) (*Header, error) {
+func parseHeader(c *realmd.Client, data []byte) (*Header, error) {
 	if len(data) < 6 {
 		return nil, fmt.Errorf("parseHeader: payload should be at least 6 bytes but it's only %d", len(data))
 	}
 
 	headerData := data[:6]
 
-	if c.authenticated {
-		if c.crypto == nil {
+	if c.Authenticated {
+		if c.Crypto == nil {
 			return nil, errors.New("parseHeader: client is authenticated but client.crypto is nil")
 		}
 
-		headerData = c.crypto.Decrypt(headerData)
+		headerData = c.Crypto.Decrypt(headerData)
 	}
 
 	h := &Header{
@@ -184,7 +178,7 @@ func readCString(r *bytes.Reader) (string, error) {
 	return s.String(), nil
 }
 
-func (s *Server) handlePacket(c *Client, data []byte) error {
+func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 	var err error
 
 	if len(data) == 0 {
@@ -226,42 +220,6 @@ func (s *Server) handlePacket(c *Client, data []byte) error {
 	}
 
 	return nil
-}
-
-func makeServerHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
-	// Include the opcode in the size
-	size += 2
-
-	if size > SizeFieldMaxValue {
-		return nil, fmt.Errorf("makeServerHeader: size is too large (%d bytes)", size)
-	}
-
-	var header []byte
-
-	// The size field in the header can be 2 or 3 bytes. The most significant bit in the size field
-	// is reserved as a flag to indicate this. In total, server headers are 4 or 5 bytes.
-	//
-	// The header format is: <size><opcode>
-	// <size> is 2-3 bytes big endian
-	// <opcode> is 2 bytes little endian
-	if size > LargeHeaderThreshold {
-		header = []byte{
-			byte(size>>16) | LargeHeaderFlag,
-			byte(size >> 8),
-			byte(size),
-			byte(opcode),
-			byte(opcode >> 8),
-		}
-	} else {
-		header = []byte{
-			byte(size >> 8),
-			byte(size),
-			byte(opcode),
-			byte(opcode >> 8),
-		}
-	}
-
-	return header, nil
 }
 
 func getPowerTypeForClass(c model.Class) PowerType {

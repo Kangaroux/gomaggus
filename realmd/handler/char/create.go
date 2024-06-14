@@ -1,4 +1,4 @@
-package realmd
+package char
 
 import (
 	"bytes"
@@ -62,7 +62,7 @@ func handleCharCreate(services *Services, client *Client, data []byte) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := makeServerHeader(OpServerCharCreate, 1)
+	respHeader, err := realmd.BuildHeader(OpServerCharCreate, 1)
 	if err != nil {
 		return err
 	}
