@@ -25,6 +25,11 @@ type createRequest struct {
 	OutfitId   byte
 }
 
+// https://gtker.com/wow_messages/docs/smsg_char_create.html#client-version-335
+type createResponse struct {
+	ResponseCode realmd.ResponseCode
+}
+
 func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	log.Println("starting character create")
 
@@ -77,20 +82,15 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		log.Println("created char with id", char.Id)
 	}
 
-	resp := bytes.Buffer{}
-	respHeader, err := client.BuildHeader(realmd.OpServerCharCreate, 1)
-	if err != nil {
-		return err
-	}
-	resp.Write(respHeader)
+	resp := createResponse{}
 
-	if existing != nil {
-		resp.WriteByte(byte(realmd.RespCodeCharCreateNameInUse))
+	if existing == nil {
+		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
 	} else {
-		resp.WriteByte(byte(realmd.RespCodeCharCreateSuccess))
+		resp.ResponseCode = realmd.RespCodeCharCreateNameInUse
 	}
 
-	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
+	if err := client.SendPacket(realmd.OpServerCharCreate, &resp); err != nil {
 		return err
 	}
 

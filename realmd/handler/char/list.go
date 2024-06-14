@@ -9,6 +9,10 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+// https://gtker.com/wow_messages/docs/smsg_char_enum.html#client-version-335
+type listResponse struct {
+}
+
 func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 	log.Println("starting character list")
 
@@ -20,7 +24,6 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 		return err
 	}
 
-	// https://gtker.com/wow_messages/docs/smsg_char_enum.html#client-version-335
 	inner := bytes.Buffer{}
 	inner.WriteByte(byte(len(accountChars)))
 

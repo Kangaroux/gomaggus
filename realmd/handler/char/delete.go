@@ -13,6 +13,11 @@ type deleteRequest struct {
 	CharacterId uint64
 }
 
+// https://gtker.com/wow_messages/docs/smsg_char_delete.html#client-version-335
+type deleteResponse struct {
+	ResponseCode realmd.ResponseCode
+}
+
 func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	log.Println("start character delete")
 
@@ -27,27 +32,35 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		return err
 	}
 
-	resp := bytes.Buffer{}
-	respHeader, err := client.BuildHeader(realmd.OpServerCharDelete, 1)
-	if err != nil {
-		return err
-	}
-	resp.Write(respHeader)
+	deleted := false
 
-	if char == nil || char.AccountId != client.Account.Id || char.RealmId != client.Realm.Id {
-		resp.WriteByte(byte(realmd.RespCodeCharDeleteFailed))
+	if char == nil {
+		log.Println("client tried to delete non-existent character:", p.CharacterId)
+	} else if char.AccountId != client.Account.Id {
+		log.Println("client tried to delete character from another account:", p.CharacterId)
+	} else if char.RealmId != client.Realm.Id {
+		log.Println("client tried to delete character from another realm:", p.CharacterId)
 	} else {
-		if _, err := svc.Chars.Delete(char.Id); err != nil {
+		deleted, err = svc.Chars.Delete(char.Id)
+
+		if err != nil {
 			return err
 		}
-		resp.WriteByte(byte(realmd.RespCodeCharDeleteSuccess))
 	}
 
-	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
+	resp := deleteResponse{}
+
+	if deleted {
+		resp.ResponseCode = realmd.RespCodeCharDeleteSuccess
+	} else {
+		resp.ResponseCode = realmd.RespCodeCharDeleteFailed
+	}
+
+	if err := client.SendPacket(realmd.OpServerCharCreate, &resp); err != nil {
 		return err
 	}
 
-	log.Println("finished character create")
+	log.Println("finished character delete")
 
 	return nil
 }

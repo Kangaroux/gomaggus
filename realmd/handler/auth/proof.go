@@ -106,8 +106,16 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	}
 
 	if !client.Authenticated {
-		// We can't return an error to the client due to the header encryption, just drop the connection
+		// The client expects the authentication to be successful and the header to be encrypted.
+		// If auth failed, we don't know how to encrypt the header, thus we can't send an error response.
+		// Just drop the connection.
 		return errors.New("client could not be authenticated")
+	}
+
+	// Header crypto can be initialized now that we know the session key
+	client.Crypto = realmd.NewHeaderCrypto(client.Session.SessionKey())
+	if err := client.Crypto.Init(); err != nil {
+		return err
 	}
 
 	resp := proofSuccess{
@@ -160,15 +168,9 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 		return false, err
 	}
 
-	// Initialize the header encryption using the session key
-	client.Crypto = realmd.NewHeaderCrypto(client.Session.SessionKey())
-	if err := client.Crypto.Init(); err != nil {
-		return false, err
-	}
-
 	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, client.Session.SessionKey())
 
-	// Check to see if the proof sent by the client is correct
+	// Client sent correct proof?
 	if !bytes.Equal(proof, p.ClientProof[:]) {
 		log.Println("authenticateClient: invalid proof")
 		return false, nil
