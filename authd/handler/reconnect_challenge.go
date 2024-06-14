@@ -35,19 +35,19 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 
 	log.Println("Starting reconnect challenge")
 
-	var err error
 	p := reconnectChallengeRequest{}
-	if err = p.Read(data); err != nil {
+	if err := p.Read(data); err != nil {
 		return err
 	}
 	c.Username = p.Username
 
 	log.Printf("client trying to reconnect as '%s'\n", c.Username)
 
-	c.Account, err = svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
+	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
 	if err != nil {
 		return err
 	}
+	c.Account = acct
 
 	// Generate random data that will be used for the reconnect proof
 	if _, err := rand.Read(c.ReconnectData); err != nil {

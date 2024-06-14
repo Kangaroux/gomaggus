@@ -9,8 +9,13 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+type character struct {
+}
+
 // https://gtker.com/wow_messages/docs/smsg_char_enum.html#client-version-335
 type listResponse struct {
+	Count      uint8
+	Characters []character `binary:"[Count]Any`
 }
 
 func ListHandler(svc *realmd.Service, client *realmd.Client) error {

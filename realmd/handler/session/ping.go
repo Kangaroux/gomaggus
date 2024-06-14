@@ -17,14 +17,13 @@ type pingRequest struct {
 func PingHandler(client *realmd.Client, data []byte) error {
 	log.Println("starting ping")
 
-	var err error
 	r := bytes.NewReader(data[6:])
 	p := pingRequest{}
 
-	if err = binary.Read(r, binary.LittleEndian, &p.SequenceId); err != nil {
+	if err := binary.Read(r, binary.LittleEndian, &p.SequenceId); err != nil {
 		return err
 	}
-	if err = binary.Read(r, binary.LittleEndian, &p.RoundTripTime); err != nil {
+	if err := binary.Read(r, binary.LittleEndian, &p.RoundTripTime); err != nil {
 		return err
 	}
 

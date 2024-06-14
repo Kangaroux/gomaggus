@@ -37,13 +37,19 @@ func (acc *Account) SetUsernamePassword(username, password string) error {
 }
 
 func (acc *Account) DecodeSrp() error {
-	var err error
-	if acc.srpSalt, err = hex.DecodeString(acc.SrpSaltHex); err != nil {
+	salt, err := hex.DecodeString(acc.SrpSaltHex)
+	if err != nil {
 		return err
 	}
-	if acc.srpVerifier, err = hex.DecodeString(acc.SrpVerifierHex); err != nil {
+
+	verifier, err := hex.DecodeString(acc.SrpVerifierHex)
+	if err != nil {
 		return err
 	}
+
+	acc.srpSalt = salt
+	acc.srpVerifier = verifier
+
 	return nil
 }
 

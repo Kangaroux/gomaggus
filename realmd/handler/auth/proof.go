@@ -60,7 +60,6 @@ type proofSuccess struct {
 func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	log.Println("starting auth session")
 
-	var err error
 	r := bytes.NewReader(data[6:])
 
 	p := proofRequest{}
@@ -140,41 +139,45 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 // from the DB, calculating the proof ourselves, and checking that it matches. If it does, the client
 // is considered authenticated.
 func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequest) (bool, error) {
-	var err error
-
-	client.Account, err = svc.Accounts.Get(&model.AccountGetParams{Username: p.Username})
+	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: p.Username})
 	if err != nil {
 		return false, err
-	} else if client.Account == nil {
+	} else if acct == nil {
 		log.Printf("authenticateClient: no account with username %s exists", p.Username)
 		return false, nil
 	}
 
-	if client.Realm, err = svc.Realms.Get(p.RealmId); err != nil {
+	realm, err := svc.Realms.Get(p.RealmId)
+	if err != nil {
 		return false, err
-	} else if client.Realm == nil {
+	} else if realm == nil {
 		log.Printf("authenticateClient: no realm with id %d exists", p.RealmId)
 		return false, nil
 	}
 
-	if client.Session, err = svc.Sessions.Get(client.Account.Id); err != nil {
+	session, err := svc.Sessions.Get(acct.Id)
+	if err != nil {
 		return false, err
-	} else if client.Session == nil {
-		log.Printf("authenticateClient: no session for username %s exists", client.Account.Username)
+	} else if session == nil {
+		log.Printf("authenticateClient: no session for username %s exists", acct.Username)
 		return false, nil
 	}
 
-	if err := client.Session.Decode(); err != nil {
+	if err := session.Decode(); err != nil {
 		return false, err
 	}
 
-	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, client.Session.SessionKey())
+	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, session.SessionKey())
 
 	// Client sent correct proof?
 	if !bytes.Equal(proof, p.ClientProof[:]) {
 		log.Println("authenticateClient: invalid proof")
 		return false, nil
 	}
+
+	client.Account = acct
+	client.Realm = realm
+	client.Session = session
 
 	log.Println("client authenticated successfully")
 

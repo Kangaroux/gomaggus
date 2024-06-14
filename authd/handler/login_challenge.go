@@ -73,20 +73,19 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	log.Println("Starting login challenge")
 
-	var err error
-
 	p := loginChallengeRequest{}
-	if err = p.Read(data); err != nil {
+	if err := p.Read(data); err != nil {
 		return err
 	}
 	c.Username = p.Username
 
 	log.Printf("client trying to login as '%s'\n", c.Username)
 
-	c.Account, err = svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
+	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
 	if err != nil {
 		return err
 	}
+	c.Account = acct
 
 	var publicKey []byte
 	var salt []byte
@@ -110,7 +109,7 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 			return err
 		}
 	} else {
-		if err = c.Account.DecodeSrp(); err != nil {
+		if err := c.Account.DecodeSrp(); err != nil {
 			return err
 		}
 		publicKey = srp.CalculateServerPublicKey(c.Account.Verifier(), c.PrivateKey)

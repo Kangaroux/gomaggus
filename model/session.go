@@ -16,10 +16,12 @@ type Session struct {
 }
 
 func (s *Session) Decode() error {
-	var err error
-	if s.sessionKey, err = hex.DecodeString(s.SessionKeyHex); err != nil {
+	key, err := hex.DecodeString(s.SessionKeyHex)
+	if err != nil {
 		return err
 	}
+
+	s.sessionKey = key
 	return nil
 }
 
