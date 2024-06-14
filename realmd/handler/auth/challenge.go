@@ -14,7 +14,7 @@ import (
 // The server initiates the challenge, there is no initial request from the client
 type challengeResponse struct {
 	Unknown    uint32
-	ServerSeed uint32
+	ServerSeed []byte `binary:"[4]byte"`
 	UnusedSeed [32]byte
 }
 

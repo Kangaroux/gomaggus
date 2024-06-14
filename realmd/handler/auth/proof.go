@@ -140,7 +140,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *authReque
 		return false, err
 	}
 
-	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed[:], client.Session.SessionKey())
+	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, client.Session.SessionKey())
 
 	if !bytes.Equal(proof, p.ClientProof[:]) {
 		log.Println("proofs don't match")

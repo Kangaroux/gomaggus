@@ -2,7 +2,6 @@ package realmd
 
 import (
 	"crypto/rand"
-	"encoding/binary"
 	"net"
 
 	"github.com/kangaroux/gomaggus/model"
@@ -10,7 +9,7 @@ import (
 
 type Client struct {
 	Conn          net.Conn
-	ServerSeed    uint32
+	ServerSeed    []byte
 	Authenticated bool
 	Crypto        *HeaderCrypto
 
@@ -27,7 +26,7 @@ func NewClient(conn net.Conn) (*Client, error) {
 
 	c := &Client{
 		Conn:       conn,
-		ServerSeed: binary.BigEndian.Uint32(seed),
+		ServerSeed: seed,
 	}
 
 	return c, nil
