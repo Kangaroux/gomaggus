@@ -12,9 +12,18 @@ import (
 	"github.com/mixcode/binarystruct"
 )
 
+const (
+	ClientHeaderSize = 6
+)
+
 type ClientHeader struct {
 	Size   uint16
 	Opcode ClientOpcode
+}
+
+type ClientPacket struct {
+	Header  *ClientHeader
+	Payload []byte
 }
 
 type Client struct {

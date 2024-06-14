@@ -18,10 +18,10 @@ type deleteResponse struct {
 	ResponseCode realmd.ResponseCode
 }
 
-func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
+func DeleteHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
 	log.Println("start character delete")
 
-	r := bytes.NewReader(data[6:])
+	r := bytes.NewReader(data.Payload)
 	p := deleteRequest{}
 	if err := binary.Read(r, binary.LittleEndian, &p.CharacterId); err != nil {
 		return err

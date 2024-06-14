@@ -40,7 +40,6 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 
 func (s *Server) Start() {
 	listener, err := net.Listen("tcp4", s.listenAddr)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +49,6 @@ func (s *Server) Start() {
 
 	for {
 		conn, err := listener.Accept()
-
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -79,8 +77,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		return
 	}
 
-	// The server is the one who initiates the auth challenge here, unlike the login server where
-	// the client is the one who initiates it
+	// In realmd the server initiates the auth challenge
 	if err := auth.SendChallenge(client); err != nil {
 		log.Printf("error sending auth challenge: %v\n", err)
 		conn.Close()
@@ -90,9 +87,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	buf := make([]byte, 4096)
 
 	for {
-		log.Println("waiting to read...")
 		n, err := conn.Read(buf)
-
 		if err == io.EOF {
 			log.Println("client disconnected (closed by client)")
 			return
@@ -113,8 +108,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
-	var err error
-
 	if len(data) == 0 {
 		return fmt.Errorf("handlePacket: packet is empty")
 	}
@@ -124,12 +117,17 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 		return err
 	}
 
+	packet := &realmd.ClientPacket{
+		Header:  header,
+		Payload: data[realmd.ClientHeaderSize:],
+	}
+
 	switch header.Opcode {
 	case realmd.OpClientAuthSession:
-		return auth.ProofHandler(s.services, c, data)
+		return auth.ProofHandler(s.services, c, packet)
 
 	case realmd.OpClientPing:
-		return session.PingHandler(c, data)
+		return session.PingHandler(c, packet)
 
 	case realmd.OpClientReadyForAccountDataTimes:
 		return session.DataTimesHandler(c)
@@ -138,20 +136,19 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 		return char.ListHandler(s.services, c)
 
 	case realmd.OpClientRealmSplit:
-		return realm.SplitInfoHandler(c, data)
+		return realm.SplitInfoHandler(c, packet)
 
 	case realmd.OpClientCharCreate:
-		return char.CreateHandler(s.services, c, data)
+		return char.CreateHandler(s.services, c, packet)
 
 	case realmd.OpClientCharDelete:
-		return char.DeleteHandler(s.services, c, data)
+		return char.DeleteHandler(s.services, c, packet)
 
 	case realmd.OpClientPlayerLogin:
-		return player.LoginHandler(s.services, c, data)
+		return player.LoginHandler(s.services, c, packet)
 
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
+		return nil
 	}
-
-	return nil
 }

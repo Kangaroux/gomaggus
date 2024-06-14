@@ -14,10 +14,10 @@ type pingRequest struct {
 	RoundTripTime uint32 // zero if server hasn't responded?
 }
 
-func PingHandler(client *realmd.Client, data []byte) error {
+func PingHandler(client *realmd.Client, data *realmd.ClientPacket) error {
 	log.Println("starting ping")
 
-	r := bytes.NewReader(data[6:])
+	r := bytes.NewReader(data.Payload)
 	p := pingRequest{}
 
 	if err := binary.Read(r, binary.LittleEndian, &p.SequenceId); err != nil {

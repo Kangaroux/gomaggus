@@ -15,10 +15,10 @@ type loginRequest struct {
 	CharacterId uint64
 }
 
-func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
+func LoginHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
 	log.Println("start character login")
 
-	r := bytes.NewReader(data[6:])
+	r := bytes.NewReader(data.Payload)
 	p := loginRequest{}
 	if err := binary.Read(r, binary.LittleEndian, &p.CharacterId); err != nil {
 		return err

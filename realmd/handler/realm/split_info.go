@@ -21,10 +21,10 @@ type splitRequest struct {
 	RealmId uint32
 }
 
-func SplitInfoHandler(client *realmd.Client, data []byte) error {
+func SplitInfoHandler(client *realmd.Client, data *realmd.ClientPacket) error {
 	log.Println("starting realm split")
 
-	r := bytes.NewReader(data[6:])
+	r := bytes.NewReader(data.Payload)
 	p := splitRequest{}
 	binary.Read(r, binary.LittleEndian, &p.RealmId)
 

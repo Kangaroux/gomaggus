@@ -57,10 +57,10 @@ type proofSuccess struct {
 // 	HasFreeCharMigration bool
 // }
 
-func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
+func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
 	log.Println("starting auth session")
 
-	r := bytes.NewReader(data[6:])
+	r := bytes.NewReader(data.Payload)
 
 	p := proofRequest{}
 	if err := binary.Read(r, binary.LittleEndian, &p.ClientBuild); err != nil {

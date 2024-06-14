@@ -30,7 +30,7 @@ type createResponse struct {
 	ResponseCode realmd.ResponseCode
 }
 
-func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
+func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
 	log.Println("starting character create")
 
 	// TODO: check if account is full
@@ -43,7 +43,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 	// }
 
 	p := createRequest{}
-	r := bytes.NewReader(data[6:])
+	r := bytes.NewReader(data.Payload)
 	charName, err := internal.ReadCString(r)
 	if err != nil {
 		return err
