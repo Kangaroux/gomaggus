@@ -8,6 +8,14 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+type RealmSplitState uint32
+
+const (
+	SplitNormal    = 0
+	SplitConfirmed = 1
+	SplitPending   = 2
+)
+
 // https://gtker.com/wow_messages/docs/cmsg_realm_split.html
 type splitRequest struct {
 	RealmId uint32
@@ -23,7 +31,7 @@ func SplitInfoHandler(client *realmd.Client, data []byte) error {
 	// https://gtker.com/wow_messages/docs/smsg_realm_split.html
 	inner := bytes.Buffer{}
 	binary.Write(&inner, binary.LittleEndian, p.RealmId)
-	inner.Write([]byte{0, 0, 0, 0})   // split state, 0 = normal
+	binary.Write(&inner, binary.LittleEndian, uint32(SplitNormal))
 	inner.WriteString("01/01/01\x00") // send a bogus date (NUL-terminated)
 
 	resp := bytes.Buffer{}

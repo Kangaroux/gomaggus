@@ -6,6 +6,16 @@ import (
 	"github.com/kangaroux/gomaggus/model"
 )
 
+type PowerType byte
+
+const (
+	PowerTypeMana      PowerType = 0
+	PowerTypeRage      PowerType = 1
+	PowerTypeFocus     PowerType = 2
+	PowerTypeEnergy    PowerType = 3
+	PowerTypeHappiness PowerType = 4
+)
+
 func PowerTypeForClass(c model.Class) PowerType {
 	switch c {
 	case model.ClassWarrior:
@@ -24,7 +34,7 @@ func PowerTypeForClass(c model.Class) PowerType {
 		return PowerTypeEnergy
 
 	default:
-		log.Println("getPowerTypeForClass: got unexpected class", c)
+		log.Println("PowerTypeForClass: got unexpected class", c)
 		return PowerTypeMana
 	}
 }
