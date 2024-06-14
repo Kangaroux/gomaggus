@@ -3,16 +3,16 @@ package handler
 type Opcode byte
 
 const (
-	OpLoginChallenge     Opcode = 0x0
-	OpLoginProof         Opcode = 0x1
-	OpReconnectChallenge Opcode = 0x2
-	OpReconnectProof     Opcode = 0x3
-	OpRealmList          Opcode = 0x10
+	OpcodeLoginChallenge     Opcode = 0x0
+	OpcodeLoginProof         Opcode = 0x1
+	OpcodeReconnectChallenge Opcode = 0x2
+	OpcodeReconnectProof     Opcode = 0x3
+	OpcodeRealmList          Opcode = 0x10
 )
 
 type RespCode byte
 
 const (
-	CodeSuccess            RespCode = 0x0
-	CodeFailUnknownAccount RespCode = 0x4
+	Success        RespCode = 0x0
+	UnknownAccount RespCode = 0x4
 )

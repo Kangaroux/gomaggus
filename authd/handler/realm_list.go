@@ -73,7 +73,7 @@ func RealmList(svc *authd.Service, c *authd.Client) error {
 	}
 
 	respHeader := realmListHeader{
-		Opcode: OpRealmList,
+		Opcode: OpcodeRealmList,
 		Size:   uint16(len(bodyBytes)),
 	}
 

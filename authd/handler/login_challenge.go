@@ -119,14 +119,14 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 	}
 
 	resp := loginChallengeResponse{
-		Opcode: OpLoginChallenge,
+		Opcode: OpcodeLoginChallenge,
 
 		// Protocol version is always zero for server responses
 		ProtocolVersion: 0,
 
 		// Always return success to prevent a bad actor from mining usernames. See above for how
 		// fake data is generated when the username doesn't exist
-		ErrorCode:      CodeSuccess,
+		ErrorCode:      Success,
 		GeneratorSize:  1,
 		Generator:      srp.Generator,
 		LargePrimeSize: srp.LargePrimeSize,

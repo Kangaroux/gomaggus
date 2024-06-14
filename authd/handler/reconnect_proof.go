@@ -70,12 +70,12 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 		}
 	}
 
-	resp := reconnectProofResponse{Opcode: OpReconnectProof}
+	resp := reconnectProofResponse{Opcode: OpcodeReconnectProof}
 
 	if !authenticated {
-		resp.ErrorCode = CodeFailUnknownAccount
+		resp.ErrorCode = UnknownAccount
 	} else {
-		resp.ErrorCode = CodeSuccess
+		resp.ErrorCode = Success
 	}
 
 	respBuf := bytes.Buffer{}

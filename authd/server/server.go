@@ -107,19 +107,19 @@ func (s *Server) handlePacket(c *authd.Client, data []byte) error {
 	opcode := handler.Opcode(data[0])
 
 	switch opcode {
-	case handler.OpLoginChallenge:
+	case handler.OpcodeLoginChallenge:
 		return handler.LoginChallenge(s.services, c, data)
 
-	case handler.OpReconnectChallenge:
+	case handler.OpcodeReconnectChallenge:
 		return handler.ReconnectChallenge(s.services, c, data)
 
-	case handler.OpLoginProof:
+	case handler.OpcodeLoginProof:
 		return handler.LoginProof(s.services, c, data)
 
-	case handler.OpReconnectProof:
+	case handler.OpcodeReconnectProof:
 		return handler.ReconnectProof(s.services, c, data)
 
-	case handler.OpRealmList:
+	case handler.OpcodeRealmList:
 		return handler.RealmList(s.services, c)
 
 	default:

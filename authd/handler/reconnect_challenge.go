@@ -55,10 +55,10 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 	}
 
 	resp := reconnectChallengeResponse{
-		Opcode: OpReconnectChallenge,
+		Opcode: OpcodeReconnectChallenge,
 
 		// Always return success to prevent a bad actor from mining usernames.
-		ErrorCode:    CodeSuccess,
+		ErrorCode:    Success,
 		ChecksumSalt: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	copy(resp.ReconnectData[:], c.ReconnectData)

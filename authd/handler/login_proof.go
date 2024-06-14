@@ -88,14 +88,14 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	if !authenticated {
 		resp := loginProofFailed{
-			Opcode:    OpLoginProof,
-			ErrorCode: CodeFailUnknownAccount,
+			Opcode:    OpcodeLoginProof,
+			ErrorCode: UnknownAccount,
 		}
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	} else {
 		resp := loginProofSuccess{
-			Opcode:           OpLoginProof,
-			ErrorCode:        CodeSuccess,
+			Opcode:           OpcodeLoginProof,
+			ErrorCode:        Success,
 			AccountFlags:     0,
 			HardwareSurveyId: 0,
 		}
