@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+// ConcatBytes returns a new slice of all the bytes concatenated together.
+func ConcatBytes(data ...[]byte) []byte {
+	buf := bytes.Buffer{}
+	for _, x := range data {
+		buf.Write(x)
+	}
+	return buf.Bytes()
+}
+
 // Pad adds zero-bytes as padding to a byte array if the array is smaller than the given length.
 // If the array doesn't need padding, the original array is returned, otherwise a copy with padding
 // included is returned.

@@ -3,33 +3,43 @@ package auth
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/binary"
 	"log"
 
+	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/smsg_auth_challenge.html#client-version-335
-func SendChallenge(c *realmd.Client) error {
-	body := &bytes.Buffer{}
-	body.Write([]byte{1, 0, 0, 0}) // unknown
-	binary.Write(body, binary.BigEndian, c.ServerSeed)
+// The server initiates the challenge, there is no initial request from the client
+type challengeResponse struct {
+	Unknown    uint32
+	ServerSeed uint32
+	UnusedSeed [32]byte
+}
 
-	seed := make([]byte, 32)
-	if _, err := rand.Read(seed); err != nil {
+func SendChallenge(c *realmd.Client) error {
+	resp := challengeResponse{
+		Unknown:    0x1,
+		ServerSeed: c.ServerSeed,
+	}
+
+	// Generate the unused seed
+	if _, err := rand.Read(resp.UnusedSeed[:]); err != nil {
 		return err
 	}
-	body.Write(seed) // seed, unused. This differs from the 4 byte server seed
 
-	resp := &bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(realmd.OpServerAuthChallenge, uint32(body.Len()))
+	buf := bytes.Buffer{}
+	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, &resp); err != nil {
+		return err
+	}
+
+	header, err := realmd.BuildHeader(realmd.OpServerAuthChallenge, uint32(buf.Len()))
 	if err != nil {
 		return err
 	}
-	resp.Write(respHeader)
-	resp.Write(body.Bytes())
 
-	if _, err := c.Conn.Write(resp.Bytes()); err != nil {
+	if _, err := c.Conn.Write(internal.ConcatBytes(header, buf.Bytes())); err != nil {
 		return err
 	}
 
