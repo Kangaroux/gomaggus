@@ -119,7 +119,7 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 		return fmt.Errorf("handlePacket: packet is empty")
 	}
 
-	header, err := realmd.ParseClientHeader(c, data)
+	header, err := c.ParseHeader(data)
 	if err != nil {
 		return err
 	}

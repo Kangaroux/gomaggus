@@ -2,11 +2,17 @@ package realmd
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"net"
 
 	"github.com/kangaroux/gomaggus/model"
 )
+
+type ClientHeader struct {
+	Size   uint16
+	Opcode ClientOpcode
+}
 
 type Client struct {
 	Conn          net.Conn
@@ -33,7 +39,7 @@ func NewClient(conn net.Conn) (*Client, error) {
 	return c, nil
 }
 
-// BuildHeader returns a 4-5 byte server header. It encrypts the header if the client is authenticated.
+// BuildHeader returns a 4-5 byte server header. The header is encrypted if the client is authenticated.
 func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	// Include the opcode in the size
 	size += 2
@@ -72,4 +78,25 @@ func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	}
 
 	return header, nil
+}
+
+// ParseHeader returns a parse header from a client packet. The header is decrypted if the client is
+// authenticated.
+func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
+	if len(data) < 6 {
+		return nil, fmt.Errorf("ParseHeader: payload should be at least 6 bytes but it's only %d", len(data))
+	}
+
+	header := data[:6]
+
+	if c.Authenticated {
+		header = c.Crypto.Decrypt(header)
+	}
+
+	h := &ClientHeader{
+		Size:   binary.BigEndian.Uint16(header[:2]),
+		Opcode: ClientOpcode(binary.LittleEndian.Uint32(header[2:6])),
+	}
+
+	return h, nil
 }
