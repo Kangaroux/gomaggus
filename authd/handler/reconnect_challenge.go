@@ -18,8 +18,8 @@ type reconnectChallengeRequest = loginChallengeRequest
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_challenge_server.html#protocol-version-8
 type reconnectChallengeResponse struct {
-	Opcode        Opcode // OpReconnectChallenge
-	ErrorCode     RespCode
+	Opcode        authd.Opcode // OpReconnectChallenge
+	ErrorCode     authd.RespCode
 	ReconnectData [ReconnectDataLen]byte
 	ChecksumSalt  [16]byte
 }
@@ -55,10 +55,10 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 	}
 
 	resp := reconnectChallengeResponse{
-		Opcode: OpcodeReconnectChallenge,
+		Opcode: authd.OpcodeReconnectChallenge,
 
 		// Always return success to prevent a bad actor from mining usernames.
-		ErrorCode:    Success,
+		ErrorCode:    authd.Success,
 		ChecksumSalt: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	copy(resp.ReconnectData[:], c.ReconnectData)

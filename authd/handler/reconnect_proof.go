@@ -15,7 +15,7 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_client.html
 type reconnectProofRequest struct {
-	Opcode         Opcode // OpReconnectProof
+	Opcode         authd.Opcode // OpReconnectProof
 	ProofData      [srp.ProofDataSize]byte
 	ClientProof    [srp.ProofSize]byte
 	ClientChecksum [20]byte
@@ -29,8 +29,8 @@ func (p *reconnectProofRequest) Read(data []byte) error {
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_server.html#protocol-version-8
 type reconnectProofResponse struct {
-	Opcode    Opcode
-	ErrorCode RespCode
+	Opcode    authd.Opcode
+	ErrorCode authd.RespCode
 	_         [2]byte // padding
 }
 
@@ -70,12 +70,12 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 		}
 	}
 
-	resp := reconnectProofResponse{Opcode: OpcodeReconnectProof}
+	resp := reconnectProofResponse{Opcode: authd.OpcodeReconnectProof}
 
 	if !authenticated {
-		resp.ErrorCode = UnknownAccount
+		resp.ErrorCode = authd.UnknownAccount
 	} else {
-		resp.ErrorCode = Success
+		resp.ErrorCode = authd.Success
 	}
 
 	respBuf := bytes.Buffer{}

@@ -104,22 +104,22 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) handlePacket(c *authd.Client, data []byte) error {
-	opcode := handler.Opcode(data[0])
+	opcode := authd.Opcode(data[0])
 
 	switch opcode {
-	case handler.OpcodeLoginChallenge:
+	case authd.OpcodeLoginChallenge:
 		return handler.LoginChallenge(s.services, c, data)
 
-	case handler.OpcodeReconnectChallenge:
+	case authd.OpcodeReconnectChallenge:
 		return handler.ReconnectChallenge(s.services, c, data)
 
-	case handler.OpcodeLoginProof:
+	case authd.OpcodeLoginProof:
 		return handler.LoginProof(s.services, c, data)
 
-	case handler.OpcodeReconnectProof:
+	case authd.OpcodeReconnectProof:
 		return handler.ReconnectProof(s.services, c, data)
 
-	case handler.OpcodeRealmList:
+	case authd.OpcodeRealmList:
 		return handler.RealmList(s.services, c)
 
 	default:

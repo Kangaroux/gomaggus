@@ -11,7 +11,7 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmd_realm_list_server.html#protocol-version-8
 type realmListHeader struct {
-	Opcode Opcode // OpRealmList
+	Opcode authd.Opcode // OpRealmList
 	Size   uint16
 }
 
@@ -73,7 +73,7 @@ func RealmList(svc *authd.Service, c *authd.Client) error {
 	}
 
 	respHeader := realmListHeader{
-		Opcode: OpcodeRealmList,
+		Opcode: authd.OpcodeRealmList,
 		Size:   uint16(len(bodyBytes)),
 	}
 

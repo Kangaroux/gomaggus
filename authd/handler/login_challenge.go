@@ -16,7 +16,7 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_client.html
 type loginChallengeRequest struct {
-	Opcode          Opcode // OpLoginChallenge
+	Opcode          authd.Opcode // OpLoginChallenge
 	ProtocolVersion uint8
 	Size            uint16
 	GameName        [4]byte
@@ -47,9 +47,9 @@ func (p *loginChallengeRequest) Read(data []byte) error {
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 type loginChallengeResponse struct {
-	Opcode          Opcode
+	Opcode          authd.Opcode
 	ProtocolVersion uint8
-	ErrorCode       RespCode
+	ErrorCode       authd.RespCode
 	PublicKey       [srp.KeySize]byte
 	GeneratorSize   uint8
 	Generator       uint8
@@ -119,14 +119,14 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 	}
 
 	resp := loginChallengeResponse{
-		Opcode: OpcodeLoginChallenge,
+		Opcode: authd.OpcodeLoginChallenge,
 
 		// Protocol version is always zero for server responses
 		ProtocolVersion: 0,
 
 		// Always return success to prevent a bad actor from mining usernames. See above for how
 		// fake data is generated when the username doesn't exist
-		ErrorCode:      Success,
+		ErrorCode:      authd.Success,
 		GeneratorSize:  1,
 		Generator:      srp.Generator,
 		LargePrimeSize: srp.LargePrimeSize,

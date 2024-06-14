@@ -15,7 +15,7 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8
 type loginProofRequest struct {
-	Opcode           Opcode // OpLoginProof
+	Opcode           authd.Opcode // OpLoginProof
 	ClientPublicKey  [srp.KeySize]byte
 	ClientProof      [srp.ProofSize]byte
 	CRCHash          [20]byte
@@ -29,14 +29,14 @@ func (p *loginProofRequest) Read(data []byte) error {
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
 type loginProofFailed struct {
-	Opcode    Opcode // OpLoginProof
-	ErrorCode RespCode
+	Opcode    authd.Opcode // OpLoginProof
+	ErrorCode authd.RespCode
 	_         [2]byte // padding
 }
 
 type loginProofSuccess struct {
-	Opcode           Opcode // OpLoginProof
-	ErrorCode        RespCode
+	Opcode           authd.Opcode // OpLoginProof
+	ErrorCode        authd.RespCode
 	Proof            [srp.ProofSize]byte
 	AccountFlags     uint32
 	HardwareSurveyId uint32
@@ -88,14 +88,14 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	if !authenticated {
 		resp := loginProofFailed{
-			Opcode:    OpcodeLoginProof,
-			ErrorCode: UnknownAccount,
+			Opcode:    authd.OpcodeLoginProof,
+			ErrorCode: authd.UnknownAccount,
 		}
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	} else {
 		resp := loginProofSuccess{
-			Opcode:           OpcodeLoginProof,
-			ErrorCode:        Success,
+			Opcode:           authd.OpcodeLoginProof,
+			ErrorCode:        authd.Success,
 			AccountFlags:     0,
 			HardwareSurveyId: 0,
 		}
