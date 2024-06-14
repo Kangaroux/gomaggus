@@ -29,11 +29,11 @@ func PingHandler(client *realmd.Client, data []byte) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(realmd.OpServerPong, 4)
+	respHeader, err := client.BuildHeader(realmd.OpServerPong, 4)
 	if err != nil {
 		return err
 	}
-	resp.Write(client.Crypto.Encrypt(respHeader))
+	resp.Write(respHeader)
 	binary.Write(&resp, binary.LittleEndian, p.SequenceId)
 
 	if _, err := client.Conn.Write(resp.Bytes()); err != nil {

@@ -34,11 +34,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 
 	if !ok {
 		// https: gtker.com/wow_messages/docs/smsg_character_login_failed.html#client-version-335
-		respHeader, err := realmd.BuildHeader(realmd.OpServerCharLoginFailed, 1)
+		respHeader, err := client.BuildHeader(realmd.OpServerCharLoginFailed, 1)
 		if err != nil {
 			return err
 		}
-		resp.Write(client.Crypto.Encrypt(respHeader))
+		resp.Write(respHeader)
 		resp.WriteByte(byte(realmd.RespCodeCharLoginFailed))
 	} else {
 		// https://gtker.com/wow_messages/docs/smsg_login_verify_world.html
@@ -49,11 +49,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
 		binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
 
-		respHeader, err := realmd.BuildHeader(realmd.OpServerCharLoginVerifyWorld, uint32(inner.Len()))
+		respHeader, err := client.BuildHeader(realmd.OpServerCharLoginVerifyWorld, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
-		resp.Write(client.Crypto.Encrypt(respHeader))
+		resp.Write(respHeader)
 		resp.Write(inner.Bytes())
 	}
 
@@ -66,11 +66,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if ok {
 		// https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
 		resp := bytes.Buffer{}
-		respHeader, err := realmd.BuildHeader(realmd.OpServerTutorialFlags, 32)
+		respHeader, err := client.BuildHeader(realmd.OpServerTutorialFlags, 32)
 		if err != nil {
 			return err
 		}
-		resp.Write(client.Crypto.Encrypt(respHeader))
+		resp.Write(respHeader)
 		resp.Write(bytes.Repeat([]byte{255}, 32))
 
 		if _, err := client.Conn.Write(resp.Bytes()); err != nil {
@@ -85,11 +85,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		inner.WriteByte(0) // voip enabled
 
 		resp = bytes.Buffer{}
-		respHeader, err = realmd.BuildHeader(realmd.OpServerSystemFeatures, uint32(inner.Len()))
+		respHeader, err = client.BuildHeader(realmd.OpServerSystemFeatures, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
-		resp.Write(client.Crypto.Encrypt(respHeader))
+		resp.Write(respHeader)
 		resp.Write(inner.Bytes())
 
 		if _, err := client.Conn.Write(resp.Bytes()); err != nil {
@@ -107,11 +107,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		inner.Write([]byte{12, 0, 0, 0})                             // area: elwynn forest
 
 		resp = bytes.Buffer{}
-		respHeader, err = realmd.BuildHeader(realmd.OpServerHearthLocation, uint32(inner.Len()))
+		respHeader, err = client.BuildHeader(realmd.OpServerHearthLocation, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
-		resp.Write(client.Crypto.Encrypt(respHeader))
+		resp.Write(respHeader)
 		resp.Write(inner.Bytes())
 
 		if _, err := client.Conn.Write(resp.Bytes()); err != nil {
@@ -125,11 +125,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		// binary.Write(&inner, binary.LittleEndian, uint32(81)) // human
 
 		// resp = bytes.Buffer{}
-		// respHeader, err = realmd.BuildHeader(OP_SRV_PLAY_CINEMATIC, uint32(inner.Len()))
+		// respHeader, err = client.BuildHeader(OpServerPlayCinematic, uint32(inner.Len()))
 		// if err != nil {
 		// 	return err
 		// }
-		// resp.Write(client.Crypto.Encrypt(respHeader))
+		// resp.Write(respHeader)
 		// resp.Write(inner.Bytes())
 
 		// if _, err := client.Conn.Write(resp.Bytes()); err != nil {
@@ -226,11 +226,11 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		// nested object end
 
 		resp = bytes.Buffer{}
-		respHeader, err = realmd.BuildHeader(realmd.OpServerUpdateObject, uint32(inner.Len()))
+		respHeader, err = client.BuildHeader(realmd.OpServerUpdateObject, uint32(inner.Len()))
 		if err != nil {
 			return err
 		}
-		resp.Write(client.Crypto.Encrypt(respHeader))
+		resp.Write(respHeader)
 		resp.Write(inner.Bytes())
 
 		fmt.Printf("%x\n", respHeader)

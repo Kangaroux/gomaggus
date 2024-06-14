@@ -28,11 +28,11 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(realmd.OpServerCharDelete, 1)
+	respHeader, err := client.BuildHeader(realmd.OpServerCharDelete, 1)
 	if err != nil {
 		return err
 	}
-	resp.Write(client.Crypto.Encrypt(respHeader))
+	resp.Write(respHeader)
 
 	if char == nil || char.AccountId != client.Account.Id || char.RealmId != client.Realm.Id {
 		resp.WriteByte(byte(realmd.RespCodeCharDeleteFailed))

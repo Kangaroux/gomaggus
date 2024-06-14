@@ -22,11 +22,11 @@ func DataTimesHandler(client *realmd.Client) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(realmd.OpServerAccountDataTimes, uint32(inner.Len()))
+	respHeader, err := client.BuildHeader(realmd.OpServerAccountDataTimes, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}
-	resp.Write(client.Crypto.Encrypt(respHeader))
+	resp.Write(respHeader)
 	resp.Write(inner.Bytes())
 
 	if _, err := client.Conn.Write(resp.Bytes()); err != nil {

@@ -18,10 +18,10 @@ type challengeResponse struct {
 	UnusedSeed [32]byte
 }
 
-func SendChallenge(c *realmd.Client) error {
+func SendChallenge(client *realmd.Client) error {
 	resp := challengeResponse{
 		Unknown:    0x1,
-		ServerSeed: c.ServerSeed,
+		ServerSeed: client.ServerSeed,
 	}
 
 	// Generate the unused seed
@@ -34,12 +34,12 @@ func SendChallenge(c *realmd.Client) error {
 		return err
 	}
 
-	header, err := realmd.BuildHeader(realmd.OpServerAuthChallenge, uint32(buf.Len()))
+	header, err := client.BuildHeader(realmd.OpServerAuthChallenge, uint32(buf.Len()))
 	if err != nil {
 		return err
 	}
 
-	if _, err := c.Conn.Write(internal.ConcatBytes(header, buf.Bytes())); err != nil {
+	if _, err := client.Conn.Write(internal.ConcatBytes(header, buf.Bytes())); err != nil {
 		return err
 	}
 

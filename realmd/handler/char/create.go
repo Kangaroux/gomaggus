@@ -78,11 +78,11 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(realmd.OpServerCharCreate, 1)
+	respHeader, err := client.BuildHeader(realmd.OpServerCharCreate, 1)
 	if err != nil {
 		return err
 	}
-	resp.Write(client.Crypto.Encrypt(respHeader))
+	resp.Write(respHeader)
 
 	if existing != nil {
 		resp.WriteByte(byte(realmd.RespCodeCharCreateNameInUse))
