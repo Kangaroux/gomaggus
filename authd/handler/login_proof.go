@@ -64,19 +64,9 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 		}
 
 		c.ClientPublicKey = p.ClientPublicKey[:]
-		c.SessionKey = srp.CalculateServerSessionKey(
-			c.ClientPublicKey,
-			c.ServerPublicKey,
-			c.PrivateKey,
-			c.Account.Verifier(),
-		)
-		calculatedClientProof := srp.CalculateClientProof(
-			c.Account.Username,
-			c.Account.Salt(),
-			c.ClientPublicKey,
-			c.ServerPublicKey,
-			c.SessionKey,
-		)
+		c.SessionKey = srp.CalculateServerSessionKey(c.ClientPublicKey, c.ServerPublicKey, c.PrivateKey, c.Account.Verifier())
+
+		calculatedClientProof := srp.CalculateClientProof(c.Account.Username, c.Account.Salt(), c.ClientPublicKey, c.ServerPublicKey, c.SessionKey)
 		authenticated = bytes.Equal(calculatedClientProof, p.ClientProof[:])
 
 		if authenticated {

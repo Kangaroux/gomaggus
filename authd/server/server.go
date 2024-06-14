@@ -109,19 +109,14 @@ func (s *Server) handlePacket(c *authd.Client, data []byte) error {
 	switch opcode {
 	case authd.OpcodeLoginChallenge:
 		return handler.LoginChallenge(s.services, c, data)
-
-	case authd.OpcodeReconnectChallenge:
-		return handler.ReconnectChallenge(s.services, c, data)
-
 	case authd.OpcodeLoginProof:
 		return handler.LoginProof(s.services, c, data)
-
+	case authd.OpcodeReconnectChallenge:
+		return handler.ReconnectChallenge(s.services, c, data)
 	case authd.OpcodeReconnectProof:
 		return handler.ReconnectProof(s.services, c, data)
-
 	case authd.OpcodeRealmList:
 		return handler.RealmList(s.services, c)
-
 	default:
 		return fmt.Errorf("handlePacket: unknown opcode %x", opcode)
 	}

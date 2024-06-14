@@ -14,8 +14,7 @@ type ErrPacketUnreadBytes struct {
 func (e *ErrPacketUnreadBytes) Error() string {
 	return fmt.Sprintf(
 		"%s: parsed packet but there's still %d unread bytes",
-		e.Handler,
-		e.UnreadCount,
+		e.Handler, e.UnreadCount,
 	)
 }
 
@@ -28,8 +27,6 @@ type ErrWrongState struct {
 func (e *ErrWrongState) Error() string {
 	return fmt.Sprintf(
 		"%s: client state does not match the required state (wanted %x, got %x)",
-		e.Handler,
-		e.Expected,
-		e.Actual,
+		e.Handler, e.Expected, e.Actual,
 	)
 }

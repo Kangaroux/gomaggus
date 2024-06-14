@@ -88,13 +88,13 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	log.Println("Replied to reconnect proof")
 
 	if authenticated {
-		err := svc.Sessions.UpdateOrCreate(&model.Session{
+		session := model.Session{
 			AccountId:     c.Account.Id,
 			SessionKeyHex: hex.EncodeToString(c.SessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
-		})
-		if err != nil {
+		}
+		if err := svc.Sessions.UpdateOrCreate(&session); err != nil {
 			return err
 		}
 		c.State = authd.StateAuthenticated
