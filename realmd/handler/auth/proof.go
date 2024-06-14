@@ -10,7 +10,6 @@ import (
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/srp"
-	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/billingplanflags.html
@@ -119,17 +118,7 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		Expansion:     realmd.ExpansionWrath,
 	}
 
-	buf := bytes.Buffer{}
-	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, &resp); err != nil {
-		return err
-	}
-
-	header, err := client.BuildHeader(realmd.OpServerAuthResponse, uint32(buf.Len()))
-	if err != nil {
-		return err
-	}
-
-	if _, err := client.Conn.Write(internal.ConcatBytes(header, buf.Bytes())); err != nil {
+	if err := client.SendPacket(realmd.OpServerAuthResponse, &resp); err != nil {
 		return err
 	}
 

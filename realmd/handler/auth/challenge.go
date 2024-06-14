@@ -1,13 +1,10 @@
 package auth
 
 import (
-	"bytes"
 	"crypto/rand"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/realmd"
-	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/smsg_auth_challenge.html#client-version-335
@@ -29,17 +26,7 @@ func SendChallenge(client *realmd.Client) error {
 		return err
 	}
 
-	buf := bytes.Buffer{}
-	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, &resp); err != nil {
-		return err
-	}
-
-	header, err := client.BuildHeader(realmd.OpServerAuthChallenge, uint32(buf.Len()))
-	if err != nil {
-		return err
-	}
-
-	if _, err := client.Conn.Write(internal.ConcatBytes(header, buf.Bytes())); err != nil {
+	if err := client.SendPacket(realmd.OpServerAuthChallenge, &resp); err != nil {
 		return err
 	}
 

@@ -1,12 +1,15 @@
 package realmd
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
 	"net"
 
+	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
+	"github.com/mixcode/binarystruct"
 )
 
 type ClientHeader struct {
@@ -99,4 +102,21 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	}
 
 	return h, nil
+}
+
+// SendPacket builds and sends a packet to the client. `data` should be either a struct pointer or
+// a byte array. The data should NOT contain any header information, including size or opcode.
+func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
+	buf := bytes.Buffer{}
+	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, data); err != nil {
+		return err
+	}
+
+	header, err := c.BuildHeader(opcode, uint32(buf.Len()))
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Conn.Write(internal.ConcatBytes(header, buf.Bytes()))
+	return err
 }
