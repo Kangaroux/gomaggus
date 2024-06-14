@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/kangaroux/gomaggus/realmd/server"
 	_ "github.com/lib/pq"
 )
 
@@ -16,6 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := realmd.NewServer(db, realmd.DefaultListenAddr)
+	server := server.New(db, server.DefaultListenAddr)
 	server.Start()
 }

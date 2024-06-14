@@ -5,9 +5,11 @@ import (
 	"encoding/binary"
 	"log"
 	"time"
+
+	"github.com/kangaroux/gomaggus/realmd"
 )
 
-func handleAccountDataTimes(client *Client) error {
+func DataTimesHandler(client *realmd.Client) error {
 	log.Println("starting account data times")
 
 	inner := bytes.Buffer{}
@@ -20,14 +22,14 @@ func handleAccountDataTimes(client *Client) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(OpServerAccountDataTimes, uint32(inner.Len()))
+	respHeader, err := realmd.BuildHeader(realmd.OpServerAccountDataTimes, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}
-	resp.Write(client.crypto.Encrypt(respHeader))
+	resp.Write(client.Crypto.Encrypt(respHeader))
 	resp.Write(inner.Bytes())
 
-	if _, err := client.conn.Write(resp.Bytes()); err != nil {
+	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
 		return err
 	}
 

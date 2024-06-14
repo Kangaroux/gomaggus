@@ -6,10 +6,26 @@ import (
 	"log"
 	"strings"
 
+	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
+	"github.com/kangaroux/gomaggus/realmd"
 )
 
-func handleCharCreate(services *Services, client *Client, data []byte) error {
+// https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
+type createRequest struct {
+	// Name string
+	Race       model.Race
+	Class      model.Class
+	Gender     model.Gender
+	SkinColor  byte
+	Face       byte
+	HairStyle  byte
+	HairColor  byte
+	FacialHair byte
+	OutfitId   byte
+}
+
+func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	log.Println("starting character create")
 
 	// TODO: check if account is full
@@ -21,9 +37,9 @@ func handleCharCreate(services *Services, client *Client, data []byte) error {
 	// 	return err
 	// }
 
-	p := CharCreatePacket{}
+	p := createRequest{}
 	r := bytes.NewReader(data[6:])
-	charName, err := readCString(r)
+	charName, err := internal.ReadCString(r)
 	if err != nil {
 		return err
 	}
@@ -35,7 +51,7 @@ func handleCharCreate(services *Services, client *Client, data []byte) error {
 
 	log.Println("client wants to create character", charName)
 
-	existing, err := services.chars.GetName(charName, client.realm.Id)
+	existing, err := svc.Chars.GetName(charName, client.Realm.Id)
 	if err != nil {
 		return err
 	}
@@ -43,8 +59,8 @@ func handleCharCreate(services *Services, client *Client, data []byte) error {
 	if existing == nil {
 		char := &model.Character{
 			Name:       charName,
-			AccountId:  client.account.Id,
-			RealmId:    client.realm.Id,
+			AccountId:  client.Account.Id,
+			RealmId:    client.Realm.Id,
 			Race:       p.Race,   // TODO
 			Class:      p.Class,  // TODO
 			Gender:     p.Gender, // TODO
@@ -55,26 +71,26 @@ func handleCharCreate(services *Services, client *Client, data []byte) error {
 			FacialHair: p.FacialHair,
 			OutfitId:   p.OutfitId,
 		}
-		if err := services.chars.Create(char); err != nil {
+		if err := svc.Chars.Create(char); err != nil {
 			return err
 		}
 		log.Println("created char with id", char.Id)
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(OpServerCharCreate, 1)
+	respHeader, err := realmd.BuildHeader(realmd.OpServerCharCreate, 1)
 	if err != nil {
 		return err
 	}
-	resp.Write(client.crypto.Encrypt(respHeader))
+	resp.Write(client.Crypto.Encrypt(respHeader))
 
 	if existing != nil {
-		resp.WriteByte(byte(RespCodeCharCreateNameInUse))
+		resp.WriteByte(byte(realmd.RespCodeCharCreateNameInUse))
 	} else {
-		resp.WriteByte(byte(RespCodeCharCreateSuccess))
+		resp.WriteByte(byte(realmd.RespCodeCharCreateSuccess))
 	}
 
-	if _, err := client.conn.Write(resp.Bytes()); err != nil {
+	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
 		return err
 	}
 

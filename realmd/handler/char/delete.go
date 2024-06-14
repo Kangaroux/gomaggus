@@ -4,39 +4,46 @@ import (
 	"bytes"
 	"encoding/binary"
 	"log"
+
+	"github.com/kangaroux/gomaggus/realmd"
 )
 
-func handleCharDelete(services *Services, client *Client, data []byte) error {
+// https://gtker.com/wow_messages/docs/cmsg_char_delete.html
+type deleteRequest struct {
+	CharacterId uint64
+}
+
+func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	log.Println("start character delete")
 
 	r := bytes.NewReader(data[6:])
-	p := CharDeletePacket{}
+	p := deleteRequest{}
 	if err := binary.Read(r, binary.LittleEndian, &p.CharacterId); err != nil {
 		return err
 	}
 
-	char, err := services.chars.Get(uint32(p.CharacterId))
+	char, err := svc.Chars.Get(uint32(p.CharacterId))
 	if err != nil {
 		return err
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(OpServerCharDelete, 1)
+	respHeader, err := realmd.BuildHeader(realmd.OpServerCharDelete, 1)
 	if err != nil {
 		return err
 	}
-	resp.Write(client.crypto.Encrypt(respHeader))
+	resp.Write(client.Crypto.Encrypt(respHeader))
 
-	if char == nil || char.AccountId != client.account.Id || char.RealmId != client.realm.Id {
-		resp.WriteByte(byte(RespCodeCharDeleteFailed))
+	if char == nil || char.AccountId != client.Account.Id || char.RealmId != client.Realm.Id {
+		resp.WriteByte(byte(realmd.RespCodeCharDeleteFailed))
 	} else {
-		if _, err := services.chars.Delete(char.Id); err != nil {
+		if _, err := svc.Chars.Delete(char.Id); err != nil {
 			return err
 		}
-		resp.WriteByte(byte(RespCodeCharDeleteSuccess))
+		resp.WriteByte(byte(realmd.RespCodeCharDeleteSuccess))
 	}
 
-	if _, err := client.conn.Write(resp.Bytes()); err != nil {
+	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
 		return err
 	}
 

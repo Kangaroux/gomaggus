@@ -6,14 +6,15 @@ import (
 	"log"
 
 	"github.com/kangaroux/gomaggus/model"
+	"github.com/kangaroux/gomaggus/realmd"
 )
 
-func handleCharList(services *Services, client *Client) error {
+func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 	log.Println("starting character list")
 
-	accountChars, err := services.chars.List(&model.CharacterListParams{
-		AccountId: client.account.Id,
-		RealmId:   client.realm.Id,
+	accountChars, err := svc.Chars.List(&model.CharacterListParams{
+		AccountId: client.Account.Id,
+		RealmId:   client.Realm.Id,
 	})
 	if err != nil {
 		return err
@@ -65,14 +66,14 @@ func handleCharList(services *Services, client *Client) error {
 	}
 
 	resp := bytes.Buffer{}
-	respHeader, err := realmd.BuildHeader(OpServerCharEnum, uint32(inner.Len()))
+	respHeader, err := realmd.BuildHeader(realmd.OpServerCharEnum, uint32(inner.Len()))
 	if err != nil {
 		return err
 	}
-	resp.Write(client.crypto.Encrypt(respHeader))
+	resp.Write(client.Crypto.Encrypt(respHeader))
 	resp.Write(inner.Bytes())
 
-	if _, err := client.conn.Write(resp.Bytes()); err != nil {
+	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
 		return err
 	}
 
