@@ -63,46 +63,49 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	r := bytes.NewReader(data[6:])
 
 	p := proofRequest{}
-	if err = binary.Read(r, binary.LittleEndian, &p.ClientBuild); err != nil {
+	if err := binary.Read(r, binary.LittleEndian, &p.ClientBuild); err != nil {
 		return err
 	}
-	if err = binary.Read(r, binary.LittleEndian, &p.LoginServerId); err != nil {
+	if err := binary.Read(r, binary.LittleEndian, &p.LoginServerId); err != nil {
 		return err
 	}
-	if p.Username, err = internal.ReadCString(r); err != nil {
-		return err
-	}
-	if err = binary.Read(r, binary.LittleEndian, &p.LoginServerType); err != nil {
-		return err
-	}
-	if err = binary.Read(r, binary.BigEndian, &p.ClientSeed); err != nil {
-		return err
-	}
-	if err = binary.Read(r, binary.LittleEndian, &p.RegionId); err != nil {
-		return err
-	}
-	if err = binary.Read(r, binary.LittleEndian, &p.BattlegroundId); err != nil {
-		return err
-	}
-	if err = binary.Read(r, binary.LittleEndian, &p.RealmId); err != nil {
-		return err
-	}
-	if err = binary.Read(r, binary.LittleEndian, &p.DOSResponse); err != nil {
-		return err
-	}
-	if _, err = r.Read(p.ClientProof[:]); err != nil {
-		return err
-	}
-	addonInfoBuf := bytes.Buffer{}
-	if _, err = r.WriteTo(&addonInfoBuf); err != nil {
-		return err
-	}
-	p.AddonInfo = addonInfoBuf.Bytes()
-
-	client.Authenticated, err = authenticateClient(svc, client, &p)
+	username, err := internal.ReadCString(r)
 	if err != nil {
 		return err
 	}
+	if err := binary.Read(r, binary.LittleEndian, &p.LoginServerType); err != nil {
+		return err
+	}
+	if err := binary.Read(r, binary.BigEndian, &p.ClientSeed); err != nil {
+		return err
+	}
+	if err := binary.Read(r, binary.LittleEndian, &p.RegionId); err != nil {
+		return err
+	}
+	if err := binary.Read(r, binary.LittleEndian, &p.BattlegroundId); err != nil {
+		return err
+	}
+	if err := binary.Read(r, binary.LittleEndian, &p.RealmId); err != nil {
+		return err
+	}
+	if err := binary.Read(r, binary.LittleEndian, &p.DOSResponse); err != nil {
+		return err
+	}
+	if _, err := r.Read(p.ClientProof[:]); err != nil {
+		return err
+	}
+	addonInfoBuf := bytes.Buffer{}
+	if _, err := r.WriteTo(&addonInfoBuf); err != nil {
+		return err
+	}
+	p.AddonInfo = addonInfoBuf.Bytes()
+	p.Username = username
+
+	authenticated, err := authenticateClient(svc, client, &p)
+	if err != nil {
+		return err
+	}
+	client.Authenticated = authenticated
 
 	if !client.Authenticated {
 		// The client expects the authentication to be successful and the header to be encrypted.
@@ -112,10 +115,11 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	}
 
 	// Header crypto can be initialized now that we know the session key
-	client.Crypto = realmd.NewHeaderCrypto(client.Session.SessionKey())
-	if err := client.Crypto.Init(); err != nil {
+	headerCrypto := realmd.NewHeaderCrypto(client.Session.SessionKey())
+	if err := headerCrypto.Init(); err != nil {
 		return err
 	}
+	client.HeaderCrypto = headerCrypto
 
 	resp := proofSuccess{
 		ResponseCode:  realmd.RespCodeAuthOk,

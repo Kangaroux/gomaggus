@@ -21,7 +21,7 @@ type Client struct {
 	Conn          net.Conn
 	ServerSeed    []byte
 	Authenticated bool
-	Crypto        *HeaderCrypto
+	HeaderCrypto  *HeaderCrypto
 
 	Account *model.Account
 	Realm   *model.Realm
@@ -77,7 +77,9 @@ func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	}
 
 	if c.Authenticated {
-		header = c.Crypto.Encrypt(header)
+		if err := c.HeaderCrypto.Encrypt(header); err != nil {
+			return nil, err
+		}
 	}
 
 	return header, nil
@@ -93,7 +95,9 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	header := data[:6]
 
 	if c.Authenticated {
-		header = c.Crypto.Decrypt(header)
+		if err := c.HeaderCrypto.Decrypt(header); err != nil {
+			return nil, err
+		}
 	}
 
 	h := &ClientHeader{

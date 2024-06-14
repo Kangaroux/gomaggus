@@ -21,13 +21,7 @@ func PowerTypeForClass(c model.Class) PowerType {
 	case model.ClassWarrior:
 		return PowerTypeRage
 
-	case model.ClassPaladin,
-		model.ClassHunter,
-		model.ClassPriest,
-		model.ClassShaman,
-		model.ClassMage,
-		model.ClassWarlock,
-		model.ClassDruid:
+	case model.ClassPaladin, model.ClassHunter, model.ClassPriest, model.ClassShaman, model.ClassMage, model.ClassWarlock, model.ClassDruid:
 		return PowerTypeMana
 
 	case model.ClassRogue:

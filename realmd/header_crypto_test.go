@@ -1,6 +1,7 @@
 package realmd
 
 import (
+	"bytes"
 	"crypto/rc4"
 	"testing"
 
@@ -46,8 +47,14 @@ func TestEncryptDecrypt(t *testing.T) {
 
 	h := NewHeaderCrypto(sessionKey)
 	h.Init()
-	assert.Equal(t, expectedDecrypt, h.Decrypt(data))
-	assert.Equal(t, expectedEncrypt, h.Encrypt(data))
+
+	actualDecrypt := bytes.Clone(data)
+	h.Decrypt(data)
+	actualEncrypt := bytes.Clone(data)
+	h.Encrypt(data)
+
+	assert.Equal(t, expectedDecrypt, actualDecrypt)
+	assert.Equal(t, expectedEncrypt, actualEncrypt)
 }
 
 func TestHeaderParse(t *testing.T) {

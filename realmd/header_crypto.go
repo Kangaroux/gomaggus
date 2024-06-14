@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/hmac"
 	"crypto/rc4"
+	"errors"
 )
 
 const (
@@ -26,6 +27,8 @@ var (
 		0xCC, 0x98, 0xAE, 0x04, 0xE8, 0x97, 0xEA, 0xCA,
 		0x12, 0xDD, 0xC0, 0x93, 0x42, 0x91, 0x53, 0x57,
 	}
+
+	ErrCryptoNotInitialized = errors.New("header crypto has not been initialized")
 )
 
 type HeaderCrypto struct {
@@ -43,43 +46,41 @@ func (h *HeaderCrypto) Init() error {
 }
 
 func (h *HeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
-	var err error
-
-	h.decryptCipher, err = rc4.NewCipher(h.GenerateKey(decryptKey))
-	if err != nil {
-		return err
-	}
-	h.encryptCipher, err = rc4.NewCipher(h.GenerateKey(encryptKey))
+	decryptCipher, err := rc4.NewCipher(h.GenerateKey(decryptKey))
 	if err != nil {
 		return err
 	}
 
+	encryptCipher, err := rc4.NewCipher(h.GenerateKey(encryptKey))
+	if err != nil {
+		return err
+	}
+
+	h.decryptCipher = decryptCipher
 	drop1024(h.decryptCipher)
+
+	h.encryptCipher = encryptCipher
 	drop1024(h.encryptCipher)
 
 	return nil
 }
 
-func (h *HeaderCrypto) Decrypt(data []byte) []byte {
+func (h *HeaderCrypto) Decrypt(data []byte) error {
 	if h.decryptCipher == nil {
-		panic("decrypt: cipher has not been initialized, call Init() first")
+		return ErrCryptoNotInitialized
 	}
 
-	dataCopy := make([]byte, len(data))
-	copy(dataCopy, data)
-	h.decryptCipher.XORKeyStream(dataCopy, dataCopy)
-	return dataCopy
+	h.decryptCipher.XORKeyStream(data, data)
+	return nil
 }
 
-func (h *HeaderCrypto) Encrypt(data []byte) []byte {
+func (h *HeaderCrypto) Encrypt(data []byte) error {
 	if h.encryptCipher == nil {
-		panic("encrypt: cipher has not been initialized, call Init() first")
+		return ErrCryptoNotInitialized
 	}
 
-	dataCopy := make([]byte, len(data))
-	copy(dataCopy, data)
-	h.encryptCipher.XORKeyStream(dataCopy, dataCopy)
-	return dataCopy
+	h.encryptCipher.XORKeyStream(data, data)
+	return nil
 }
 
 func (h *HeaderCrypto) GenerateKey(fixedKey []byte) []byte {
