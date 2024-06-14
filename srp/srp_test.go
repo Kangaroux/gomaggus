@@ -9,14 +9,14 @@ import (
 )
 
 func TestX(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_x.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_x.csv")
 
 	t.Run("generated test data", func(t *testing.T) {
 		for _, row := range rows {
 			username := row[0]
 			password := row[1]
-			salt := internal.DecodeHex(row[2])
-			expected := internal.DecodeHex(row[3])
+			salt := internal.MustDecodeHex(row[2])
+			expected := internal.MustDecodeHex(row[3])
 
 			assert.Equal(t, expected, CalculateX(username, password, salt))
 		}
@@ -26,7 +26,7 @@ func TestX(t *testing.T) {
 		row := rows[0]
 		username := row[0]
 		password := row[1]
-		salt := internal.DecodeHex(row[2])
+		salt := internal.MustDecodeHex(row[2])
 
 		first := CalculateX(strings.ToLower(username), strings.ToLower(password), salt)
 		second := CalculateX(strings.ToUpper(username), strings.ToUpper(password), salt)
@@ -36,14 +36,14 @@ func TestX(t *testing.T) {
 }
 
 func TestVerifier(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_verifier.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_verifier.csv")
 
 	t.Run("generated test data", func(t *testing.T) {
 		for _, row := range rows {
 			username := row[0]
 			password := row[1]
-			salt := internal.DecodeHex(row[2])
-			expected := internal.DecodeHex(row[3])
+			salt := internal.MustDecodeHex(row[2])
+			expected := internal.MustDecodeHex(row[3])
 
 			assert.Equal(t, expected, CalculateVerifier(username, password, salt))
 		}
@@ -53,7 +53,7 @@ func TestVerifier(t *testing.T) {
 		row := rows[0]
 		username := row[0]
 		password := row[1]
-		salt := internal.DecodeHex(row[2])
+		salt := internal.MustDecodeHex(row[2])
 
 		first := CalculateVerifier(strings.ToLower(username), strings.ToLower(password), salt)
 		second := CalculateVerifier(strings.ToUpper(username), strings.ToUpper(password), salt)
@@ -63,62 +63,62 @@ func TestVerifier(t *testing.T) {
 }
 
 func TestServerPublicKey(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_server_public_key.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_server_public_key.csv")
 
 	for _, row := range rows {
-		verifier := internal.DecodeHex(row[0])
-		privateKey := internal.DecodeHex(row[1])
-		expected := internal.DecodeHex(row[2])
+		verifier := internal.MustDecodeHex(row[0])
+		privateKey := internal.MustDecodeHex(row[1])
+		expected := internal.MustDecodeHex(row[2])
 
 		assert.Equal(t, expected, CalculateServerPublicKey(verifier, privateKey))
 	}
 }
 
 func TestCalculateU(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_u.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_u.csv")
 
 	for _, row := range rows {
-		clientPublic := internal.DecodeHex(row[0])
-		serverPublic := internal.DecodeHex(row[1])
-		expected := internal.DecodeHex(row[2])
+		clientPublic := internal.MustDecodeHex(row[0])
+		serverPublic := internal.MustDecodeHex(row[1])
+		expected := internal.MustDecodeHex(row[2])
 
 		assert.Equal(t, expected, CalculateU(clientPublic, serverPublic))
 	}
 }
 
 func TestServerSKey(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_server_s.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_server_s.csv")
 
 	for _, row := range rows {
-		clientPublic := internal.DecodeHex(row[0])
-		verifier := internal.DecodeHex(row[1])
-		u := internal.DecodeHex(row[2])
-		serverPrivate := internal.DecodeHex(row[3])
-		expected := internal.DecodeHex(row[4])
+		clientPublic := internal.MustDecodeHex(row[0])
+		verifier := internal.MustDecodeHex(row[1])
+		u := internal.MustDecodeHex(row[2])
+		serverPrivate := internal.MustDecodeHex(row[3])
+		expected := internal.MustDecodeHex(row[4])
 
 		assert.Equal(t, expected, CalculateServerSKey(clientPublic, verifier, u, serverPrivate))
 	}
 }
 
 func TestInterleave(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_interleaved.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_interleaved.csv")
 
 	for _, row := range rows {
-		s := internal.DecodeHex(row[0])
-		expected := internal.DecodeHex(row[1])
+		s := internal.MustDecodeHex(row[0])
+		expected := internal.MustDecodeHex(row[1])
 
 		assert.Equal(t, expected, CalculateInterleave(s))
 	}
 }
 
 func TestServerSessionKey(t *testing.T) {
-	rows := internal.LoadTestData("../testdata/srp/calculate_server_session_key.csv")
+	rows := internal.MustLoadTestData("../testdata/srp/calculate_server_session_key.csv")
 
 	for _, row := range rows {
-		clientPublic := internal.DecodeHex(row[0])
-		serverPrivate := internal.DecodeHex(row[1])
-		verifier := internal.DecodeHex(row[2])
-		expected := internal.DecodeHex(row[3])
+		clientPublic := internal.MustDecodeHex(row[0])
+		serverPrivate := internal.MustDecodeHex(row[1])
+		verifier := internal.MustDecodeHex(row[2])
+		expected := internal.MustDecodeHex(row[3])
 		serverPublic := CalculateServerPublicKey(verifier, serverPrivate)
 
 		assert.Equal(t, expected, CalculateServerSessionKey(clientPublic, serverPublic, serverPrivate, verifier))

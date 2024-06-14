@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-// LoadTestData reads a CSV containing test inputs and returns a 2D array of the rows and columns.
+// MustLoadTestData reads a CSV containing test inputs and returns a 2D array of the rows and columns.
 // This should only be used inside tests. Panics if an error occurs.
-func LoadTestData(path string) [][]string {
+func MustLoadTestData(path string) [][]string {
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -23,9 +23,9 @@ func LoadTestData(path string) [][]string {
 	return rows
 }
 
-// DecodeHex returns a byte array parsed from the given hex string. This should only be used inside
+// MustDecodeHex returns a byte array parsed from the given hex string. This should only be used inside
 // tests. Panics if an error occurs.
-func DecodeHex(s string) []byte {
+func MustDecodeHex(s string) []byte {
 	val, err := hex.DecodeString(s)
 	if err != nil {
 		panic(err)
