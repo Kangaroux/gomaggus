@@ -1,11 +1,9 @@
 package server
 
 import (
-	"encoding/binary"
 	"fmt"
 	"io"
 	"log"
-	mrand "math/rand"
 	"net"
 
 	"github.com/jmoiron/sqlx"
@@ -74,8 +72,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
-	client := &realmd.Client{Conn: conn}
-	binary.BigEndian.PutUint32(client.ServerSeed[:], mrand.Uint32())
+	client, err := realmd.NewClient(conn)
+	if err != nil {
+		log.Printf("error setting up client: %v\n", err)
+		conn.Close()
+		return
+	}
 
 	// The server is the one who initiates the auth challenge here, unlike the login server where
 	// the client is the one who initiates it
