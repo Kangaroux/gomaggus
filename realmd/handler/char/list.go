@@ -88,7 +88,7 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 			PetFamily:            0,
 		}
 
-		for j := 0; i < 23; i++ {
+		for j := 0; j < 23; j++ {
 			char.GearDisplay[j] = gearDisplay{
 				DisplayId:   0,
 				Slot:        uint8(j) + 1,
