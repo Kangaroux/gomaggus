@@ -53,6 +53,7 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 	accountChars, err := svc.Chars.List(&model.CharacterListParams{
 		AccountId: client.Account.Id,
 		RealmId:   client.Realm.Id,
+		Sort:      model.OldestToNewest,
 	})
 	if err != nil {
 		return err

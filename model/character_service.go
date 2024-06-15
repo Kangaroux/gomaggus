@@ -7,9 +7,19 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type CharacterSort uint8
+
+const (
+	NoSort CharacterSort = iota
+	OldestToNewest
+	Alphabetically
+	LastLogin
+)
+
 type CharacterListParams struct {
 	AccountId uint32
 	RealmId   uint32
+	Sort      CharacterSort
 }
 
 type CharacterService interface {
@@ -82,6 +92,15 @@ func (s *DbCharacterService) List(params *CharacterListParams) ([]*Character, er
 	if len(cond) > 0 {
 		q += " WHERE " + strings.Join(cond, " AND ")
 		q = s.db.Rebind(q)
+	}
+
+	switch params.Sort {
+	case OldestToNewest:
+		q += " ORDER BY created_at ASC"
+	case Alphabetically:
+		q += " ORDER BY name ASC"
+	case LastLogin:
+		q += " ORDER BY last_login DESC NULLS LAST"
 	}
 
 	results := []*Character{}
