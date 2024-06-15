@@ -31,20 +31,6 @@ type loginChallengeRequest struct {
 	Username        string `binary:"string(UsernameLength)"`
 }
 
-func (p *loginChallengeRequest) Read(data []byte) error {
-	reader := bytes.NewReader(data)
-
-	if _, err := binarystruct.Read(reader, binarystruct.LittleEndian, p); err != nil {
-		return err
-	}
-
-	if reader.Len() != 0 {
-		return &ErrPacketUnreadBytes{Handler: "LoginChallengePacket", UnreadCount: reader.Len()}
-	}
-
-	return nil
-}
-
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_challenge_server.html#protocol-version-8
 type loginChallengeResponse struct {
 	Opcode          authd.Opcode
@@ -62,35 +48,34 @@ type loginChallengeResponse struct {
 	SecurityFlags byte
 }
 
-func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
-	if c.State != authd.StateAuthChallenge {
+func LoginChallenge(svc *authd.Service, client *authd.Client, data []byte) error {
+	if client.State != authd.StateAuthChallenge {
 		return &ErrWrongState{
 			Handler:  "LoginChallenge",
 			Expected: authd.StateAuthChallenge,
-			Actual:   c.State,
+			Actual:   client.State,
 		}
 	}
 
 	log.Println("Starting login challenge")
 
-	p := loginChallengeRequest{}
-	if err := p.Read(data); err != nil {
+	req := loginChallengeRequest{}
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
-	c.Username = p.Username
 
-	log.Printf("client trying to login as '%s'\n", c.Username)
+	log.Printf("client trying to login as '%s'\n", req.Username)
 
-	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
+	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: req.Username})
 	if err != nil {
 		return err
 	}
-	c.Account = acct
 
 	var publicKey []byte
 	var salt []byte
+	faked := acct == nil
 
-	if c.Account == nil {
+	if faked {
 		publicKey = make([]byte, srp.KeySize)
 		if _, err := rand.Read(publicKey); err != nil {
 			return err
@@ -103,18 +88,19 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 		// If we didn't do this, a bad actor could send two challenges with the same username and compare
 		// the salts. The salts would be the same for real accounts and different for fake accounts.
 		// This would allow someone to mine usernames and start building an attack vector.
-		seededRand := mrand.New(mrand.NewSource(internal.FastHash(c.Username)))
+		seededRand := mrand.New(mrand.NewSource(internal.FastHash(client.Username)))
 		salt = make([]byte, srp.SaltSize)
 		if _, err := seededRand.Read(salt); err != nil {
 			return err
 		}
+
 	} else {
-		if err := c.Account.DecodeSrp(); err != nil {
+		if err := acct.DecodeSrp(); err != nil {
 			return err
 		}
-		publicKey = srp.CalculateServerPublicKey(c.Account.Verifier(), c.PrivateKey)
-		c.ServerPublicKey = publicKey
-		salt = c.Account.Salt()
+		publicKey = srp.CalculateServerPublicKey(acct.Verifier(), client.PrivateKey)
+		client.ServerPublicKey = publicKey
+		salt = acct.Salt()
 	}
 
 	resp := loginChallengeResponse{
@@ -140,12 +126,18 @@ func LoginChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
 	// The byte arrays are already little endian so the buffer can be used as-is
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to login challenge")
-	c.State = authd.StateAuthProof
+
+	if !faked {
+		client.Account = acct
+		client.Username = req.Username
+	}
+
+	client.State = authd.StateAuthProof
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_client.html
@@ -20,11 +21,6 @@ type reconnectProofRequest struct {
 	ClientProof    [srp.ProofSize]byte
 	ClientChecksum [20]byte
 	KeyCount       uint8
-}
-
-func (p *reconnectProofRequest) Read(data []byte) error {
-	reader := bytes.NewReader(data)
-	return binary.Read(reader, binary.LittleEndian, p)
 }
 
 // https://gtker.com/wow_messages/docs/cmd_auth_reconnect_proof_server.html#protocol-version-8
@@ -60,13 +56,13 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 			}
 			c.SessionKey = session.SessionKey()
 
-			p := reconnectProofRequest{}
-			if err := p.Read(data); err != nil {
+			req := reconnectProofRequest{}
+			if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 				return err
 			}
 
-			serverProof := srp.CalculateReconnectProof(c.Username, p.ProofData[:], c.ReconnectData, c.SessionKey)
-			authenticated = bytes.Equal(serverProof, p.ClientProof[:])
+			serverProof := srp.CalculateReconnectProof(c.Username, req.ProofData[:], c.ReconnectData, c.SessionKey)
+			authenticated = bytes.Equal(serverProof, req.ClientProof[:])
 		}
 	}
 

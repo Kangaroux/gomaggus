@@ -8,6 +8,7 @@ import (
 
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
+	"github.com/mixcode/binarystruct"
 )
 
 const (
@@ -35,19 +36,17 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 
 	log.Println("Starting reconnect challenge")
 
-	p := reconnectChallengeRequest{}
-	if err := p.Read(data); err != nil {
+	req := reconnectChallengeRequest{}
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
-	c.Username = p.Username
 
-	log.Printf("client trying to reconnect as '%s'\n", c.Username)
+	log.Printf("client trying to reconnect as '%s'\n", req.Username)
 
-	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: c.Username})
+	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: req.Username})
 	if err != nil {
 		return err
 	}
-	c.Account = acct
 
 	// Generate random data that will be used for the reconnect proof
 	if _, err := rand.Read(c.ReconnectData); err != nil {
@@ -71,6 +70,11 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 	}
 
 	log.Println("Replied to reconnect challenge")
+
+	if acct != nil {
+		c.Account = acct
+		c.Username = req.Username
+	}
 
 	c.State = authd.StateReconnectProof
 

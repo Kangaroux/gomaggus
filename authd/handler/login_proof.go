@@ -11,6 +11,7 @@ import (
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/srp"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8
@@ -20,11 +21,6 @@ type loginProofRequest struct {
 	ClientProof      [srp.ProofSize]byte
 	CRCHash          [20]byte
 	NumTelemetryKeys uint8
-}
-
-func (p *loginProofRequest) Read(data []byte) error {
-	reader := bytes.NewReader(data)
-	return binary.Read(reader, binary.LittleEndian, p)
 }
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8
@@ -43,12 +39,12 @@ type loginProofSuccess struct {
 	_                [2]byte // padding
 }
 
-func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
-	if c.State != authd.StateAuthProof {
+func LoginProof(svc *authd.Service, client *authd.Client, data []byte) error {
+	if client.State != authd.StateAuthProof {
 		return &ErrWrongState{
 			Handler:  "LoginProof",
 			Expected: authd.StateAuthProof,
-			Actual:   c.State,
+			Actual:   client.State,
 		}
 	}
 
@@ -57,20 +53,20 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	var serverProof []byte
 	authenticated := false
 
-	if c.Account != nil {
-		p := loginProofRequest{}
-		if err := p.Read(data); err != nil {
+	if client.Account != nil {
+		req := loginProofRequest{}
+		if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 			return err
 		}
 
-		c.ClientPublicKey = p.ClientPublicKey[:]
-		c.SessionKey = srp.CalculateServerSessionKey(c.ClientPublicKey, c.ServerPublicKey, c.PrivateKey, c.Account.Verifier())
+		client.ClientPublicKey = req.ClientPublicKey[:]
+		client.SessionKey = srp.CalculateServerSessionKey(client.ClientPublicKey, client.ServerPublicKey, client.PrivateKey, client.Account.Verifier())
 
-		calculatedClientProof := srp.CalculateClientProof(c.Account.Username, c.Account.Salt(), c.ClientPublicKey, c.ServerPublicKey, c.SessionKey)
-		authenticated = bytes.Equal(calculatedClientProof, p.ClientProof[:])
+		calculatedClientProof := srp.CalculateClientProof(client.Account.Username, client.Account.Salt(), client.ClientPublicKey, client.ServerPublicKey, client.SessionKey)
+		authenticated = bytes.Equal(calculatedClientProof, req.ClientProof[:])
 
 		if authenticated {
-			serverProof = srp.CalculateServerProof(c.ClientPublicKey, p.ClientProof[:], c.SessionKey)
+			serverProof = srp.CalculateServerProof(client.ClientPublicKey, req.ClientProof[:], client.SessionKey)
 		}
 	}
 
@@ -93,7 +89,7 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	}
 
-	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
@@ -101,8 +97,8 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	if authenticated {
 		err := svc.Sessions.UpdateOrCreate(&model.Session{
-			AccountId:     c.Account.Id,
-			SessionKeyHex: hex.EncodeToString(c.SessionKey),
+			AccountId:     client.Account.Id,
+			SessionKeyHex: hex.EncodeToString(client.SessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		})
@@ -110,9 +106,9 @@ func LoginProof(svc *authd.Service, c *authd.Client, data []byte) error {
 			return err
 		}
 
-		c.State = authd.StateAuthenticated
+		client.State = authd.StateAuthenticated
 	} else {
-		c.State = authd.StateInvalid
+		client.State = authd.StateInvalid
 	}
 
 	return nil
