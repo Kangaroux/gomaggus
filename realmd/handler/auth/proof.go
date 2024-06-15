@@ -2,14 +2,13 @@ package auth
 
 import (
 	"bytes"
-	"encoding/binary"
 	"errors"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/srp"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/billingplanflags.html
@@ -58,59 +57,24 @@ type proofSuccess struct {
 // }
 
 func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
-	r := bytes.NewReader(data.Payload)
+	req := proofRequest{}
+	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+		return err
+	}
 
-	p := proofRequest{}
-	if err := binary.Read(r, binary.LittleEndian, &p.ClientBuild); err != nil {
-		return err
-	}
-	if err := binary.Read(r, binary.LittleEndian, &p.LoginServerId); err != nil {
-		return err
-	}
-	username, err := internal.ReadCString(r)
+	authenticated, err := authenticateClient(svc, client, &req)
 	if err != nil {
 		return err
 	}
-	if err := binary.Read(r, binary.LittleEndian, &p.LoginServerType); err != nil {
-		return err
-	}
-	if err := binary.Read(r, binary.BigEndian, &p.ClientSeed); err != nil {
-		return err
-	}
-	if err := binary.Read(r, binary.LittleEndian, &p.RegionId); err != nil {
-		return err
-	}
-	if err := binary.Read(r, binary.LittleEndian, &p.BattlegroundId); err != nil {
-		return err
-	}
-	if err := binary.Read(r, binary.LittleEndian, &p.RealmId); err != nil {
-		return err
-	}
-	if err := binary.Read(r, binary.LittleEndian, &p.DOSResponse); err != nil {
-		return err
-	}
-	if _, err := r.Read(p.ClientProof[:]); err != nil {
-		return err
-	}
-	addonInfoBuf := bytes.Buffer{}
-	if _, err := r.WriteTo(&addonInfoBuf); err != nil {
-		return err
-	}
-	p.AddonInfo = addonInfoBuf.Bytes()
-	p.Username = username
 
-	authenticated, err := authenticateClient(svc, client, &p)
-	if err != nil {
-		return err
-	}
-	client.Authenticated = authenticated
-
-	if !client.Authenticated {
+	if !authenticated {
 		// The client expects the authentication to be successful and the header to be encrypted.
 		// If auth failed, we don't know how to encrypt the header, thus we can't send an error response.
 		// Just drop the connection.
 		return errors.New("client could not be authenticated")
 	}
+
+	client.Authenticated = true
 
 	// Header crypto can be initialized now that we know the session key
 	headerCrypto := realmd.NewHeaderCrypto(client.Session.SessionKey())
@@ -126,7 +90,6 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 		BillingRested: 0,
 		Expansion:     realmd.ExpansionWrath,
 	}
-
 	if err := client.SendPacket(realmd.OpServerAuthResponse, &resp); err != nil {
 		return err
 	}
