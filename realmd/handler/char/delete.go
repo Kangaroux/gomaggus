@@ -1,11 +1,11 @@
 package char
 
 import (
-	"bytes"
 	"encoding/binary"
 	"log"
 
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_char_delete.html
@@ -19,15 +19,12 @@ type deleteResponse struct {
 }
 
 func DeleteHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
-	log.Println("start character delete")
-
-	r := bytes.NewReader(data.Payload)
-	p := deleteRequest{}
-	if err := binary.Read(r, binary.LittleEndian, &p.CharacterId); err != nil {
+	req := deleteRequest{}
+	if _, err := binarystruct.Unmarshal(data.Payload, binary.LittleEndian, &req); err != nil {
 		return err
 	}
 
-	char, err := svc.Chars.Get(uint32(p.CharacterId))
+	char, err := svc.Chars.Get(uint32(req.CharacterId))
 	if err != nil {
 		return err
 	}
@@ -35,11 +32,11 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clie
 	deleted := false
 
 	if char == nil {
-		log.Println("client tried to delete non-existent character:", p.CharacterId)
+		log.Println("client tried to delete non-existent character:", req.CharacterId)
 	} else if char.AccountId != client.Account.Id {
-		log.Println("client tried to delete character from another account:", p.CharacterId)
+		log.Println("client tried to delete character from another account:", req.CharacterId)
 	} else if char.RealmId != client.Realm.Id {
-		log.Println("client tried to delete character from another realm:", p.CharacterId)
+		log.Println("client tried to delete character from another realm:", req.CharacterId)
 	} else {
 		deleted, err = svc.Chars.Delete(char.Id)
 
@@ -61,6 +58,5 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clie
 	}
 
 	log.Println("finished character delete")
-
 	return nil
 }

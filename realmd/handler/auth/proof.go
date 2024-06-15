@@ -58,8 +58,6 @@ type proofSuccess struct {
 // }
 
 func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
-	log.Println("starting auth session")
-
 	r := bytes.NewReader(data.Payload)
 
 	p := proofRequest{}
@@ -134,7 +132,6 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 	}
 
 	log.Println("sent auth response")
-
 	return nil
 }
 

@@ -1,39 +1,33 @@
 package session
 
 import (
-	"bytes"
-	"encoding/binary"
 	"log"
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+// https://gtker.com/wow_messages/docs/smsg_account_data_times.html#client-version-335
+type dataTimesResponse struct {
+	Time      uint32
+	Activated bool
+
+	// CacheMask is the size of Cache but it's represented by how many bits are set, not the actual value.
+	CacheMask uint32
+	Cache     []uint32
+}
+
 func DataTimesHandler(client *realmd.Client) error {
-	log.Println("starting account data times")
-
-	inner := bytes.Buffer{}
-	binary.Write(&inner, binary.LittleEndian, uint32(time.Now().Unix()))
-	inner.WriteByte(1)                 // activated (bool)
-	inner.Write([]byte{0, 0, 0, 0xFF}) // cache mask (all)
-	// cache times
-	for i := 0; i < 8; i++ {
-		inner.Write([]byte{0, 0, 0, 0})
+	resp := dataTimesResponse{
+		Time:      uint32(time.Now().Unix()),
+		Activated: true,
+		CacheMask: 0xFF,              // 8 bits = 8 cache values
+		Cache:     make([]uint32, 8), // Can leave it as all zeroes for now
 	}
-
-	resp := bytes.Buffer{}
-	respHeader, err := client.BuildHeader(realmd.OpServerAccountDataTimes, uint32(inner.Len()))
-	if err != nil {
-		return err
-	}
-	resp.Write(respHeader)
-	resp.Write(inner.Bytes())
-
-	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
+	if err := client.SendPacket(realmd.OpServerAccountDataTimes, &resp); err != nil {
 		return err
 	}
 
 	log.Println("sent account data times")
-
 	return nil
 }

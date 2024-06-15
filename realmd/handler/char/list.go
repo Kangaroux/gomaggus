@@ -48,8 +48,6 @@ type listResponse struct {
 }
 
 func ListHandler(svc *realmd.Service, client *realmd.Client) error {
-	log.Println("starting character list")
-
 	accountChars, err := svc.Chars.List(&model.CharacterListParams{
 		AccountId: client.Account.Id,
 		RealmId:   client.Realm.Id,
@@ -105,6 +103,5 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 	}
 
 	log.Println("sent character list")
-
 	return nil
 }

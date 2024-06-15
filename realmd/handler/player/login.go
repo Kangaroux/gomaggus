@@ -22,15 +22,12 @@ type loginFailed struct {
 }
 
 func LoginHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
-	log.Println("start character login")
-
-	p := loginRequest{}
-
-	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &p); err != nil {
+	req := loginRequest{}
+	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
 
-	char, err := svc.Chars.Get(uint32(p.CharacterId))
+	char, err := svc.Chars.Get(uint32(req.CharacterId))
 	if err != nil {
 		return err
 	}
@@ -77,7 +74,6 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 	}
 
 	log.Println("finished character login")
-
 	return nil
 }
 

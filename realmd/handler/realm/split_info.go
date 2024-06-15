@@ -1,19 +1,18 @@
 package realm
 
 import (
-	"bytes"
-	"encoding/binary"
 	"log"
 
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/mixcode/binarystruct"
 )
 
 type RealmSplitState uint32
 
 const (
-	SplitNormal    = 0
-	SplitConfirmed = 1
-	SplitPending   = 2
+	SplitNormal    RealmSplitState = 0
+	SplitConfirmed RealmSplitState = 1
+	SplitPending   RealmSplitState = 2
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_realm_split.html
@@ -21,32 +20,29 @@ type splitRequest struct {
 	RealmId uint32
 }
 
+// https://gtker.com/wow_messages/docs/smsg_realm_split.html
+type splitResponse struct {
+	RealmId   uint32
+	State     RealmSplitState
+	SplitDate string `binary:"zstring"`
+}
+
 func SplitInfoHandler(client *realmd.Client, data *realmd.ClientPacket) error {
-	log.Println("starting realm split")
-
-	r := bytes.NewReader(data.Payload)
-	p := splitRequest{}
-	binary.Read(r, binary.LittleEndian, &p.RealmId)
-
-	// https://gtker.com/wow_messages/docs/smsg_realm_split.html
-	inner := bytes.Buffer{}
-	binary.Write(&inner, binary.LittleEndian, p.RealmId)
-	binary.Write(&inner, binary.LittleEndian, uint32(SplitNormal))
-	inner.WriteString("01/01/01\x00") // send a bogus date (NUL-terminated)
-
-	resp := bytes.Buffer{}
-	respHeader, err := client.BuildHeader(realmd.OpServerRealmSplit, uint32(inner.Len()))
-	if err != nil {
+	req := splitRequest{}
+	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
-	resp.Write(respHeader)
-	resp.Write(inner.Bytes())
 
-	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
+	// This response will never change but we should probably validate the realm ID
+	resp := splitResponse{
+		RealmId:   req.RealmId,
+		State:     SplitNormal,
+		SplitDate: "01/01/01",
+	}
+	if err := client.SendPacket(realmd.OpServerRealmSplit, &resp); err != nil {
 		return err
 	}
 
 	log.Println("sent realm split")
-
 	return nil
 }

@@ -1,19 +1,16 @@
 package char
 
 import (
-	"bytes"
-	"encoding/binary"
 	"log"
-	"strings"
 
-	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/mixcode/binarystruct"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
 type createRequest struct {
-	// Name string
+	Name       string `binary:"zstring"`
 	Race       model.Race
 	Class      model.Class
 	Gender     model.Gender
@@ -31,8 +28,6 @@ type createResponse struct {
 }
 
 func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
-	log.Println("starting character create")
-
 	// TODO: check if account is full
 	// accountChars, err := s.charsDb.List(&model.CharacterListParams{
 	// 	AccountId: c.account.Id,
@@ -42,52 +37,43 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clie
 	// 	return err
 	// }
 
-	p := createRequest{}
-	r := bytes.NewReader(data.Payload)
-	charName, err := internal.ReadCString(r)
+	req := createRequest{}
+	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+		return err
+	}
+
+	log.Println("client wants to create character", req.Name)
+
+	existing, err := svc.Chars.GetName(req.Name, client.Realm.Id)
 	if err != nil {
 		return err
-	}
-	charName = strings.TrimSpace(charName)
-
-	if err := binary.Read(r, binary.BigEndian, &p); err != nil {
-		return err
-	}
-
-	log.Println("client wants to create character", charName)
-
-	existing, err := svc.Chars.GetName(charName, client.Realm.Id)
-	if err != nil {
-		return err
-	}
-
-	if existing == nil {
-		char := &model.Character{
-			Name:       charName,
-			AccountId:  client.Account.Id,
-			RealmId:    client.Realm.Id,
-			Race:       p.Race,   // TODO
-			Class:      p.Class,  // TODO
-			Gender:     p.Gender, // TODO
-			SkinColor:  p.SkinColor,
-			Face:       p.Face,
-			HairStyle:  p.HairStyle,
-			HairColor:  p.HairColor,
-			FacialHair: p.FacialHair,
-			OutfitId:   p.OutfitId,
-		}
-		if err := svc.Chars.Create(char); err != nil {
-			return err
-		}
-		log.Println("created char with id", char.Id)
 	}
 
 	resp := createResponse{}
 
-	if existing == nil {
-		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
-	} else {
+	if existing != nil {
 		resp.ResponseCode = realmd.RespCodeCharCreateNameInUse
+	} else {
+		char := &model.Character{
+			Name:       req.Name,
+			AccountId:  client.Account.Id,
+			RealmId:    client.Realm.Id,
+			Race:       req.Race,
+			Class:      req.Class,
+			Gender:     req.Gender,
+			SkinColor:  req.SkinColor,
+			Face:       req.Face,
+			HairStyle:  req.HairStyle,
+			HairColor:  req.HairColor,
+			FacialHair: req.FacialHair,
+			OutfitId:   req.OutfitId,
+		}
+		if err := svc.Chars.Create(char); err != nil {
+			return err
+		}
+
+		log.Println("created char with id", char.Id)
+		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
 	}
 
 	if err := client.SendPacket(realmd.OpServerCharCreate, &resp); err != nil {
@@ -95,6 +81,5 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clie
 	}
 
 	log.Println("finished character create")
-
 	return nil
 }
