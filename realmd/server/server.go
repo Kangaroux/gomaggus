@@ -32,7 +32,7 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 		listenAddr: listenAddr,
 		services: &realmd.Service{
 			Accounts: model.NewDbAccountService(db),
-			Chars:    model.NewDbCharacterervice(db),
+			Chars:    model.NewDbCharacterService(db),
 			Realms:   model.NewDbRealmService(db),
 			Sessions: model.NewDbSessionService(db),
 		},

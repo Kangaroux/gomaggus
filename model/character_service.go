@@ -39,7 +39,7 @@ type DbCharacterService struct {
 
 var _ CharacterService = (*DbCharacterService)(nil)
 
-func NewDbCharacterervice(db *sqlx.DB) *DbCharacterService {
+func NewDbCharacterService(db *sqlx.DB) *DbCharacterService {
 	return &DbCharacterService{db}
 }
 
@@ -131,6 +131,7 @@ func (s *DbCharacterService) Create(c *Character) error {
 func (s *DbCharacterService) Update(c *Character) (bool, error) {
 	q := `
 	UPDATE characters SET
+		last_login=:last_login,
 		name=:name,
 		race=:race,
 		class=:class,

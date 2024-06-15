@@ -30,7 +30,7 @@ type character struct {
 	Level                uint8
 	Area                 uint32
 	Map                  uint32
-	Position             realmd.Vector
+	Position             realmd.Vector3
 	GuildId              uint32
 	Flags                uint32
 	RecustomizationFlags uint32
@@ -76,9 +76,9 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 			HairColor:            accountChar.HairStyle,
 			FacialHair:           accountChar.FacialHair,
 			Level:                1,
-			Area:                 0x12,            // Elwynn forest
-			Map:                  0x0,             // Eastern kingdoms
-			Position:             realmd.Vector{}, // Position doesn't matter for char list
+			Area:                 0xC,              // Elwynn forest
+			Map:                  0x0,              // Eastern kingdoms
+			Position:             realmd.Vector3{}, // Position doesn't matter for char list
 			GuildId:              0,
 			Flags:                0, // ??
 			RecustomizationFlags: 0, // ??

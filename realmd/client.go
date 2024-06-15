@@ -32,9 +32,10 @@ type Client struct {
 	Authenticated bool
 	HeaderCrypto  *HeaderCrypto
 
-	Account *model.Account
-	Realm   *model.Realm
-	Session *model.Session
+	Account   *model.Account
+	Character *model.Character
+	Realm     *model.Realm
+	Session   *model.Session
 }
 
 func NewClient(conn net.Conn) (*Client, error) {
@@ -117,19 +118,25 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	return h, nil
 }
 
-// SendPacket builds and sends a packet to the client. `data` should be either a struct pointer or
-// a byte array. The data should NOT contain any header information, including size or opcode.
+// SendPacket builds a packet from a struct pointer and sends the packet to the client.
+// The struct should NOT contain any header information.
 func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
 	buf := bytes.Buffer{}
 	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, data); err != nil {
 		return err
 	}
 
-	header, err := c.BuildHeader(opcode, uint32(buf.Len()))
+	return c.SendPacketBytes(opcode, buf.Bytes())
+}
+
+// SendPacketBytes builds a packet from a byte array and sends the packet to the client.
+// The byte array should NOT contain any header information. In most cases, you should use SendPacket.
+func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
+	header, err := c.BuildHeader(opcode, uint32(len(data)))
 	if err != nil {
 		return err
 	}
 
-	_, err = c.Conn.Write(internal.ConcatBytes(header, buf.Bytes()))
+	_, err = c.Conn.Write(internal.ConcatBytes(header, data))
 	return err
 }
