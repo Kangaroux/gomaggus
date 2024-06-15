@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"runtime/debug"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/model"
@@ -60,10 +61,11 @@ func (s *Server) Start() {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("recovered from panic: %v", err)
+			log.Printf("recovered from panic: %v\n", err)
+			debug.PrintStack()
 
 			if err := conn.Close(); err != nil {
-				log.Printf("error closing after recover: %v", err)
+				log.Printf("error closing after recover: %v\n", err)
 			}
 		}
 	}()
