@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
@@ -144,7 +143,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 
 		// nested object start
 		inner.WriteByte(byte(realmd.UpdateTypeCreateObject2)) // update type: CREATE_OBJECT2
-		inner.Write(internal.PackGuid(uint64(char.Id)))       // packed guid
+		inner.Write(realmd.PackGuid(uint64(char.Id)))         // packed guid
 		inner.WriteByte(byte(realmd.ObjectTypePlayer))
 
 		// movement block start

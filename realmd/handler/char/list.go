@@ -1,21 +1,50 @@
 package char
 
 import (
-	"bytes"
-	"encoding/binary"
 	"log"
 
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+// https://gtker.com/wow_messages/docs/charactergear.html
+type gearDisplay struct {
+	DisplayId uint32
+	// https://gtker.com/wow_messages/docs/inventorytype.html
+	Slot        uint8
+	Enchantment uint32
+}
+
+// https://gtker.com/wow_messages/docs/character.html#client-version-335
 type character struct {
+	Guid                 realmd.Guid
+	Name                 string `binary:"zstring"`
+	Race                 model.Race
+	Class                model.Class
+	Gender               model.Gender
+	Skin                 uint8
+	Face                 uint8
+	HairStyle            uint8
+	HairColor            uint8
+	FacialHair           uint8
+	Level                uint8
+	Area                 uint32
+	Map                  uint32
+	Position             realmd.Vector
+	GuildId              uint32
+	Flags                uint32
+	RecustomizationFlags uint32
+	FirstLogin           bool
+	PetDisplayId         uint32
+	PetLevel             uint32
+	PetFamily            uint32
+	GearDisplay          [23]gearDisplay
 }
 
 // https://gtker.com/wow_messages/docs/smsg_char_enum.html#client-version-335
 type listResponse struct {
 	Count      uint8
-	Characters []character `binary:"[Count]Any`
+	Characters []character `binary:"[Count]Any"`
 }
 
 func ListHandler(svc *realmd.Service, client *realmd.Client) error {
@@ -29,59 +58,48 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 		return err
 	}
 
-	inner := bytes.Buffer{}
-	inner.WriteByte(byte(len(accountChars)))
-
-	for _, char := range accountChars {
-		binary.Write(&inner, binary.LittleEndian, uint64(char.Id))
-		inner.WriteString(char.Name)
-		inner.WriteByte(0) // NUL-terminated
-		inner.WriteByte(byte(char.Race))
-		inner.WriteByte(byte(char.Class))
-		inner.WriteByte(byte(char.Gender))
-		inner.WriteByte(char.SkinColor)
-		inner.WriteByte(char.Face)
-		inner.WriteByte(char.HairStyle)
-		inner.WriteByte(char.HairColor)
-		inner.WriteByte(char.FacialHair)
-		inner.WriteByte(1)                                    // level
-		inner.Write([]byte{12, 0, 0, 0})                      // area (hardcoded as elwynn forest)
-		inner.Write([]byte{0, 0, 0, 0})                       // map (hardcoded as eastern kingdoms)
-		binary.Write(&inner, binary.LittleEndian, float32(0)) // x
-		binary.Write(&inner, binary.LittleEndian, float32(0)) // y
-		binary.Write(&inner, binary.LittleEndian, float32(0)) // z
-		inner.Write([]byte{0, 0, 0, 0})                       // guild id
-		inner.Write([]byte{0, 0, 0, 0})                       // flags
-		inner.Write([]byte{0, 0, 0, 0})                       // recustomization_flags (?)
-
-		if !char.LastLogin.Valid {
-			inner.WriteByte(1) // first login, show tutorial
-		} else {
-			inner.WriteByte(0) // not first login
-		}
-
-		inner.Write([]byte{0, 0, 0, 0}) // pet display id
-		inner.Write([]byte{0, 0, 0, 0}) // pet level
-		inner.Write([]byte{0, 0, 0, 0}) // pet family
-
-		// equipment (from head to holdable)
-		// https://gtker.com/wow_messages/docs/inventorytype.html
-		for i := 1; i <= 23; i++ {
-			inner.Write([]byte{0, 0, 0, 0}) // equipment display id
-			inner.WriteByte(byte(i))        // slot
-			inner.Write([]byte{0, 0, 0, 0}) // enchantment
-		}
+	resp := listResponse{
+		Count:      uint8(len(accountChars)),
+		Characters: make([]character, len(accountChars)),
 	}
 
-	resp := bytes.Buffer{}
-	respHeader, err := client.BuildHeader(realmd.OpServerCharEnum, uint32(inner.Len()))
-	if err != nil {
-		return err
-	}
-	resp.Write(respHeader)
-	resp.Write(inner.Bytes())
+	for i, accountChar := range accountChars {
+		char := character{
+			Guid:                 realmd.Guid(accountChar.Id),
+			Name:                 accountChar.Name,
+			Race:                 accountChar.Race,
+			Class:                accountChar.Class,
+			Gender:               accountChar.Gender,
+			Skin:                 accountChar.SkinColor,
+			Face:                 accountChar.Face,
+			HairStyle:            accountChar.HairStyle,
+			HairColor:            accountChar.HairStyle,
+			FacialHair:           accountChar.FacialHair,
+			Level:                1,
+			Area:                 0x12,            // Elwynn forest
+			Map:                  0x0,             // Eastern kingdoms
+			Position:             realmd.Vector{}, // Position doesn't matter for char list
+			GuildId:              0,
+			Flags:                0, // ??
+			RecustomizationFlags: 0, // ??
+			FirstLogin:           !accountChar.LastLogin.Valid,
+			PetDisplayId:         0,
+			PetLevel:             0,
+			PetFamily:            0,
+		}
 
-	if _, err := client.Conn.Write(resp.Bytes()); err != nil {
+		for j := 0; i < 23; i++ {
+			char.GearDisplay[j] = gearDisplay{
+				DisplayId:   0,
+				Slot:        uint8(j) + 1,
+				Enchantment: 0,
+			}
+		}
+
+		resp.Characters[i] = char
+	}
+
+	if err := client.SendPacket(realmd.OpServerCharList, &resp); err != nil {
 		return err
 	}
 

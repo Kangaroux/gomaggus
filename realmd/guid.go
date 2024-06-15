@@ -1,10 +1,13 @@
-package internal
+package realmd
+
+type Guid uint64
+type PackedGuid []byte
 
 // internal.PackGuid returns a packed *little-endian* representation of an 8-byte integer. The packing works
 // by creating a bit mask to mark which bytes are non-zero. Any bytes which are zero are discarded.
 // The result is a byte array with the first byte as the bitmask, followed by the remaining
 // undiscarded bytes. The bytes after the bitmask are little-endian.
-func PackGuid(val uint64) []byte {
+func PackGuid(val uint64) PackedGuid {
 	// At its largest, a packed guid takes up 9 bytes (1 byte mask + 8 bytes)
 	result := make([]byte, 9)
 	n := 0
