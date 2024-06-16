@@ -48,12 +48,17 @@ type loginChallengeResponse struct {
 	SecurityFlags byte
 }
 
-func LoginChallenge(svc *authd.Service, client *authd.Client, data []byte) error {
-	if client.State != authd.StateAuthChallenge {
+type LoginChallenge struct {
+	Client   *authd.Client
+	Accounts model.AccountService
+}
+
+func (h *LoginChallenge) Handle(data []byte) error {
+	if h.Client.State != authd.StateAuthChallenge {
 		return &ErrWrongState{
 			Handler:  "LoginChallenge",
 			Expected: authd.StateAuthChallenge,
-			Actual:   client.State,
+			Actual:   h.Client.State,
 		}
 	}
 
@@ -66,7 +71,7 @@ func LoginChallenge(svc *authd.Service, client *authd.Client, data []byte) error
 
 	log.Printf("client trying to login as '%s'\n", req.Username)
 
-	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: req.Username})
+	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: req.Username})
 	if err != nil {
 		return err
 	}
@@ -88,7 +93,7 @@ func LoginChallenge(svc *authd.Service, client *authd.Client, data []byte) error
 		// If we didn't do this, a bad actor could send two challenges with the same username and compare
 		// the salts. The salts would be the same for real accounts and different for fake accounts.
 		// This would allow someone to mine usernames and start building an attack vector.
-		seededRand := mrand.New(mrand.NewSource(internal.FastHash(client.Username)))
+		seededRand := mrand.New(mrand.NewSource(internal.FastHash(h.Client.Username)))
 		salt = make([]byte, srp.SaltSize)
 		if _, err := seededRand.Read(salt); err != nil {
 			return err
@@ -98,8 +103,8 @@ func LoginChallenge(svc *authd.Service, client *authd.Client, data []byte) error
 		if err := acct.DecodeSrp(); err != nil {
 			return err
 		}
-		publicKey = srp.CalculateServerPublicKey(acct.Verifier(), client.PrivateKey)
-		client.ServerPublicKey = publicKey
+		publicKey = srp.CalculateServerPublicKey(acct.Verifier(), h.Client.PrivateKey)
+		h.Client.ServerPublicKey = publicKey
 		salt = acct.Salt()
 	}
 
@@ -126,18 +131,18 @@ func LoginChallenge(svc *authd.Service, client *authd.Client, data []byte) error
 	// The byte arrays are already little endian so the buffer can be used as-is
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := client.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := h.Client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to login challenge")
 
 	if !faked {
-		client.Account = acct
-		client.Username = req.Username
+		h.Client.Account = acct
+		h.Client.Username = req.Username
 	}
 
-	client.State = authd.StateAuthProof
+	h.Client.State = authd.StateAuthProof
 
 	return nil
 }

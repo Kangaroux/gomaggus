@@ -30,12 +30,17 @@ type reconnectProofResponse struct {
 	_         [2]byte // padding
 }
 
-func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
-	if c.State != authd.StateAuthProof {
+type ReconnectProof struct {
+	Client   *authd.Client
+	Sessions model.SessionService
+}
+
+func (h *ReconnectProof) Handle(data []byte) error {
+	if h.Client.State != authd.StateAuthProof {
 		return &ErrWrongState{
 			Handler:  "RealmList",
 			Expected: authd.StateAuthProof,
-			Actual:   c.State,
+			Actual:   h.Client.State,
 		}
 	}
 
@@ -43,8 +48,8 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	authenticated := false
 
-	if c.Account != nil {
-		session, err := svc.Sessions.Get(c.Account.Id)
+	if h.Client.Account != nil {
+		session, err := h.Sessions.Get(h.Client.Account.Id)
 		if err != nil {
 			return err
 		}
@@ -54,14 +59,14 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 			if err := session.Decode(); err != nil {
 				return err
 			}
-			c.SessionKey = session.SessionKey()
+			h.Client.SessionKey = session.SessionKey()
 
 			req := reconnectProofRequest{}
 			if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 				return err
 			}
 
-			serverProof := srp.CalculateReconnectProof(c.Username, req.ProofData[:], c.ReconnectData, c.SessionKey)
+			serverProof := srp.CalculateReconnectProof(h.Client.Username, req.ProofData[:], h.Client.ReconnectData, h.Client.SessionKey)
 			authenticated = bytes.Equal(serverProof, req.ClientProof[:])
 		}
 	}
@@ -77,7 +82,7 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 	respBuf := bytes.Buffer{}
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := h.Client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
@@ -85,17 +90,17 @@ func ReconnectProof(svc *authd.Service, c *authd.Client, data []byte) error {
 
 	if authenticated {
 		session := model.Session{
-			AccountId:     c.Account.Id,
-			SessionKeyHex: hex.EncodeToString(c.SessionKey),
+			AccountId:     h.Client.Account.Id,
+			SessionKeyHex: hex.EncodeToString(h.Client.SessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		}
-		if err := svc.Sessions.UpdateOrCreate(&session); err != nil {
+		if err := h.Sessions.UpdateOrCreate(&session); err != nil {
 			return err
 		}
-		c.State = authd.StateAuthenticated
+		h.Client.State = authd.StateAuthenticated
 	} else {
-		c.State = authd.StateInvalid
+		h.Client.State = authd.StateInvalid
 	}
 
 	return nil

@@ -22,22 +22,22 @@ const (
 
 type Server struct {
 	listenAddr string
-	services   *authd.Service
+	Accounts   model.AccountService
+	Realms     model.RealmService
+	Sessions   model.SessionService
 }
 
 func New(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
-		services: &authd.Service{
-			Accounts: model.NewDbAccountService(db),
-			Realms:   model.NewDbRealmService(db),
-			Sessions: model.NewDbSessionService(db),
-		},
+		Accounts:   model.NewDbAccountService(db),
+		Realms:     model.NewDbRealmService(db),
+		Sessions:   model.NewDbSessionService(db),
 	}
 }
 
-func (s *Server) Start() {
-	listener, err := net.Listen("tcp4", s.listenAddr)
+func (srv *Server) Start() {
+	listener, err := net.Listen("tcp4", srv.listenAddr)
 
 	if err != nil {
 		log.Fatal(err)
@@ -55,11 +55,11 @@ func (s *Server) Start() {
 
 		log.Printf("client connected from %s\n", conn.RemoteAddr().String())
 
-		go s.handleConnection(conn)
+		go srv.handleConnection(conn)
 	}
 }
 
-func (s *Server) handleConnection(conn net.Conn) {
+func (srv *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("recovered from panic: %v\n", err)
@@ -73,20 +73,20 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
 
-	c := &authd.Client{
+	client := &authd.Client{
 		Conn:          conn,
 		ReconnectData: make([]byte, handler.ReconnectDataLen),
 		PrivateKey:    make([]byte, srp.KeySize),
 	}
 
-	if _, err := rand.Read(c.PrivateKey); err != nil {
+	if _, err := rand.Read(client.PrivateKey); err != nil {
 		return
 	}
 
 	buf := make([]byte, 4096)
 
 	for {
-		n, err := c.Conn.Read(buf)
+		n, err := client.Conn.Read(buf)
 
 		if err == io.EOF {
 			log.Println("client disconnected (closed by client)")
@@ -98,27 +98,52 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 		log.Printf("read %d bytes\n", n)
 
-		if err := s.handlePacket(c, buf[:n]); err != nil {
+		if err := srv.handlePacket(client, buf[:n]); err != nil {
 			log.Println(err)
 			return
 		}
 	}
 }
 
-func (s *Server) handlePacket(c *authd.Client, data []byte) error {
+func (srv *Server) handlePacket(c *authd.Client, data []byte) error {
 	opcode := authd.Opcode(data[0])
 
 	switch opcode {
 	case authd.OpcodeLoginChallenge:
-		return handler.LoginChallenge(s.services, c, data)
+		h := handler.LoginChallenge{
+			Client:   c,
+			Accounts: srv.Accounts,
+		}
+		return h.Handle(data)
+
 	case authd.OpcodeLoginProof:
-		return handler.LoginProof(s.services, c, data)
+		h := handler.LoginProof{
+			Client:   c,
+			Sessions: srv.Sessions,
+		}
+		return h.Handle(data)
+
 	case authd.OpcodeReconnectChallenge:
-		return handler.ReconnectChallenge(s.services, c, data)
+		h := handler.ReconnectChallenge{
+			Client:   c,
+			Accounts: srv.Accounts,
+		}
+		return h.Handle(data)
+
 	case authd.OpcodeReconnectProof:
-		return handler.ReconnectProof(s.services, c, data)
+		h := handler.ReconnectProof{
+			Client:   c,
+			Sessions: srv.Sessions,
+		}
+		return h.Handle(data)
+
 	case authd.OpcodeRealmList:
-		return handler.RealmList(s.services, c)
+		h := handler.RealmList{
+			Client: c,
+			Realms: srv.Realms,
+		}
+		return h.Handle()
+
 	default:
 		return fmt.Errorf("handlePacket: unknown opcode %x", opcode)
 	}

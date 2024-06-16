@@ -25,12 +25,17 @@ type reconnectChallengeResponse struct {
 	ChecksumSalt  [16]byte
 }
 
-func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error {
-	if c.State != authd.StateAuthChallenge {
+type ReconnectChallenge struct {
+	Client   *authd.Client
+	Accounts model.AccountService
+}
+
+func (h *ReconnectChallenge) Handle(data []byte) error {
+	if h.Client.State != authd.StateAuthChallenge {
 		return &ErrWrongState{
 			Handler:  "RealmList",
 			Expected: authd.StateAuthChallenge,
-			Actual:   c.State,
+			Actual:   h.Client.State,
 		}
 	}
 
@@ -43,13 +48,13 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 
 	log.Printf("client trying to reconnect as '%s'\n", req.Username)
 
-	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: req.Username})
+	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: req.Username})
 	if err != nil {
 		return err
 	}
 
 	// Generate random data that will be used for the reconnect proof
-	if _, err := rand.Read(c.ReconnectData); err != nil {
+	if _, err := rand.Read(h.Client.ReconnectData); err != nil {
 		return err
 	}
 
@@ -60,23 +65,23 @@ func ReconnectChallenge(svc *authd.Service, c *authd.Client, data []byte) error 
 		ErrorCode:    authd.Success,
 		ChecksumSalt: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
-	copy(resp.ReconnectData[:], c.ReconnectData)
+	copy(resp.ReconnectData[:], h.Client.ReconnectData)
 
 	respBuf := bytes.Buffer{}
 	binary.Write(&respBuf, binary.BigEndian, &resp)
 
-	if _, err := c.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := h.Client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to reconnect challenge")
 
 	if acct != nil {
-		c.Account = acct
-		c.Username = req.Username
+		h.Client.Account = acct
+		h.Client.Username = req.Username
 	}
 
-	c.State = authd.StateReconnectProof
+	h.Client.State = authd.StateReconnectProof
 
 	return nil
 }

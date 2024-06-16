@@ -34,16 +34,21 @@ type realm struct {
 	Id            uint8
 }
 
-func RealmList(svc *authd.Service, client *authd.Client) error {
-	if client.State != authd.StateAuthenticated {
+type RealmList struct {
+	Client *authd.Client
+	Realms model.RealmService
+}
+
+func (h *RealmList) Handle() error {
+	if h.Client.State != authd.StateAuthenticated {
 		return &ErrWrongState{
 			Handler:  "RealmList",
 			Expected: authd.StateAuthenticated,
-			Actual:   client.State,
+			Actual:   h.Client.State,
 		}
 	}
 
-	realmList, err := svc.Realms.List()
+	realmList, err := h.Realms.List()
 	if err != nil {
 		return err
 	}
@@ -86,7 +91,7 @@ func RealmList(svc *authd.Service, client *authd.Client) error {
 	respBuf.Write(headerBytes)
 	respBuf.Write(bodyBytes)
 
-	if _, err := client.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := h.Client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 

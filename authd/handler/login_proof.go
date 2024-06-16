@@ -14,7 +14,7 @@ import (
 	"github.com/mixcode/binarystruct"
 )
 
-// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_client.html#protocol-version-8
+// https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_h.Client.html#protocol-version-8
 type loginProofRequest struct {
 	Opcode           authd.Opcode // OpLoginProof
 	ClientPublicKey  [srp.KeySize]byte
@@ -39,12 +39,17 @@ type loginProofSuccess struct {
 	_                [2]byte // padding
 }
 
-func LoginProof(svc *authd.Service, client *authd.Client, data []byte) error {
-	if client.State != authd.StateAuthProof {
+type LoginProof struct {
+	Client   *authd.Client
+	Sessions model.SessionService
+}
+
+func (h *LoginProof) Handle(data []byte) error {
+	if h.Client.State != authd.StateAuthProof {
 		return &ErrWrongState{
 			Handler:  "LoginProof",
 			Expected: authd.StateAuthProof,
-			Actual:   client.State,
+			Actual:   h.Client.State,
 		}
 	}
 
@@ -53,20 +58,22 @@ func LoginProof(svc *authd.Service, client *authd.Client, data []byte) error {
 	var serverProof []byte
 	authenticated := false
 
-	if client.Account != nil {
+	if h.Client.Account != nil {
 		req := loginProofRequest{}
 		if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 			return err
 		}
 
-		client.ClientPublicKey = req.ClientPublicKey[:]
-		client.SessionKey = srp.CalculateServerSessionKey(client.ClientPublicKey, client.ServerPublicKey, client.PrivateKey, client.Account.Verifier())
+		c := h.Client
+		acct := h.Client.Account
 
-		calculatedClientProof := srp.CalculateClientProof(client.Account.Username, client.Account.Salt(), client.ClientPublicKey, client.ServerPublicKey, client.SessionKey)
+		c.ClientPublicKey = req.ClientPublicKey[:]
+		c.SessionKey = srp.CalculateServerSessionKey(c.ClientPublicKey, c.ServerPublicKey, c.PrivateKey, acct.Verifier())
+		calculatedClientProof := srp.CalculateClientProof(acct.Username, acct.Salt(), c.ClientPublicKey, c.ServerPublicKey, c.SessionKey)
 		authenticated = bytes.Equal(calculatedClientProof, req.ClientProof[:])
 
 		if authenticated {
-			serverProof = srp.CalculateServerProof(client.ClientPublicKey, req.ClientProof[:], client.SessionKey)
+			serverProof = srp.CalculateServerProof(c.ClientPublicKey, req.ClientProof[:], c.SessionKey)
 		}
 	}
 
@@ -89,16 +96,16 @@ func LoginProof(svc *authd.Service, client *authd.Client, data []byte) error {
 		binary.Write(&respBuf, binary.BigEndian, &resp)
 	}
 
-	if _, err := client.Conn.Write(respBuf.Bytes()); err != nil {
+	if _, err := h.Client.Conn.Write(respBuf.Bytes()); err != nil {
 		return err
 	}
 
 	log.Println("Replied to login proof")
 
 	if authenticated {
-		err := svc.Sessions.UpdateOrCreate(&model.Session{
-			AccountId:     client.Account.Id,
-			SessionKeyHex: hex.EncodeToString(client.SessionKey),
+		err := h.Sessions.UpdateOrCreate(&model.Session{
+			AccountId:     h.Client.Account.Id,
+			SessionKeyHex: hex.EncodeToString(h.Client.SessionKey),
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		})
@@ -106,9 +113,9 @@ func LoginProof(svc *authd.Service, client *authd.Client, data []byte) error {
 			return err
 		}
 
-		client.State = authd.StateAuthenticated
+		h.Client.State = authd.StateAuthenticated
 	} else {
-		client.State = authd.StateInvalid
+		h.Client.State = authd.StateInvalid
 	}
 
 	return nil
