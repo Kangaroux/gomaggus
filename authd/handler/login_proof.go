@@ -58,12 +58,14 @@ func (h *LoginProof) Handle(data []byte) error {
 	var serverProof []byte
 	authenticated := false
 
-	if h.Client.Account != nil {
-		req := loginProofRequest{}
-		if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
-			return err
-		}
+	// This data is only used if the challenge response wasn't faked, however it should still be parsed
+	// to ensure the request wasn't malformed
+	req := loginProofRequest{}
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
+		return err
+	}
 
+	if h.Client.Account != nil {
 		c := h.Client
 		acct := h.Client.Account
 

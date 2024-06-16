@@ -7,18 +7,11 @@ import (
 
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/authd/mock"
+	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/mixcode/binarystruct"
 	"github.com/stretchr/testify/assert"
 )
-
-func MustMarshal(src interface{}, byteOrder binarystruct.ByteOrder) []byte {
-	data, err := binarystruct.Marshal(src, byteOrder)
-	if err != nil {
-		panic(err)
-	}
-	return data
-}
 
 func TestLoginChallenge(t *testing.T) {
 	var client *authd.Client
@@ -26,7 +19,8 @@ func TestLoginChallenge(t *testing.T) {
 
 	newHandler := func() *LoginChallenge {
 		client = &authd.Client{
-			Conn: &mock.Conn{},
+			Conn:  &mock.Conn{},
+			State: authd.StateAuthChallenge,
 		}
 		accounts = &mock.AccountService{}
 		return &LoginChallenge{
@@ -59,13 +53,13 @@ func TestLoginChallenge(t *testing.T) {
 			UsernameLength: 1,
 			Username:       "a",
 		}
-		data := MustMarshal(packet, binarystruct.LittleEndian)
+		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
 
-		assert.Equal(t, expectedErr, h.Handle(data))
+		assert.Equal(t, expectedErr, h.Handle(request))
 	})
 
 	t.Run("unknown username fake response", func(t *testing.T) {
-		packet := loginChallengeRequest{
+		packet := &loginChallengeRequest{
 			UsernameLength: 4,
 			Username:       "fake",
 		}
@@ -75,9 +69,9 @@ func TestLoginChallenge(t *testing.T) {
 			// will be fake
 			return nil, nil
 		}
-		data := MustMarshal(packet, binarystruct.LittleEndian)
+		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
 
-		assert.NoError(t, h.Handle(data))
+		assert.NoError(t, h.Handle(request))
 		assert.Equal(t, authd.StateAuthProof, client.State)
 
 		// The client's account/username will remain empty if it's faked
@@ -86,7 +80,7 @@ func TestLoginChallenge(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		packet := loginChallengeRequest{
+		packet := &loginChallengeRequest{
 			UsernameLength: 3,
 			Username:       "bob",
 		}
@@ -97,9 +91,9 @@ func TestLoginChallenge(t *testing.T) {
 			assert.Equal(t, packet.Username, params.Username)
 			return mockAccount, nil
 		}
-		data := MustMarshal(packet, binarystruct.LittleEndian)
+		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
 
-		assert.NoError(t, h.Handle(data))
+		assert.NoError(t, h.Handle(request))
 		assert.Equal(t, authd.StateAuthProof, client.State)
 
 		// The client's account/username are set
