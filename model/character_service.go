@@ -123,7 +123,7 @@ func (s *DbCharacterService) Create(c *Character) error {
 		face,
 		hair_style,
 		hair_color,
-		facial_hair,
+		extra_cosmetic,
 		outfit_id
 	) VALUES (
 		:name,
@@ -136,7 +136,7 @@ func (s *DbCharacterService) Create(c *Character) error {
 		:face,
 		:hair_style,
 		:hair_color,
-		:facial_hair,
+		:extra_cosmetic,
 		:outfit_id
 	) RETURNING id, created_at`
 	result, err := s.db.NamedQuery(q, c)
@@ -159,7 +159,7 @@ func (s *DbCharacterService) Update(c *Character) (bool, error) {
 		face=:face,
 		hair_style=:hair_style,
 		hair_color=:hair_color,
-		facial_hair=:facial_hair,
+		extra_cosmetic=:extra_cosmetic,
 		outfit_id=:outfit_id
 	WHERE
 		id=:id`

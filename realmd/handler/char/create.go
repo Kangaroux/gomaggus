@@ -10,16 +10,16 @@ import (
 
 // https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
 type createRequest struct {
-	Name       string `binary:"zstring"`
-	Race       model.Race
-	Class      model.Class
-	Gender     model.Gender
-	SkinColor  byte
-	Face       byte
-	HairStyle  byte
-	HairColor  byte
-	FacialHair byte
-	OutfitId   byte
+	Name          string `binary:"zstring"`
+	Race          model.Race
+	Class         model.Class
+	Gender        model.Gender
+	SkinColor     byte
+	Face          byte
+	HairStyle     byte
+	HairColor     byte
+	ExtraCosmetic byte
+	OutfitId      byte
 }
 
 // https://gtker.com/wow_messages/docs/smsg_char_create.html#client-version-335
@@ -55,18 +55,18 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clie
 		resp.ResponseCode = realmd.RespCodeCharCreateNameInUse
 	} else {
 		char := &model.Character{
-			Name:       req.Name,
-			AccountId:  client.Account.Id,
-			RealmId:    client.Realm.Id,
-			Race:       req.Race,
-			Class:      req.Class,
-			Gender:     req.Gender,
-			SkinColor:  req.SkinColor,
-			Face:       req.Face,
-			HairStyle:  req.HairStyle,
-			HairColor:  req.HairColor,
-			FacialHair: req.FacialHair,
-			OutfitId:   req.OutfitId,
+			Name:          req.Name,
+			AccountId:     client.Account.Id,
+			RealmId:       client.Realm.Id,
+			Race:          req.Race,
+			Class:         req.Class,
+			Gender:        req.Gender,
+			SkinColor:     req.SkinColor,
+			Face:          req.Face,
+			HairStyle:     req.HairStyle,
+			HairColor:     req.HairColor,
+			ExtraCosmetic: req.ExtraCosmetic,
+			OutfitId:      req.OutfitId,
 		}
 		if err := svc.Chars.Create(char); err != nil {
 			return err

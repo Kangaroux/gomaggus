@@ -26,7 +26,7 @@ type character struct {
 	Face                 uint8
 	HairStyle            uint8
 	HairColor            uint8
-	FacialHair           uint8
+	ExtraCosmetic        uint8
 	Level                uint8
 	Area                 uint32
 	Map                  uint32
@@ -73,7 +73,7 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 			Face:                 accountChar.Face,
 			HairStyle:            accountChar.HairStyle,
 			HairColor:            accountChar.HairStyle,
-			FacialHair:           accountChar.FacialHair,
+			ExtraCosmetic:        accountChar.ExtraCosmetic,
 			Level:                1,
 			Area:                 0xC,              // Elwynn forest
 			Map:                  0x0,              // Eastern kingdoms

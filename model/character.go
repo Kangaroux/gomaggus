@@ -10,18 +10,20 @@ type Character struct {
 	CreatedAt time.Time    `db:"created_at"`
 	LastLogin sql.NullTime `db:"last_login"`
 
-	Name       string
-	AccountId  uint32 `db:"account_id"`
-	RealmId    uint32 `db:"realm_id"`
-	Race       Race
-	Class      Class
-	Gender     Gender
-	SkinColor  byte `db:"skin_color"`
-	Face       byte
-	HairStyle  byte `db:"hair_style"`
-	HairColor  byte `db:"hair_color"`
-	FacialHair byte `db:"facial_hair"`
-	OutfitId   byte `db:"outfit_id"`
+	Name      string
+	AccountId uint32 `db:"account_id"`
+	RealmId   uint32 `db:"realm_id"`
+	Race      Race
+	Class     Class
+	Gender    Gender
+	SkinColor byte `db:"skin_color"`
+	Face      byte
+	HairStyle byte `db:"hair_style"`
+	HairColor byte `db:"hair_color"`
+
+	// Facial hair, piercings, etc.
+	ExtraCosmetic byte `db:"extra_cosmetic"`
+	OutfitId      byte `db:"outfit_id"`
 }
 
 type Race byte
