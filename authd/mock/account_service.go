@@ -10,6 +10,8 @@ type AccountService struct {
 	OnDelete func(uint32) (bool, error)
 }
 
+var _ model.AccountService = (*AccountService)(nil)
+
 func (s *AccountService) Get(params *model.AccountGetParams) (*model.Account, error) {
 	if s.OnGet == nil {
 		return nil, nil
