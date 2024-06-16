@@ -98,11 +98,11 @@ func (h *LoginChallenge) Handle(data []byte) error {
 		if _, err := seededRand.Read(salt); err != nil {
 			return err
 		}
-
 	} else {
 		if err := acct.DecodeSrp(); err != nil {
 			return err
 		}
+
 		publicKey = srp.CalculateServerPublicKey(acct.Verifier(), h.Client.PrivateKey)
 		h.Client.ServerPublicKey = publicKey
 		salt = acct.Salt()

@@ -1,7 +1,7 @@
 package authd
 
 import (
-	"net"
+	"io"
 
 	"github.com/kangaroux/gomaggus/model"
 )
@@ -10,7 +10,7 @@ type ClientState int
 
 const (
 	// Initial state, waiting for the client to send an auth or reconnect challenge
-	StateAuthChallenge = iota
+	StateAuthChallenge ClientState = iota
 
 	// We've responded to the auth challenge and are waiting for the client's proof
 	StateAuthProof
@@ -26,7 +26,8 @@ const (
 )
 
 type Client struct {
-	Conn            net.Conn
+	// Using ReadWriteCloser instead of net.Conn makes test mocks simpler
+	Conn            io.ReadWriteCloser
 	Username        string
 	ReconnectData   []byte
 	SessionKey      []byte
