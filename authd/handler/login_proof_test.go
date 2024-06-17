@@ -77,6 +77,7 @@ func TestLoginProof(t *testing.T) {
 		respPacket := &loginProofSuccess{
 			Opcode:           authd.OpcodeLoginProof,
 			ErrorCode:        authd.Success,
+			Proof:            [20]byte(internal.MustDecodeHex("979F4506AF22E2A3C3BA8C122350BB2B9D144CE2")),
 			AccountFlags:     0,
 			HardwareSurveyId: 0,
 		}
