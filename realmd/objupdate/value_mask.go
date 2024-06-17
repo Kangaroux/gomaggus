@@ -342,7 +342,8 @@ var (
 	FieldMaskCorpseDynamicFlags = FieldMask{Size: 1, Offset: 0x22}
 )
 
-type UpdateMask struct {
+// ValueMask stores the mask that communicates what fields are set in a ValueBuffer.
+type ValueMask struct {
 	largestBit uint32
 	mask       []uint32
 }
@@ -352,7 +353,7 @@ const (
 )
 
 // Bit returns whether the provided bit has been set.
-func (m *UpdateMask) Bit(bit uint32) bool {
+func (m *ValueMask) Bit(bit uint32) bool {
 	if bit > m.largestBit {
 		return false
 	}
@@ -364,7 +365,7 @@ func (m *UpdateMask) Bit(bit uint32) bool {
 }
 
 // FieldMask returns whether all the bits for the provided mask have been set.
-func (m *UpdateMask) FieldMask(fieldMask FieldMask) bool {
+func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
 	for i := uint32(0); i < fieldMask.Size; i++ {
 		if !m.Bit(fieldMask.Offset + i) {
 			return false
@@ -375,20 +376,23 @@ func (m *UpdateMask) FieldMask(fieldMask FieldMask) bool {
 }
 
 // Mask returns the smallest []uint32 to represent all of the mask bits that were set.
-func (m *UpdateMask) Mask() []uint32 {
+func (m *ValueMask) Mask() []uint32 {
+	if len(m.mask) == 0 {
+		return m.mask
+	}
 	largestBitIndex := m.largestBit / 32
 	return m.mask[:largestBitIndex+1]
 }
 
 // SetFieldMask sets all the bits necessary for the provided field mask.
-func (m *UpdateMask) SetFieldMask(fieldMask FieldMask) {
+func (m *ValueMask) SetFieldMask(fieldMask FieldMask) {
 	for i := uint32(0); i < fieldMask.Size; i++ {
 		m.SetBit(fieldMask.Offset + i)
 	}
 }
 
 // SetBit sets the nth bit in the update mask. The bit is zero-indexed with the first bit being zero.
-func (m *UpdateMask) SetBit(bit uint32) {
+func (m *ValueMask) SetBit(bit uint32) {
 	index := bit / 32
 	bitPos := bit % 32
 	m.resize(index)
@@ -401,7 +405,7 @@ func (m *UpdateMask) SetBit(bit uint32) {
 }
 
 // Resizes the mask to fit up to n uint32s.
-func (m *UpdateMask) resize(n uint32) {
+func (m *ValueMask) resize(n uint32) {
 	maskLen := uint32(len(m.mask))
 
 	if maskLen > n {

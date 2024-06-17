@@ -29,13 +29,13 @@ type valueField struct {
 	value []uint32
 }
 
-type ValuesBuffer struct {
-	mask       UpdateMask
+type ValueBuffer struct {
+	mask       ValueMask
 	fields     []*valueField
 	objBuilder *ObjectBuilder
 }
 
-func (vb *ValuesBuffer) Bytes() []byte {
+func (vb *ValueBuffer) Bytes() []byte {
 	buf := bytes.Buffer{}
 	binary.Write(&buf, binary.LittleEndian, vb.mask.Mask())
 
@@ -51,14 +51,14 @@ func (vb *ValuesBuffer) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func (vb *ValuesBuffer) Objects() *ObjectBuilder {
+func (vb *ValueBuffer) Objects() *ObjectBuilder {
 	if vb.objBuilder == nil {
 		vb.objBuilder = &ObjectBuilder{buf: vb}
 	}
 	return vb.objBuilder
 }
 
-func (vb *ValuesBuffer) addField(field *valueField) {
+func (vb *ValueBuffer) addField(field *valueField) {
 	// Has this field already been added?
 	if vb.mask.FieldMask(field.mask) {
 

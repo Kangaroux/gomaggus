@@ -15,5 +15,5 @@ const (
 
 type PartialUpdate struct {
 	Guid   realmd.PackedGuid
-	Values ValuesBuffer
+	Values ValueBuffer
 }

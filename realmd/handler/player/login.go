@@ -219,7 +219,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	// movement block end
 
 	// field mask start
-	updateMask := objupdate.UpdateMask{}
+	updateMask := objupdate.ValueMask{}
 	valuesBuf := bytes.Buffer{}
 
 	// Without this, client gets stuck on loading screen and floods server with 0x2CE opcode

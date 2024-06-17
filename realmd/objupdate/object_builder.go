@@ -20,7 +20,7 @@ const (
 )
 
 type ObjectBuilder struct {
-	buf *ValuesBuffer
+	buf *ValueBuffer
 }
 
 func (b *ObjectBuilder) Guid(guid realmd.Guid) {
