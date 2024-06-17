@@ -248,6 +248,9 @@ func (b *MovementBuilder) Bytes() []byte {
 		flags := b.buf.livingFlags
 
 		binary.Write(&bytesBuf, binary.LittleEndian, flags)
+		// Living flags are stored as 8 bytes but written as 6. Discard the last two bytes
+		bytesBuf.Truncate(bytesBuf.Len() - 2)
+
 		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living1)
 
 		if b.buf.transportPassengerInterpolated != nil {
