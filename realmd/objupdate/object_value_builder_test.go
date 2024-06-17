@@ -10,7 +10,7 @@ import (
 )
 
 type valueBlock struct {
-	MaskSize uint32
+	MaskSize byte
 	Mask     []uint32
 	Values   []uint32
 }
@@ -22,7 +22,7 @@ func TestObjectGuid(t *testing.T) {
 		&valueBlock{
 			MaskSize: 1,
 			Mask:     []uint32{0x3},
-			Values:   []uint32{0xDEADBEEF, 0x11C0FFEE},
+			Values:   []uint32{0x11C0FFEE, 0xDEADBEEF},
 		},
 		binarystruct.LittleEndian,
 	)
@@ -37,7 +37,7 @@ func TestObjectType(t *testing.T) {
 		&valueBlock{
 			MaskSize: 1,
 			Mask:     []uint32{0x4},
-			Values:   []uint32{uint32(ObjectTypePlayer)},
+			Values:   []uint32{1 << uint32(ObjectTypePlayer)},
 		},
 		binarystruct.LittleEndian,
 	)
