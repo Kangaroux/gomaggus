@@ -19,27 +19,27 @@ const (
 	ObjectTypeCorpse        ObjectType = 7
 )
 
-// ObjectBuilder builds the values for OBJECT_* types.
+// ObjectValueBuilder builds the values for OBJECT_* types.
 // https://gtker.com/wow_messages/types/update-mask.html#version-335
-type ObjectBuilder struct {
+type ObjectValueBuilder struct {
 	buf *ValueBuffer
 }
 
-func (b *ObjectBuilder) Guid(guid realmd.Guid) {
+func (b *ObjectValueBuilder) Guid(guid realmd.Guid) {
 	b.buf.addField(&valueField{
 		mask:  FieldMaskObjectGuid,
 		value: []uint32{uint32(guid >> 32), uint32(guid)},
 	})
 }
 
-func (b *ObjectBuilder) Type(t ObjectType) {
+func (b *ObjectValueBuilder) Type(t ObjectType) {
 	b.buf.addField(&valueField{
 		mask:  FieldMaskObjectType,
 		value: []uint32{uint32(t)},
 	})
 }
 
-func (b *ObjectBuilder) ScaleX(val float32) {
+func (b *ObjectValueBuilder) ScaleX(val float32) {
 	b.buf.addField(&valueField{
 		mask:  FieldMaskObjectScaleX,
 		value: []uint32{math.Float32bits(val)},

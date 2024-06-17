@@ -32,8 +32,8 @@ type valueField struct {
 type ValueBuffer struct {
 	mask        ValueMask
 	fields      []*valueField
-	objBuilder  *ObjectBuilder
-	unitBuilder *UnitBuilder
+	objBuilder  *ObjectValueBuilder
+	unitBuilder *UnitValueBuilder
 }
 
 func (vb *ValueBuffer) Bytes() []byte {
@@ -52,16 +52,16 @@ func (vb *ValueBuffer) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func (vb *ValueBuffer) Object() *ObjectBuilder {
+func (vb *ValueBuffer) Object() *ObjectValueBuilder {
 	if vb.objBuilder == nil {
-		vb.objBuilder = &ObjectBuilder{buf: vb}
+		vb.objBuilder = &ObjectValueBuilder{buf: vb}
 	}
 	return vb.objBuilder
 }
 
-func (vb *ValueBuffer) Unit() *UnitBuilder {
+func (vb *ValueBuffer) Unit() *UnitValueBuilder {
 	if vb.unitBuilder == nil {
-		vb.unitBuilder = &UnitBuilder{buf: vb}
+		vb.unitBuilder = &UnitValueBuilder{buf: vb}
 	}
 	return vb.unitBuilder
 }

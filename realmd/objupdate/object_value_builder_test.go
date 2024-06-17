@@ -16,7 +16,7 @@ type valueBlock struct {
 }
 
 func TestObjectGuid(t *testing.T) {
-	b := ObjectBuilder{buf: &ValueBuffer{}}
+	b := ObjectValueBuilder{buf: &ValueBuffer{}}
 	b.Guid(0xDEADBEEF11C0FFEE)
 	expected := internal.MustMarshal(
 		&valueBlock{
@@ -31,7 +31,7 @@ func TestObjectGuid(t *testing.T) {
 }
 
 func TestObjectType(t *testing.T) {
-	b := ObjectBuilder{buf: &ValueBuffer{}}
+	b := ObjectValueBuilder{buf: &ValueBuffer{}}
 	b.Type(ObjectTypePlayer)
 	expected := internal.MustMarshal(
 		&valueBlock{
@@ -46,7 +46,7 @@ func TestObjectType(t *testing.T) {
 }
 
 func TestObjectScaleX(t *testing.T) {
-	b := ObjectBuilder{buf: &ValueBuffer{}}
+	b := ObjectValueBuilder{buf: &ValueBuffer{}}
 	b.ScaleX(123.45)
 	expected := internal.MustMarshal(
 		&valueBlock{
