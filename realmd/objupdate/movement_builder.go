@@ -24,63 +24,63 @@ const (
 )
 
 // Encoded as 48 bits
-type MovementFlag uint64
+type LivingMovementFlag uint64
 
 const (
-	MovementFlagNone                          MovementFlag = 0x0
-	MovementFlagForward                       MovementFlag = 0x1
-	MovementFlagBackward                      MovementFlag = 0x2
-	MovementFlagStrafeLeft                    MovementFlag = 0x4
-	MovementFlagStrafeRight                   MovementFlag = 0x8
-	MovementFlagLeft                          MovementFlag = 0x10
-	MovementFlagRight                         MovementFlag = 0x20
-	MovementFlagPitchUp                       MovementFlag = 0x40
-	MovementFlagPitchDown                     MovementFlag = 0x80
-	MovementFlagWalking                       MovementFlag = 0x100
-	MovementFlagOnTransport                   MovementFlag = 0x200
-	MovementFlagDisableGravity                MovementFlag = 0x400
-	MovementFlagRoot                          MovementFlag = 0x800
-	MovementFlagFalling                       MovementFlag = 0x1000
-	MovementFlagFallingFar                    MovementFlag = 0x2000
-	MovementFlagPendingStop                   MovementFlag = 0x4000
-	MovementFlagPendingStrafeStop             MovementFlag = 0x8000
-	MovementFlagPendingForward                MovementFlag = 0x10000
-	MovementFlagPendingBackward               MovementFlag = 0x20000
-	MovementFlagPendingStrafeLeft             MovementFlag = 0x40000
-	MovementFlagPendingStrafeRight            MovementFlag = 0x80000
-	MovementFlagPendingRoot                   MovementFlag = 0x100000
-	MovementFlagSwimming                      MovementFlag = 0x200000
-	MovementFlagAscending                     MovementFlag = 0x400000
-	MovementFlagDescending                    MovementFlag = 0x800000
-	MovementFlagCanFly                        MovementFlag = 0x1000000
-	MovementFlagFlying                        MovementFlag = 0x2000000
-	MovementFlagSplineElevation               MovementFlag = 0x4000000
-	MovementFlagSplineEnabled                 MovementFlag = 0x8000000
-	MovementFlagWaterwalking                  MovementFlag = 0x10000000
-	MovementFlagFallingSlow                   MovementFlag = 0x20000000
-	MovementFlagHover                         MovementFlag = 0x40000000
-	MovementFlagNoStrafe                      MovementFlag = 0x100000000
-	MovementFlagNoJumping                     MovementFlag = 0x200000000
-	MovementFlagUnknown1                      MovementFlag = 0x400000000
-	MovementFlagFullSpeedTurning              MovementFlag = 0x800000000
-	MovementFlagFullSpeedPitching             MovementFlag = 0x1000000000
-	MovementFlagAlwaysAllowPitching           MovementFlag = 0x2000000000
-	MovementFlagUnknown2                      MovementFlag = 0x4000000000
-	MovementFlagUnknown3                      MovementFlag = 0x8000000000
-	MovementFlagUnknown4                      MovementFlag = 0x10000000000
-	MovementFlagUnknown5                      MovementFlag = 0x20000000000
-	MovementFlagTransportInterpolatedMovement MovementFlag = 0x40000000000
-	MovementFlagTransportInterpolatedTurning  MovementFlag = 0x80000000000
-	MovementFlagTransportInterpolatedPitching MovementFlag = 0x100000000000
-	MovementFlagUnknown6                      MovementFlag = 0x200000000000
-	MovementFlagUnknown7                      MovementFlag = 0x400000000000
-	MovementFlagUnknown8                      MovementFlag = 0x800000000000
+	LivingMovementFlagNone                          LivingMovementFlag = 0x0
+	LivingMovementFlagForward                       LivingMovementFlag = 0x1
+	LivingMovementFlagBackward                      LivingMovementFlag = 0x2
+	LivingMovementFlagStrafeLeft                    LivingMovementFlag = 0x4
+	LivingMovementFlagStrafeRight                   LivingMovementFlag = 0x8
+	LivingMovementFlagLeft                          LivingMovementFlag = 0x10
+	LivingMovementFlagRight                         LivingMovementFlag = 0x20
+	LivingMovementFlagPitchUp                       LivingMovementFlag = 0x40
+	LivingMovementFlagPitchDown                     LivingMovementFlag = 0x80
+	LivingMovementFlagWalking                       LivingMovementFlag = 0x100
+	LivingMovementFlagOnTransport                   LivingMovementFlag = 0x200
+	LivingMovementFlagDisableGravity                LivingMovementFlag = 0x400
+	LivingMovementFlagRoot                          LivingMovementFlag = 0x800
+	LivingMovementFlagFalling                       LivingMovementFlag = 0x1000
+	LivingMovementFlagFallingFar                    LivingMovementFlag = 0x2000
+	LivingMovementFlagPendingStop                   LivingMovementFlag = 0x4000
+	LivingMovementFlagPendingStrafeStop             LivingMovementFlag = 0x8000
+	LivingMovementFlagPendingForward                LivingMovementFlag = 0x10000
+	LivingMovementFlagPendingBackward               LivingMovementFlag = 0x20000
+	LivingMovementFlagPendingStrafeLeft             LivingMovementFlag = 0x40000
+	LivingMovementFlagPendingStrafeRight            LivingMovementFlag = 0x80000
+	LivingMovementFlagPendingRoot                   LivingMovementFlag = 0x100000
+	LivingMovementFlagSwimming                      LivingMovementFlag = 0x200000
+	LivingMovementFlagAscending                     LivingMovementFlag = 0x400000
+	LivingMovementFlagDescending                    LivingMovementFlag = 0x800000
+	LivingMovementFlagCanFly                        LivingMovementFlag = 0x1000000
+	LivingMovementFlagFlying                        LivingMovementFlag = 0x2000000
+	LivingMovementFlagSplineElevation               LivingMovementFlag = 0x4000000
+	LivingMovementFlagSplineEnabled                 LivingMovementFlag = 0x8000000
+	LivingMovementFlagWaterwalking                  LivingMovementFlag = 0x10000000
+	LivingMovementFlagFallingSlow                   LivingMovementFlag = 0x20000000
+	LivingMovementFlagHover                         LivingMovementFlag = 0x40000000
+	LivingMovementFlagNoStrafe                      LivingMovementFlag = 0x100000000
+	LivingMovementFlagNoJumping                     LivingMovementFlag = 0x200000000
+	LivingMovementFlagUnknown1                      LivingMovementFlag = 0x400000000
+	LivingMovementFlagFullSpeedTurning              LivingMovementFlag = 0x800000000
+	LivingMovementFlagFullSpeedPitching             LivingMovementFlag = 0x1000000000
+	LivingMovementFlagAlwaysAllowPitching           LivingMovementFlag = 0x2000000000
+	LivingMovementFlagUnknown2                      LivingMovementFlag = 0x4000000000
+	LivingMovementFlagUnknown3                      LivingMovementFlag = 0x8000000000
+	LivingMovementFlagUnknown4                      LivingMovementFlag = 0x10000000000
+	LivingMovementFlagUnknown5                      LivingMovementFlag = 0x20000000000
+	LivingMovementFlagTransportInterpolatedMovement LivingMovementFlag = 0x40000000000
+	LivingMovementFlagTransportInterpolatedTurning  LivingMovementFlag = 0x80000000000
+	LivingMovementFlagTransportInterpolatedPitching LivingMovementFlag = 0x100000000000
+	LivingMovementFlagUnknown6                      LivingMovementFlag = 0x200000000000
+	LivingMovementFlagUnknown7                      LivingMovementFlag = 0x400000000000
+	LivingMovementFlagUnknown8                      LivingMovementFlag = 0x800000000000
 )
 
 // Required
 // MovementUpdateLiving
 type LivingFlags struct {
-	Flags MovementFlag
+	Flags LivingMovementFlag
 }
 
 // Required
@@ -91,7 +91,7 @@ type LivingCommonData1 struct {
 }
 
 // Optional
-// MovementFlagTransportInterpolatedMovement
+// LivingMovementFlagTransportInterpolatedMovement
 // Nested in living block
 type TransportPassengerInterpolatedData struct {
 	// https://gtker.com/wow_messages/docs/transportinfo.html#wowm-representation-1
@@ -100,15 +100,15 @@ type TransportPassengerInterpolatedData struct {
 }
 
 // Optional
-// MovementFlagOnTransport
-// Mutually exclusive with MovementFlagTransportInterpolatedMovement
+// LivingMovementFlagOnTransport
+// Mutually exclusive with LivingMovementFlagTransportInterpolatedMovement
 // Nested in living block
 type TransportPassengerData struct {
 	// TODO: TransportInfo
 }
 
 // Optional
-// MovementFlagSwimming OR MovementFlagFlying OR MovementFlagAlwaysAllowPitching
+// LivingMovementFlagSwimming OR LivingMovementFlagFlying OR LivingMovementFlagAlwaysAllowPitching
 // Nested in living block
 type PitchData struct {
 	Pitch float32
@@ -118,12 +118,12 @@ type PitchData struct {
 // MovementUpdateLiving
 // Nested in living block
 type LivingCommonData2 struct {
-	// FallTime always is included even if MovementFlagFalling isn't set
+	// FallTime always is included even if LivingMovementFlagFalling isn't set
 	FallTime float32
 }
 
 // Optional
-// MovementFlagFalling
+// LivingMovementFlagFalling
 // Nested in living block
 type FallData struct {
 	FallSpeed       float32
@@ -133,7 +133,7 @@ type FallData struct {
 }
 
 // Optional
-// MovementFlagSplineElevation
+// LivingMovementFlagSplineElevation
 // Nested in living block
 type SplineElevationData struct {
 	Elevation float32 // TODO: research
@@ -161,7 +161,7 @@ type LivingDataCommon struct {
 }
 
 // Optional
-// MovementFlagSplineElevation
+// LivingMovementFlagSplineElevation
 type SplineData struct {
 	// TODO
 }
@@ -211,7 +211,7 @@ type movementBuffer struct {
 	updateFlag MovementUpdateFlag
 
 	// living block
-	livingFlags                    MovementFlag
+	livingFlags                    LivingMovementFlag
 	living1                        *LivingCommonData1
 	transportPassengerInterpolated *TransportPassengerInterpolatedData
 	transportPassenger             *TransportPassengerData
@@ -402,72 +402,72 @@ func (b *LivingMovementBuilder) Common(data *LivingDataCommon) error {
 
 func (b *LivingMovementBuilder) TransportPassengerMovement(data *TransportPassengerInterpolatedData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagTransportInterpolatedMovement
+		b.buf.livingFlags &= ^LivingMovementFlagTransportInterpolatedMovement
 	} else {
-		b.buf.livingFlags |= MovementFlagTransportInterpolatedMovement
+		b.buf.livingFlags |= LivingMovementFlagTransportInterpolatedMovement
 	}
 	b.buf.transportPassengerInterpolated = data
 }
 
 func (b *LivingMovementBuilder) TransportPassenger(data *TransportPassengerData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagOnTransport
+		b.buf.livingFlags &= ^LivingMovementFlagOnTransport
 	} else {
-		b.buf.livingFlags |= MovementFlagOnTransport
+		b.buf.livingFlags |= LivingMovementFlagOnTransport
 	}
 	b.buf.transportPassenger = data
 }
 
 func (b *LivingMovementBuilder) Swimming(data *PitchData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagSwimming
+		b.buf.livingFlags &= ^LivingMovementFlagSwimming
 	} else {
-		b.buf.livingFlags |= MovementFlagSwimming
+		b.buf.livingFlags |= LivingMovementFlagSwimming
 	}
 	b.buf.pitch = data
 }
 
 func (b *LivingMovementBuilder) Flying(data *PitchData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagFlying
+		b.buf.livingFlags &= ^LivingMovementFlagFlying
 	} else {
-		b.buf.livingFlags |= MovementFlagFlying
+		b.buf.livingFlags |= LivingMovementFlagFlying
 	}
 	b.buf.pitch = data
 }
 
 func (b *LivingMovementBuilder) ForcePitch(data *PitchData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagAlwaysAllowPitching
+		b.buf.livingFlags &= ^LivingMovementFlagAlwaysAllowPitching
 	} else {
-		b.buf.livingFlags |= MovementFlagAlwaysAllowPitching
+		b.buf.livingFlags |= LivingMovementFlagAlwaysAllowPitching
 	}
 	b.buf.pitch = data
 }
 
 func (b *LivingMovementBuilder) Falling(data *FallData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagFalling
+		b.buf.livingFlags &= ^LivingMovementFlagFalling
 	} else {
-		b.buf.livingFlags |= MovementFlagFalling
+		b.buf.livingFlags |= LivingMovementFlagFalling
 	}
 	b.buf.fall = data
 }
 
 func (b *LivingMovementBuilder) SplineElevation(data *SplineElevationData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagSplineElevation
+		b.buf.livingFlags &= ^LivingMovementFlagSplineElevation
 	} else {
-		b.buf.livingFlags |= MovementFlagSplineElevation
+		b.buf.livingFlags |= LivingMovementFlagSplineElevation
 	}
 	b.buf.splineElevation = data
 }
 
 func (b *LivingMovementBuilder) Spline(data *SplineData) {
 	if data == nil {
-		b.buf.livingFlags &= ^MovementFlagSplineEnabled
+		b.buf.livingFlags &= ^LivingMovementFlagSplineEnabled
 	} else {
-		b.buf.livingFlags |= MovementFlagSplineEnabled
+		b.buf.livingFlags |= LivingMovementFlagSplineEnabled
 	}
 	b.buf.spline = data
 }
