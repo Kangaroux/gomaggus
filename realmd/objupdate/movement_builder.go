@@ -314,6 +314,10 @@ func (b *MovementBuilder) Living() *LivingMovementBuilder {
 	return b.livingBuilder
 }
 
+func (b *MovementBuilder) Self() {
+	b.buf.updateFlag |= MovementUpdateSelf
+}
+
 func (b *MovementBuilder) Position(data *PositionData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdatePosition

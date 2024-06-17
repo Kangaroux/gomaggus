@@ -32,10 +32,17 @@ func (b *ObjectValueBuilder) Guid(guid realmd.Guid) {
 	})
 }
 
-func (b *ObjectValueBuilder) Type(t ObjectType) {
+func (b *ObjectValueBuilder) Type(types ...ObjectType) {
+	val := uint32(0)
+
+	// Convert types to bitmask
+	for _, t := range types {
+		val |= 1 << t
+	}
+
 	b.buf.addField(&valueField{
 		mask:  FieldMaskObjectType,
-		value: []uint32{uint32(t)},
+		value: []uint32{val},
 	})
 }
 

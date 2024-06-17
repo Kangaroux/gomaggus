@@ -3,8 +3,8 @@ package player
 import (
 	"bytes"
 	"database/sql"
-	"encoding/binary"
 	"log"
+	"math"
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
@@ -196,80 +196,54 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	inner.Write(realmd.PackGuid(uint64(char.Id)))            // packed guid
 	inner.WriteByte(byte(objupdate.ObjectTypePlayer))
 
-	// movement block start
-	// inner.WriteByte()
-	binary.Write(&inner, binary.LittleEndian, objupdate.UpdateFlagSelf|objupdate.UpdateFlagLiving)
-	inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
-	inner.Write([]byte{0, 0, 0, 0})                              // timestamp
-	binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
-	binary.Write(&inner, binary.LittleEndian, float32(-132.493)) // y
-	binary.Write(&inner, binary.LittleEndian, float32(83.5312))  // z
-	binary.Write(&inner, binary.LittleEndian, float32(0))        // orientation
-	inner.Write([]byte{0, 0, 0, 0})                              // fall time
+	movement := objupdate.MovementBuilder{}
+	movement.Self()
 
-	binary.Write(&inner, binary.LittleEndian, float32(1))       // walk speed
-	binary.Write(&inner, binary.LittleEndian, float32(70))      // run speed
-	binary.Write(&inner, binary.LittleEndian, float32(4.5))     // reverse speed
-	binary.Write(&inner, binary.LittleEndian, float32(0))       // swim speed
-	binary.Write(&inner, binary.LittleEndian, float32(0))       // swim reverse speed
-	binary.Write(&inner, binary.LittleEndian, float32(0))       // flight speed
-	binary.Write(&inner, binary.LittleEndian, float32(0))       // flight reverse speed
-	binary.Write(&inner, binary.LittleEndian, float32(3.14159)) // turn speed
-	binary.Write(&inner, binary.LittleEndian, float32(0))       // pitch rate
-	// movement block end
+	living := movement.Living()
+	living.Common(&objupdate.LivingDataCommon{
+		LivingCommonData1: objupdate.LivingCommonData1{
+			Timestamp: uint32(time.Now().Unix()),
+			PositionRotation: realmd.Vector4{
+				X:        float32(-8949.95),
+				Y:        float32(-132.493),
+				Z:        float32(83.5312),
+				Rotation: float32(0),
+			},
+		},
+		LivingCommonData2: objupdate.LivingCommonData2{
+			FallTime: 0,
+		},
+		LivingCommonData3: objupdate.LivingCommonData3{
+			WalkSpeed:          1,
+			RunSpeed:           70,
+			ReverseSpeed:       4.5,
+			SwimSpeed:          0,
+			SwimReverseSpeed:   0,
+			FlightSpeed:        0,
+			FlightReverseSpeed: 0,
+			TurnRate:           math.Pi,
+			PitchRate:          0,
+		},
+	})
 
-	// field mask start
-	updateMask := objupdate.ValueMask{}
-	valuesBuf := bytes.Buffer{}
+	inner.Write(movement.Bytes())
 
-	// Without this, client gets stuck on loading screen and floods server with 0x2CE opcode
-	updateMask.SetFieldMask(objupdate.FieldMaskObjectGuid)
-	binary.Write(&valuesBuf, binary.LittleEndian, uint32(char.Id)) // low guid
-	binary.Write(&valuesBuf, binary.LittleEndian, uint32(0))       // high guid
+	values := objupdate.ValueBuffer{}
+	obj := values.Object()
+	obj.Guid(realmd.Guid(char.Id))
+	obj.Type(objupdate.ObjectTypeObject, objupdate.ObjectTypeUnit, objupdate.ObjectTypePlayer)
+	obj.ScaleX(1)
 
-	// Character seems to load fine without this
-	updateMask.SetFieldMask(objupdate.FieldMaskObjectType)
-	binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<objupdate.ObjectTypeObject|1<<objupdate.ObjectTypeUnit|1<<objupdate.ObjectTypePlayer))
+	unit := values.Unit()
+	unit.ClassRaceGenderPower(char.Race, char.Class, char.Gender, realmd.PowerTypeForClass(char.Class))
+	unit.Health(100)
+	unit.MaxHealth(100)
+	unit.Level(1)
+	unit.Faction(char.Race)
+	unit.DisplayModel(0x4D0C)       // human female
+	unit.NativeDisplayModel(0x4D0C) // human female
 
-	// Without this, character model scale is zero and camera starts in first person
-	updateMask.SetFieldMask(objupdate.FieldMaskObjectScaleX)
-	valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
-
-	// Without this, talent screen is blank
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitBytes0)
-	valuesBuf.WriteByte(byte(char.Race))
-	valuesBuf.WriteByte(byte(char.Class))
-	valuesBuf.WriteByte(byte(char.Gender))
-	valuesBuf.WriteByte(byte(realmd.PowerTypeForClass(char.Class)))
-
-	// Without this, character spawns in as a corpse
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitHealth)
-	valuesBuf.Write([]byte{100, 0, 0, 0})
-
-	// Without this, UI doesn't show max health
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitMaxHealth)
-	valuesBuf.Write([]byte{100, 0, 0, 0})
-
-	// Without this, character level appears as 0
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitLevel)
-	valuesBuf.Write([]byte{10, 0, 0, 0})
-
-	// Without this, client segfaults
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitFactionTemplate)
-	valuesBuf.Write([]byte{byte(char.Race), 0, 0, 0})
-
-	// Without this, client segfaults
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitDisplayId)
-	valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
-
-	// Without this, client segfaults
-	updateMask.SetFieldMask(objupdate.FieldMaskUnitNativeDisplayId)
-	valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
-
-	mask := updateMask.Mask()
-	inner.WriteByte(byte(len(mask)))
-	binary.Write(&inner, binary.LittleEndian, mask)
-	inner.Write(valuesBuf.Bytes())
+	inner.Write(values.Bytes())
 
 	if err := client.SendPacketBytes(realmd.OpServerUpdateObject, inner.Bytes()); err != nil {
 		return err
