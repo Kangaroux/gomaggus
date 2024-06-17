@@ -1,6 +1,9 @@
 package objupdate
 
 import (
+	"bytes"
+	"encoding/binary"
+
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
@@ -234,6 +237,69 @@ type movementBuffer struct {
 type MovementBuilder struct {
 	buf           movementBuffer
 	livingBuilder *LivingMovementBuilder
+}
+
+// Bytes returns the movement block as a little-endian byte array.
+func (b *MovementBuilder) Bytes() []byte {
+	bytesBuf := bytes.Buffer{}
+	binary.Write(&bytesBuf, binary.LittleEndian, b.buf.updateFlag)
+
+	if b.buf.updateFlag&MovementUpdateLiving > 0 {
+		flags := b.buf.livingFlags
+
+		binary.Write(&bytesBuf, binary.LittleEndian, flags)
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living1)
+
+		if b.buf.transportPassengerInterpolated != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.transportPassengerInterpolated)
+		}
+		if b.buf.transportPassenger != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.transportPassenger)
+		}
+		if b.buf.pitch != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.pitch)
+		}
+
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living2)
+
+		if b.buf.fall != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.fall)
+		}
+		if b.buf.splineElevation != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.splineElevation)
+		}
+
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living3)
+
+		if b.buf.spline != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.spline)
+		}
+	} else if b.buf.updateFlag&MovementUpdatePosition > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.positionData)
+	} else if b.buf.updateFlag&MovementUpdateHasPosition > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.hasPositionData)
+	}
+
+	if b.buf.updateFlag&MovementUpdateHighGuid > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.highGuidData)
+	}
+	if b.buf.updateFlag&MovementUpdateLowGuid > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.lowGuidData)
+	}
+	if b.buf.updateFlag&MovementUpdateHasAttackingTarget > 0 {
+		bytesBuf.Write(b.buf.attackingTargetData.Guid)
+	}
+	if b.buf.updateFlag&MovementUpdateTransport > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.transportData)
+	}
+	if b.buf.updateFlag&MovementUpdateVehicle > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.vehicleData)
+	}
+	if b.buf.updateFlag&MovementUpdateRotation > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.rotationData)
+	}
+
+	return bytesBuf.Bytes()
 }
 
 // Living returns a builder for building the block related to living units. It also sets the living flag.
