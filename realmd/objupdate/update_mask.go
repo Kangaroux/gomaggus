@@ -3,7 +3,7 @@ package objupdate
 // https://gtker.com/wow_messages/types/update-mask.html#version-335
 type FieldMask struct {
 	// Size is the number of uint32 blocks used for the field data.
-	Size int
+	Size uint32
 	// Offset is the bit number that is set to indicate this field is included.
 	Offset uint32
 }
@@ -343,8 +343,35 @@ var (
 )
 
 type UpdateMask struct {
-	largestBit int
+	largestBit uint32
 	mask       []uint32
+}
+
+const (
+	maskMinSize = 16
+)
+
+// Bit returns whether the provided bit has been set.
+func (m *UpdateMask) Bit(bit uint32) bool {
+	if bit > m.largestBit {
+		return false
+	}
+
+	index := bit / 32
+	bitPos := bit % 32
+
+	return m.mask[index]&(1<<bitPos) > 0
+}
+
+// FieldMask returns whether all the bits for the provided mask have been set.
+func (m *UpdateMask) FieldMask(fieldMask FieldMask) bool {
+	for i := uint32(0); i < fieldMask.Size; i++ {
+		if !m.Bit(fieldMask.Offset + i) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Mask returns the smallest []uint32 to represent all of the mask bits that were set.
@@ -355,13 +382,13 @@ func (m *UpdateMask) Mask() []uint32 {
 
 // SetFieldMask sets all the bits necessary for the provided field mask.
 func (m *UpdateMask) SetFieldMask(fieldMask FieldMask) {
-	for i := 0; i < fieldMask.Size; i++ {
-		m.SetBit(int(fieldMask.Offset) + i)
+	for i := uint32(0); i < fieldMask.Size; i++ {
+		m.SetBit(fieldMask.Offset + i)
 	}
 }
 
 // SetBit sets the nth bit in the update mask. The bit is zero-indexed with the first bit being zero.
-func (m *UpdateMask) SetBit(bit int) {
+func (m *UpdateMask) SetBit(bit uint32) {
 	index := bit / 32
 	bitPos := bit % 32
 	m.resize(index)
@@ -373,19 +400,15 @@ func (m *UpdateMask) SetBit(bit int) {
 	m.mask[index] |= 1 << bitPos
 }
 
-const (
-	maskMinSize = 16
-)
-
 // Resizes the mask to fit up to n uint32s.
-func (m *UpdateMask) resize(n int) {
-	maskLen := len(m.mask)
+func (m *UpdateMask) resize(n uint32) {
+	maskLen := uint32(len(m.mask))
 
 	if maskLen > n {
 		return
 	}
 
-	var newSize int
+	var newSize uint32
 
 	if maskLen < maskMinSize {
 		newSize = maskMinSize

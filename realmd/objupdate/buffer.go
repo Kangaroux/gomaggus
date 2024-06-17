@@ -3,6 +3,7 @@ package objupdate
 import (
 	"bytes"
 	"encoding/binary"
+	"log"
 	"sort"
 )
 
@@ -58,6 +59,20 @@ func (vb *ValuesBuffer) Objects() *ObjectBuilder {
 }
 
 func (vb *ValuesBuffer) addField(field *valueField) {
+	// Has this field already been added?
+	if vb.mask.FieldMask(field.mask) {
+
+		// Find and replace the field
+		for i := range vb.fields {
+			if vb.fields[i].mask == field.mask {
+				// Log this since it shouldn't happen and is likely a logical error
+				log.Printf("warning: overwrote field mask %v (old=%v new=%v)\n", field.mask, vb.fields[i].value, field.value)
+				vb.fields[i] = field
+				return
+			}
+		}
+	}
+
 	vb.fields = append(vb.fields, field)
 	vb.mask.SetFieldMask(field.mask)
 }
