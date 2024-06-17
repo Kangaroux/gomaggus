@@ -378,7 +378,7 @@ func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
 // Mask returns the smallest []uint32 to represent all of the mask bits that were set.
 func (m *ValueMask) Mask() []uint32 {
 	if len(m.mask) == 0 {
-		return m.mask
+		return []uint32{}
 	}
 	largestBitIndex := m.largestBit / 32
 	return m.mask[:largestBitIndex+1]
@@ -395,7 +395,7 @@ func (m *ValueMask) SetFieldMask(fieldMask FieldMask) {
 func (m *ValueMask) SetBit(bit uint32) {
 	index := bit / 32
 	bitPos := bit % 32
-	m.resize(index)
+	m.resize(index + 1)
 
 	if bit > m.largestBit {
 		m.largestBit = bit
