@@ -14,36 +14,37 @@ func TestValueMask(t *testing.T) {
 	}{
 		{
 			masks:    []o.FieldMask{},
-			expected: []uint32{},
+			expected: []uint32{0},
 		},
 		{
 			masks:    []o.FieldMask{{Size: 1, Offset: 0}},
-			expected: []uint32{0x1},
+			expected: []uint32{1, 0x1},
 		},
 		{
 			masks:    []o.FieldMask{{Size: 32, Offset: 0}},
-			expected: []uint32{0xFFFFFFFF},
+			expected: []uint32{1, 0xFFFFFFFF},
 		},
 		{
 			masks:    []o.FieldMask{{Size: 33, Offset: 0}},
-			expected: []uint32{0xFFFFFFFF, 0x1},
+			expected: []uint32{2, 0xFFFFFFFF, 0x1},
 		},
 		{
 			masks:    []o.FieldMask{{Size: 1, Offset: 32}},
-			expected: []uint32{0x0, 0x1},
+			expected: []uint32{2, 0x0, 0x1},
 		},
 		{
 			masks:    []o.FieldMask{{Size: 2, Offset: 31}},
-			expected: []uint32{0x80000000, 0x1},
+			expected: []uint32{2, 0x80000000, 0x1},
 		},
 		{
 			masks:    []o.FieldMask{{Size: 1, Offset: 0}, {Size: 2, Offset: 2}},
-			expected: []uint32{0xD},
+			expected: []uint32{1, 0xD},
 		},
 		{
 			// Largest field offset
 			masks: []o.FieldMask{o.FieldMaskPlayerPetSpellPower},
 			expected: []uint32{
+				42,
 				0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 				0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 				0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,

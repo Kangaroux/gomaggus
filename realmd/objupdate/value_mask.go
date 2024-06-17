@@ -344,6 +344,9 @@ var (
 
 // ValueMask stores the mask that communicates what fields are set in a ValueBuffer.
 type ValueMask struct {
+	// Tracks whether any bits in the mask have been set. Used to disambiguate between no bits set
+	// and only the first bit set
+	anyBits    bool
 	largestBit uint32
 	mask       []uint32
 }
@@ -375,13 +378,16 @@ func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
 	return true
 }
 
-// Mask returns the smallest []uint32 to represent all of the mask bits that were set.
+// Mask returns the smallest []uint32 to represent all of the mask bits that were set. The first
+// element is the size of the mask (in uint32s).
 func (m *ValueMask) Mask() []uint32 {
-	if len(m.mask) == 0 {
-		return []uint32{}
+	size := m.largestBit / 32
+
+	if m.anyBits {
+		size++
 	}
-	largestBitIndex := m.largestBit / 32
-	return m.mask[:largestBitIndex+1]
+
+	return append([]uint32{uint32(size)}, m.mask[:size]...)
 }
 
 // SetFieldMask sets all the bits necessary for the provided field mask.
@@ -402,6 +408,7 @@ func (m *ValueMask) SetBit(bit uint32) {
 	}
 
 	m.mask[index] |= 1 << bitPos
+	m.anyBits = true
 }
 
 // Resizes the mask to fit up to n uint32s.
