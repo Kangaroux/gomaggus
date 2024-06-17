@@ -39,7 +39,7 @@ func (b *ObjectBuilder) Type(t ObjectType) {
 
 func (b *ObjectBuilder) ScaleX(val float32) {
 	b.buf.addField(&valueField{
-		mask:  FieldMaskObjectEntry,
+		mask:  FieldMaskObjectScaleX,
 		value: []uint32{math.Float32bits(val)},
 	})
 }

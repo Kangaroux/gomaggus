@@ -357,7 +357,7 @@ const (
 
 // Bit returns whether the provided bit has been set.
 func (m *ValueMask) Bit(bit uint32) bool {
-	if bit > m.largestBit {
+	if !m.anyBits || bit > m.largestBit {
 		return false
 	}
 
