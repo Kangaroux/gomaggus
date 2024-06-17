@@ -42,7 +42,7 @@ func (vb *ValueBuffer) Bytes() []byte {
 
 	// Fields need to be sorted by offset so they are written in the correct order
 	sort.Slice(vb.fields, func(i, j int) bool {
-		return vb.fields[i].mask.Offset-vb.fields[j].mask.Offset > 0
+		return vb.fields[i].mask.Offset < vb.fields[j].mask.Offset
 	})
 
 	for _, field := range vb.fields {

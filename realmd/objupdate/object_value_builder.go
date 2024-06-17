@@ -28,7 +28,7 @@ type ObjectValueBuilder struct {
 func (b *ObjectValueBuilder) Guid(guid realmd.Guid) {
 	b.buf.addField(&valueField{
 		mask:  FieldMaskObjectGuid,
-		value: []uint32{uint32(guid >> 32), uint32(guid)},
+		value: []uint32{uint32(guid), uint32(guid >> 32)},
 	})
 }
 

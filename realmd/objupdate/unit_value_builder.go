@@ -11,11 +11,11 @@ type UnitValueBuilder struct {
 	buf *ValueBuffer
 }
 
-func (b *UnitValueBuilder) ClassRaceGenderPower(race model.Race, class model.Class, gender model.Gender, powerType realmd.PowerType) {
-	val := uint32(realmd.PowerTypeForClass(class)) |
-		uint32(gender)<<8 |
-		uint32(class)<<16 |
-		uint32(race)<<24
+func (b *UnitValueBuilder) RaceClassGenderPower(race model.Race, class model.Class, gender model.Gender, powerType realmd.PowerType) {
+	val := uint32(race) |
+		uint32(class)<<8 |
+		uint32(gender)<<16 |
+		uint32(realmd.PowerTypeForClass(class))<<24
 
 	b.buf.addField(&valueField{
 		mask:  FieldMaskUnitBytes0,

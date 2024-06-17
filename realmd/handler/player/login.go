@@ -235,7 +235,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	obj.ScaleX(1)
 
 	unit := values.Unit()
-	unit.ClassRaceGenderPower(char.Race, char.Class, char.Gender, realmd.PowerTypeForClass(char.Class))
+	unit.RaceClassGenderPower(char.Race, char.Class, char.Gender, realmd.PowerTypeForClass(char.Class))
 	unit.Health(100)
 	unit.MaxHealth(100)
 	unit.Level(1)
