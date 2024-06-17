@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/kangaroux/gomaggus/realmd/objupdate"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -191,13 +192,13 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
 	// nested object start
-	inner.WriteByte(byte(realmd.UpdateTypeCreateObject2)) // update type: CREATE_OBJECT2
-	inner.Write(realmd.PackGuid(uint64(char.Id)))         // packed guid
-	inner.WriteByte(byte(realmd.ObjectTypePlayer))
+	inner.WriteByte(byte(objupdate.UpdateTypeCreateObject2)) // update type: CREATE_OBJECT2
+	inner.Write(realmd.PackGuid(uint64(char.Id)))            // packed guid
+	inner.WriteByte(byte(objupdate.ObjectTypePlayer))
 
 	// movement block start
 	// inner.WriteByte()
-	binary.Write(&inner, binary.LittleEndian, realmd.UpdateFlagSelf|realmd.UpdateFlagLiving)
+	binary.Write(&inner, binary.LittleEndian, objupdate.UpdateFlagSelf|objupdate.UpdateFlagLiving)
 	inner.Write([]byte{0, 0, 0, 0, 0, 0})                        // movement flags
 	inner.Write([]byte{0, 0, 0, 0})                              // timestamp
 	binary.Write(&inner, binary.LittleEndian, float32(-8949.95)) // x
@@ -218,51 +219,51 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	// movement block end
 
 	// field mask start
-	updateMask := realmd.NewUpdateMask()
+	updateMask := objupdate.UpdateMask{}
 	valuesBuf := bytes.Buffer{}
 
 	// Without this, client gets stuck on loading screen and floods server with 0x2CE opcode
-	updateMask.SetFieldMask(realmd.FieldMaskObjectGuid)
+	updateMask.SetFieldMask(objupdate.FieldMaskObjectGuid)
 	binary.Write(&valuesBuf, binary.LittleEndian, uint32(char.Id)) // low guid
 	binary.Write(&valuesBuf, binary.LittleEndian, uint32(0))       // high guid
 
 	// Character seems to load fine without this
-	updateMask.SetFieldMask(realmd.FieldMaskObjectType)
-	binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<realmd.ObjectTypeObject|1<<realmd.ObjectTypeUnit|1<<realmd.ObjectTypePlayer))
+	updateMask.SetFieldMask(objupdate.FieldMaskObjectType)
+	binary.Write(&valuesBuf, binary.LittleEndian, uint32(1<<objupdate.ObjectTypeObject|1<<objupdate.ObjectTypeUnit|1<<objupdate.ObjectTypePlayer))
 
 	// Without this, character model scale is zero and camera starts in first person
-	updateMask.SetFieldMask(realmd.FieldMaskObjectScaleX)
+	updateMask.SetFieldMask(objupdate.FieldMaskObjectScaleX)
 	valuesBuf.Write([]byte{0x00, 0x00, 0x80, 0x3f})
 
 	// Without this, talent screen is blank
-	updateMask.SetFieldMask(realmd.FieldMaskUnitBytes0)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitBytes0)
 	valuesBuf.WriteByte(byte(char.Race))
 	valuesBuf.WriteByte(byte(char.Class))
 	valuesBuf.WriteByte(byte(char.Gender))
 	valuesBuf.WriteByte(byte(realmd.PowerTypeForClass(char.Class)))
 
 	// Without this, character spawns in as a corpse
-	updateMask.SetFieldMask(realmd.FieldMaskUnitHealth)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitHealth)
 	valuesBuf.Write([]byte{100, 0, 0, 0})
 
 	// Without this, UI doesn't show max health
-	updateMask.SetFieldMask(realmd.FieldMaskUnitMaxHealth)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitMaxHealth)
 	valuesBuf.Write([]byte{100, 0, 0, 0})
 
 	// Without this, character level appears as 0
-	updateMask.SetFieldMask(realmd.FieldMaskUnitLevel)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitLevel)
 	valuesBuf.Write([]byte{10, 0, 0, 0})
 
 	// Without this, client segfaults
-	updateMask.SetFieldMask(realmd.FieldMaskUnitFactionTemplate)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitFactionTemplate)
 	valuesBuf.Write([]byte{byte(char.Race), 0, 0, 0})
 
 	// Without this, client segfaults
-	updateMask.SetFieldMask(realmd.FieldMaskUnitDisplayId)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitDisplayId)
 	valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
 
 	// Without this, client segfaults
-	updateMask.SetFieldMask(realmd.FieldMaskUnitNativeDisplayId)
+	updateMask.SetFieldMask(objupdate.FieldMaskUnitNativeDisplayId)
 	valuesBuf.Write([]byte{0x0C, 0x4D, 0x00, 0x00}) // human female
 
 	mask := updateMask.Mask()
