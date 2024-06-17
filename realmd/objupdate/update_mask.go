@@ -391,7 +391,7 @@ func (m *UpdateMask) resize(n int) {
 		newSize = maskMinSize
 	} else {
 		// Grow the array exponentially
-		newSize = maskLen * maskLen
+		newSize = maskLen * 2
 	}
 
 	// If it's still too small just use the desired size

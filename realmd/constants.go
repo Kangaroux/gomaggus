@@ -8,19 +8,6 @@ const (
 	ExpansionWrath   Expansion = 0x2
 )
 
-type ObjectType byte
-
-const (
-	ObjectTypeObject        ObjectType = 0
-	ObjectTypeItem          ObjectType = 1
-	ObjectTypeContainer     ObjectType = 2
-	ObjectTypeUnit          ObjectType = 3
-	ObjectTypePlayer        ObjectType = 4
-	ObjectTypeGameObject    ObjectType = 5
-	ObjectTypeDynamicObject ObjectType = 6
-	ObjectTypeCorpse        ObjectType = 7
-)
-
 type UpdateType byte
 
 const (
