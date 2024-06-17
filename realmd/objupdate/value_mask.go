@@ -1,5 +1,10 @@
 package objupdate
 
+import (
+	"bytes"
+	"encoding/binary"
+)
+
 // https://gtker.com/wow_messages/types/update-mask.html#version-335
 type FieldMask struct {
 	// Size is the number of uint32 blocks used for the field data.
@@ -367,6 +372,16 @@ func (m *ValueMask) Bit(bit uint32) bool {
 	return m.mask[index]&(1<<bitPos) > 0
 }
 
+// Bytes returns a little-endian byte array of the value mask. The first byte is the size of the mask.
+func (m *ValueMask) Bytes() []byte {
+	buf := bytes.Buffer{}
+	size := m.Len()
+	buf.WriteByte(byte(size))
+	binary.Write(&buf, binary.LittleEndian, m.mask[:size])
+
+	return buf.Bytes()
+}
+
 // FieldMask returns whether all the bits for the provided mask have been set.
 func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
 	for i := uint32(0); i < fieldMask.Size; i++ {
@@ -378,16 +393,15 @@ func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
 	return true
 }
 
-// Mask returns the smallest []uint32 to represent all of the mask bits that were set. The first
-// element is the size of the mask (in uint32s).
-func (m *ValueMask) Mask() []uint32 {
+// Len returns the number of uint32s used to represent the mask.
+func (m *ValueMask) Len() int {
 	size := m.largestBit / 32
 
 	if m.anyBits {
 		size++
 	}
 
-	return append([]uint32{uint32(size)}, m.mask[:size]...)
+	return int(size)
 }
 
 // SetFieldMask sets all the bits necessary for the provided field mask.

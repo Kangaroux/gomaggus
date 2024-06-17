@@ -38,7 +38,7 @@ type ValueBuffer struct {
 
 func (vb *ValueBuffer) Bytes() []byte {
 	buf := bytes.Buffer{}
-	binary.Write(&buf, binary.LittleEndian, vb.mask.Mask())
+	buf.Write(vb.mask.Bytes())
 
 	// Fields need to be sorted by offset so they are written in the correct order
 	sort.Slice(vb.fields, func(i, j int) bool {
