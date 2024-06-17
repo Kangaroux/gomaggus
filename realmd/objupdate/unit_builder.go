@@ -5,6 +5,8 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+// UnitBuilder builds the values for UNIT_* types.
+// https://gtker.com/wow_messages/types/update-mask.html#version-335
 type UnitBuilder struct {
 	buf *ValueBuffer
 }

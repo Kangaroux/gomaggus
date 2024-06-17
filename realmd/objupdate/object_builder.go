@@ -19,6 +19,8 @@ const (
 	ObjectTypeCorpse        ObjectType = 7
 )
 
+// ObjectBuilder builds the values for OBJECT_* types.
+// https://gtker.com/wow_messages/types/update-mask.html#version-335
 type ObjectBuilder struct {
 	buf *ValueBuffer
 }
