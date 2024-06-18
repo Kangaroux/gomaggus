@@ -86,13 +86,12 @@ func (h *LoginChallenge) Handle(data []byte) error {
 			return err
 		}
 
-		// A real account will always return the same salt, so our fake account needs to do that, too.
-		// Using the username as a seed for the fake salt guarantees we always generate the same data.
-		// Ironically, using crypto/rand here is actually less secure.
+		// A real account will always return the same salt, so the fake account needs to do that, too.
+		// Using the username as a seed for the fake salt is a clever way to always return the same
+		// salt for the same username.
 		//
-		// If we didn't do this, a bad actor could send two challenges with the same username and compare
-		// the salts. The salts would be the same for real accounts and different for fake accounts.
-		// This would allow someone to mine usernames and start building an attack vector.
+		// Ironically, using crypto/rand here is actually less secure. If the salt wasn't seeded and
+		// was random every time, a bad actor could abuse that to mine usernames.
 		seededRand := mrand.New(mrand.NewSource(internal.FastHash(h.Client.Username)))
 		salt = make([]byte, srp.SaltSize)
 		if _, err := seededRand.Read(salt); err != nil {

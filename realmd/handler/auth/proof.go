@@ -50,7 +50,7 @@ type proofSuccess struct {
 	Expansion     realmd.Expansion
 }
 
-// Unused for now
+// TODO
 // type proofWaitQueue struct {
 // 	ResponseCode         realmd.ResponseCode
 // 	HasFreeCharMigration bool
@@ -68,15 +68,13 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 	}
 
 	if !authenticated {
-		// The client expects the authentication to be successful and the header to be encrypted.
-		// If auth failed, we don't know how to encrypt the header, thus we can't send an error response.
-		// Just drop the connection.
+		// The client expects the proof response to be successful (since it just authenticated with authd).
+		// If the authentication failed, no response is returned and the connection is closed.
 		return errors.New("client could not be authenticated")
 	}
 
 	client.Authenticated = true
 
-	// Header crypto can be initialized now that we know the session key
 	headerCrypto := realmd.NewHeaderCrypto(client.Session.SessionKey())
 	if err := headerCrypto.Init(); err != nil {
 		return err
@@ -98,10 +96,7 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 	return nil
 }
 
-// Returns whether the client is authenticated. Clients authenticate with authd and then send a proof
-// to realmd to show that they know the session key. We verify the proof by fetching the session key
-// from the DB, calculating the proof ourselves, and checking that it matches. If it does, the client
-// is considered authenticated.
+// authenticateClient reports whether the client's proof is valid.
 func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequest) (bool, error) {
 	acct, err := svc.Accounts.Get(&model.AccountGetParams{Username: p.Username})
 	if err != nil {
@@ -119,6 +114,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 		return false, nil
 	}
 
+	// Fetch the last known session from the DB. This is set by authd when the client logs in.
 	session, err := svc.Sessions.Get(acct.Id)
 	if err != nil {
 		return false, err
@@ -133,7 +129,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 
 	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, session.SessionKey())
 
-	// Client sent correct proof?
+	// Did the client authenticate with authd first?
 	if !bytes.Equal(proof, p.ClientProof[:]) {
 		log.Println("authenticateClient: invalid proof")
 		return false, nil

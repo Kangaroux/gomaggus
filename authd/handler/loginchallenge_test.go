@@ -65,8 +65,7 @@ func TestLoginChallenge(t *testing.T) {
 		}
 		h := newHandler()
 		accounts.OnGet = func(_ *model.AccountGetParams) (*model.Account, error) {
-			// Returning nil for the account signals that this username is unknown and the response
-			// will be fake
+			// Account not found
 			return nil, nil
 		}
 		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
@@ -87,7 +86,6 @@ func TestLoginChallenge(t *testing.T) {
 		h := newHandler()
 		mockAccount := &model.Account{}
 		accounts.OnGet = func(params *model.AccountGetParams) (*model.Account, error) {
-			// Validate we try looking up the correct user
 			assert.Equal(t, packet.Username, params.Username)
 			return mockAccount, nil
 		}
@@ -95,8 +93,6 @@ func TestLoginChallenge(t *testing.T) {
 
 		assert.NoError(t, h.Handle(request))
 		assert.Equal(t, authd.StateAuthProof, client.State)
-
-		// The client's account/username are set
 		assert.Equal(t, mockAccount, client.Account)
 		assert.Equal(t, packet.Username, client.Username)
 	})

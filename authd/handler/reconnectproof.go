@@ -54,7 +54,6 @@ func (h *ReconnectProof) Handle(data []byte) error {
 			return err
 		}
 
-		// We can only try to reconnect the client if we have a previous session key
 		if session != nil {
 			if err := session.Decode(); err != nil {
 				return err

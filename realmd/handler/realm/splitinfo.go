@@ -33,7 +33,6 @@ func SplitInfoHandler(client *realmd.Client, data *realmd.ClientPacket) error {
 		return err
 	}
 
-	// This response will never change but we should probably validate the realm ID
 	resp := splitResponse{
 		RealmId:   req.RealmId,
 		State:     SplitNormal,

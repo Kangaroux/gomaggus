@@ -9,24 +9,24 @@ import (
 type ClientState int
 
 const (
-	// Initial state, waiting for the client to send an auth or reconnect challenge
+	// Initial state. Waiting for the client to send an auth or reconnect challenge.
 	StateAuthChallenge ClientState = iota
 
-	// We've responded to the auth challenge and are waiting for the client's proof
+	// Waiting for client to send auth proof.
 	StateAuthProof
 
-	// Waiting for client to send proof in order to reconnect
+	// Waiting for client to send reconnect proof.
 	StateReconnectProof
 
-	// Client has authenticated successfully
+	// Client is fully authenticated.
 	StateAuthenticated
 
-	// Client failed to authenticate or an error occurred, and the connection should be closed
+	// Client failed to authenticate or an error occurred.
 	StateInvalid
 )
 
 type Client struct {
-	// Using ReadWriteCloser instead of net.Conn makes test mocks simpler
+	// Using ReadWriteCloser instead of net.Conn results in cleaner test mocks.
 	Conn            io.ReadWriteCloser
 	Username        string
 	ReconnectData   []byte

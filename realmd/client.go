@@ -30,7 +30,10 @@ type Client struct {
 	Conn          net.Conn
 	ServerSeed    []byte
 	Authenticated bool
-	HeaderCrypto  *HeaderCrypto
+
+	// HeaderCrypto decrypts incoming packet headers and encrypts outgoing packet headers. HeaderCrypto
+	// is nil if the client has not yet authenticated.
+	HeaderCrypto *HeaderCrypto
 
 	Account   *model.Account
 	Character *model.Character
@@ -52,7 +55,9 @@ func NewClient(conn net.Conn) (*Client, error) {
 	return c, nil
 }
 
-// BuildHeader returns a 4-5 byte server header. The header is encrypted if the client is authenticated.
+// BuildHeader returns the server header as a byte array. The returned array contains 4 or 5 bytes
+// depending on the size and is encrypted if the client is authenticated. If size is larger than
+// SizeFieldMaxValue, BuildHeader returns an error.
 func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	// Include the opcode in the size
 	size += 2
@@ -63,8 +68,8 @@ func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 
 	var header []byte
 
-	// The size field in the header can be 2 or 3 bytes. The most significant bit in the size field
-	// is reserved as a flag to indicate this. In total, server headers are 4 or 5 bytes.
+	// The size field in the header can be 2 or 3 bytes. If the size field is 3 bytes, the MSB of the
+	// size will be set.
 	//
 	// The header format is: <size><opcode>
 	// <size> is 2-3 bytes big endian
@@ -95,8 +100,8 @@ func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
 	return header, nil
 }
 
-// ParseHeader returns a parse header from a client packet. The header is decrypted if the client is
-// authenticated.
+// ParseHeader parses and returns the header from data. If data is smaller than 6 bytes, ParseHeader
+// returns an error.
 func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	if len(data) < 6 {
 		return nil, fmt.Errorf("ParseHeader: payload should be at least 6 bytes but it's only %d", len(data))
@@ -118,8 +123,7 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	return h, nil
 }
 
-// SendPacket builds a packet from a struct pointer and sends the packet to the client.
-// The struct should NOT contain any header information.
+// SendPacket encodes data and sends it to the client. SendPacket expects data to not contain header information.
 func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
 	buf := bytes.Buffer{}
 	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, data); err != nil {
@@ -129,8 +133,8 @@ func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
 	return c.SendPacketBytes(opcode, buf.Bytes())
 }
 
-// SendPacketBytes builds a packet from a byte array and sends the packet to the client.
-// The byte array should NOT contain any header information. In most cases, you should use SendPacket.
+// SendPacketBytes generates a header and sends a packet containing the header + data. In most cases,
+// SendPacket should be used instead.
 func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 	header, err := c.BuildHeader(opcode, uint32(len(data)))
 	if err != nil {
