@@ -7,12 +7,12 @@ import (
 	"github.com/mixcode/binarystruct"
 )
 
-type RealmSplitState uint32
+type realmSplitState uint32
 
 const (
-	SplitNormal    RealmSplitState = 0
-	SplitConfirmed RealmSplitState = 1
-	SplitPending   RealmSplitState = 2
+	splitNormal    realmSplitState = 0
+	splitConfirmed realmSplitState = 1
+	splitPending   realmSplitState = 2
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_realm_split.html
@@ -23,7 +23,7 @@ type splitRequest struct {
 // https://gtker.com/wow_messages/docs/smsg_realm_split.html
 type splitResponse struct {
 	RealmId   uint32
-	State     RealmSplitState
+	State     realmSplitState
 	SplitDate string `binary:"zstring"`
 }
 
@@ -35,7 +35,7 @@ func SplitInfoHandler(client *realmd.Client, data *realmd.ClientPacket) error {
 
 	resp := splitResponse{
 		RealmId:   req.RealmId,
-		State:     SplitNormal,
+		State:     splitNormal,
 		SplitDate: "01/01/01",
 	}
 	if err := client.SendPacket(realmd.OpServerRealmSplit, &resp); err != nil {

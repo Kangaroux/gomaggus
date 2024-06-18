@@ -12,18 +12,18 @@ import (
 )
 
 // https://gtker.com/wow_messages/docs/billingplanflags.html
-type BillingFlag uint8
+type billingFlag uint8
 
 const (
-	BillingNone          BillingFlag = 0x00
-	BillingUnused        BillingFlag = 0x01
-	BillingRecurringBill BillingFlag = 0x02
-	BillingFreeTrial     BillingFlag = 0x04
-	BillingIgr           BillingFlag = 0x08
-	BillingUsage         BillingFlag = 0x10
-	BillingTimeMixture   BillingFlag = 0x20
-	BillingRestricted    BillingFlag = 0x40
-	BillingEnableCais    BillingFlag = 0x80
+	billingNone          billingFlag = 0x00
+	billingUnused        billingFlag = 0x01
+	billingRecurringBill billingFlag = 0x02
+	billingFreeTrial     billingFlag = 0x04
+	billingIgr           billingFlag = 0x08
+	billingUsage         billingFlag = 0x10
+	billingTimeMixture   billingFlag = 0x20
+	billingRestricted    billingFlag = 0x40
+	billingEnableCais    billingFlag = 0x80
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_auth_session.html#client-version-335
@@ -45,7 +45,7 @@ type proofRequest struct {
 type proofSuccess struct {
 	ResponseCode  realmd.ResponseCode
 	BillingTime   uint32
-	BillingFlags  BillingFlag
+	BillingFlags  billingFlag
 	BillingRested uint32
 	Expansion     realmd.Expansion
 }
@@ -84,7 +84,7 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clien
 	resp := proofSuccess{
 		ResponseCode:  realmd.RespCodeAuthOk,
 		BillingTime:   0,
-		BillingFlags:  BillingNone,
+		BillingFlags:  billingNone,
 		BillingRested: 0,
 		Expansion:     realmd.ExpansionWrath,
 	}

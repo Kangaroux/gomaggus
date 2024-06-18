@@ -12,7 +12,6 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/realmd/handler/auth"
 	"github.com/kangaroux/gomaggus/realmd/handler/char"
-	"github.com/kangaroux/gomaggus/realmd/handler/player"
 	"github.com/kangaroux/gomaggus/realmd/handler/realm"
 	"github.com/kangaroux/gomaggus/realmd/handler/session"
 )
@@ -125,14 +124,11 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 	}
 
 	switch header.Opcode {
-	case realmd.OpClientAuthSession:
-		return auth.ProofHandler(s.services, c, packet)
-
 	case realmd.OpClientPing:
 		return session.PingHandler(c, packet)
 
-	case realmd.OpClientReadyForAccountDataTimes:
-		return session.DataTimesHandler(c)
+	case realmd.OpClientAuthSession:
+		return auth.ProofHandler(s.services, c, packet)
 
 	case realmd.OpClientCharList:
 		return char.ListHandler(s.services, c)
@@ -146,8 +142,11 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 	case realmd.OpClientCharDelete:
 		return char.DeleteHandler(s.services, c, packet)
 
+	case realmd.OpClientReadyForAccountDataTimes:
+		return session.DataTimesHandler(c)
+
 	case realmd.OpClientPlayerLogin:
-		return player.LoginHandler(s.services, c, packet)
+		return session.LoginHandler(s.services, c, packet)
 
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
