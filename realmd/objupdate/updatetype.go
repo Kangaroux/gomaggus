@@ -2,30 +2,32 @@ package objupdate
 
 import "github.com/kangaroux/gomaggus/realmd"
 
+// UpdateType selects the payload to use for object update packets.
 type UpdateType byte
 
 const (
 	UpdateTypePartial           UpdateType = 0
 	UpdateTypeMovement          UpdateType = 1
 	UpdateTypeCreateObject      UpdateType = 2
-	UpdateTypeCreateObject2     UpdateType = 3
+	UpdateTypeCreateNewObject   UpdateType = 3 // Unused
 	UpdateTypeOutOfRangeObjects UpdateType = 4
-	UpdateTypeNearObjects       UpdateType = 5 // unused
+	UpdateTypeNearObjects       UpdateType = 5 // Unused
 )
 
-// PartialUpdate is used for updating non-movement properties of existing objects.
+// PartialUpdate contains changes to an object's non-movement properties (hp, level, etc).
 type PartialUpdate struct {
 	Guid   realmd.PackedGuid
 	Values *Values
 }
 
-// MovementUpdate is used for updating movement (position, speed, etc.) of existing objects.
+// MovementUpdate contains changes to an object's movement properties (position, speed, etc).
 type MovementUpdate struct {
 	Guid   realmd.PackedGuid
 	Values *MovementValues
 }
 
-// CreateObject is used for creating new objects and setting their properties/movement.
+// CreateObject contains data for objects which have just appeared to a player. An object could appear
+// if it just spawned, entered the player's range, became visible, etc.
 type CreateObject struct {
 	Guid     realmd.PackedGuid
 	Type     ObjectType
@@ -33,9 +35,7 @@ type CreateObject struct {
 	Values   *Values
 }
 
-// ProximityUpdate is used for notifying the client about objects which are too far away. Players can
-// only see objects in a certain radius around them. Objects that leave that radius will trigger a
-// ProximityUpdate so the client can hide it.
+// ProximityUpdate contains a list of object guids that have left the player's range.
 type ProximityUpdate struct {
 	Count uint32
 	Guids []realmd.PackedGuid

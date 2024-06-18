@@ -192,8 +192,8 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
 	// nested object start
-	inner.WriteByte(byte(objupdate.UpdateTypeCreateObject2)) // update type: CREATE_OBJECT2
-	inner.Write(realmd.PackGuid(uint64(char.Id)))            // packed guid
+	inner.WriteByte(byte(objupdate.UpdateTypeCreateObject))
+	inner.Write(realmd.PackGuid(uint64(char.Id)))
 	inner.WriteByte(byte(objupdate.ObjectTypePlayer))
 
 	movement := objupdate.MovementValues{}
