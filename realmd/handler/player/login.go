@@ -200,30 +200,24 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	movement.Self()
 
 	living := movement.Living()
-	living.Common(&objupdate.LivingDataCommon{
-		LivingCommonData1: objupdate.LivingCommonData1{
-			Timestamp: uint32(time.Now().Unix()),
-			PositionRotation: realmd.Vector4{
-				X:        float32(-8949.95),
-				Y:        float32(-132.493),
-				Z:        float32(83.5312),
-				Rotation: float32(0),
-			},
+	living.Data(&objupdate.LivingData{
+		Timestamp: uint32(time.Now().Unix()),
+		PositionRotation: realmd.Vector4{
+			X:        float32(-8949.95),
+			Y:        float32(-132.493),
+			Z:        float32(83.5312),
+			Rotation: float32(0),
 		},
-		LivingCommonData2: objupdate.LivingCommonData2{
-			FallTime: 0,
-		},
-		LivingCommonData3: objupdate.LivingCommonData3{
-			WalkSpeed:          1,
-			RunSpeed:           70,
-			ReverseSpeed:       4.5,
-			SwimSpeed:          0,
-			SwimReverseSpeed:   0,
-			FlightSpeed:        0,
-			FlightReverseSpeed: 0,
-			TurnRate:           math.Pi,
-			PitchRate:          0,
-		},
+		FallTime:           0,
+		WalkSpeed:          1,
+		RunSpeed:           70,
+		ReverseSpeed:       4.5,
+		SwimSpeed:          0,
+		SwimReverseSpeed:   0,
+		FlightSpeed:        0,
+		FlightReverseSpeed: 0,
+		TurnRate:           math.Pi,
+		PitchRate:          0,
 	})
 
 	inner.Write(movement.Bytes())

@@ -77,72 +77,17 @@ const (
 	LivingMovementFlagUnknown8                      LivingMovementFlag = 0x800000000000
 )
 
-// Required
-// MovementUpdateLiving
-type LivingFlags struct {
-	Flags LivingMovementFlag
-}
-
-// Required
-// MovementUpdateLiving
-type LivingCommonData1 struct {
+// LivingData contains data that is always present when the living flag is set.
+type LivingData struct {
+	// First section
 	Timestamp        uint32
 	PositionRotation realmd.Vector4
-}
 
-// Optional
-// LivingMovementFlagTransportInterpolatedMovement
-// Nested in living block
-type TransportPassengerInterpolatedData struct {
-	// https://gtker.com/wow_messages/docs/transportinfo.html#wowm-representation-1
-	// TODO: TransportInfo
-	TransportTime uint32
-}
-
-// Optional
-// LivingMovementFlagOnTransport
-// Mutually exclusive with LivingMovementFlagTransportInterpolatedMovement
-// Nested in living block
-type TransportPassengerData struct {
-	// TODO: TransportInfo
-}
-
-// Optional
-// LivingMovementFlagSwimming OR LivingMovementFlagFlying OR LivingMovementFlagAlwaysAllowPitching
-// Nested in living block
-type PitchData struct {
-	Pitch float32
-}
-
-// Required
-// MovementUpdateLiving
-// Nested in living block
-type LivingCommonData2 struct {
+	// Second section
 	// FallTime always is included even if LivingMovementFlagFalling isn't set
 	FallTime float32
-}
 
-// Optional
-// LivingMovementFlagFalling
-// Nested in living block
-type FallData struct {
-	FallSpeed       float32
-	CosAngle        float32 // TODO: name?
-	SinAngle        float32 // TODO: name?
-	HorizontalSpeed float32 // TODO: research
-}
-
-// Optional
-// LivingMovementFlagSplineElevation
-// Nested in living block
-type SplineElevationData struct {
-	Elevation float32 // TODO: research
-}
-
-// Required
-// MovementUpdateLiving
-// Nested in living block
-type LivingCommonData3 struct {
+	// Third section
 	WalkSpeed          float32
 	RunSpeed           float32
 	ReverseSpeed       float32
@@ -154,56 +99,79 @@ type LivingCommonData3 struct {
 	PitchRate          float32
 }
 
-type LivingDataCommon struct {
-	LivingCommonData1
-	LivingCommonData2
-	LivingCommonData3
+// MovementUpdateLiving (optional)
+type transportPassengerInterpolatedData struct {
+	// https://gtker.com/wow_messages/docs/transportinfo.html#wowm-representation-1
+	// TODO: TransportInfo
+	TransportTime uint32
 }
 
-// Optional
-// LivingMovementFlagSplineElevation
-type SplineData struct {
+// MovementUpdateLiving (optional)
+type transportPassengerData struct {
+	// TODO: TransportInfo
+}
+
+// MovementUpdateLiving (optional)
+type pitchData struct {
+	Pitch float32
+}
+
+// MovementUpdateLiving (optional)
+type fallData struct {
+	FallSpeed       float32
+	CosAngle        float32 // TODO: name?
+	SinAngle        float32 // TODO: name?
+	HorizontalSpeed float32 // TODO: research
+}
+
+// MovementUpdateLiving (optional)
+type splineElevationData struct {
+	Elevation float32 // TODO: research
+}
+
+// MovementUpdateLiving (optional)
+type splineData struct {
 	// TODO
 }
 
 // MovementUpdatePosition
-type PositionData struct {
+type positionData struct {
 	// TODO
 }
 
 // MovementUpdateHasPosition
-type HasPositionData struct {
+type hasPositionData struct {
 	// TODO
 }
 
 // MovementUpdateHighGuid
-type HighGuidData struct {
+type highGuidData struct {
 	HighGuid uint32
 }
 
 // MovementUpdateLowGuid
-type LowGuidData struct {
+type lowGuidData struct {
 	LowGuid uint32
 }
 
 // MovementUpdateHasAttackingTarget
-type AttackingTargetData struct {
+type attackingTargetData struct {
 	Guid realmd.PackedGuid
 }
 
 // MovementUpdateTransport
-type TransportData struct {
+type transportData struct {
 	TransportProgressMs uint32 // milliseconds
 }
 
 // MovementUpdateVehicle
-type VehicleData struct {
+type vehicleData struct {
 	Id          uint32
 	Orientation float32
 }
 
 // MovementUpdateRotation
-type RotationData struct {
+type rotationData struct {
 	PackedLocalRotation uint64 // TODO: research
 }
 
@@ -212,24 +180,22 @@ type movementBuffer struct {
 
 	// living block
 	livingFlags                    LivingMovementFlag
-	living1                        *LivingCommonData1
-	transportPassengerInterpolated *TransportPassengerInterpolatedData
-	transportPassenger             *TransportPassengerData
-	pitch                          *PitchData
-	living2                        *LivingCommonData2
-	fall                           *FallData
-	splineElevation                *SplineElevationData
-	living3                        *LivingCommonData3
-	spline                         *SplineData
+	livingData                     *LivingData
+	transportPassengerInterpolated *transportPassengerInterpolatedData
+	transportPassenger             *transportPassengerData
+	pitch                          *pitchData
+	fall                           *fallData
+	splineElevation                *splineElevationData
+	spline                         *splineData
 
-	positionData        *PositionData    // TODO: naming
-	hasPositionData     *HasPositionData // TODO: naming
-	highGuidData        *HighGuidData
-	lowGuidData         *LowGuidData
-	attackingTargetData *AttackingTargetData
-	transportData       *TransportData
-	vehicleData         *VehicleData
-	rotationData        *RotationData
+	positionData        *positionData    // TODO: naming
+	hasPositionData     *hasPositionData // TODO: naming
+	highGuidData        *highGuidData
+	lowGuidData         *lowGuidData
+	attackingTargetData *attackingTargetData
+	transportData       *transportData
+	vehicleData         *vehicleData
+	rotationData        *rotationData
 }
 
 // MovementValues provides an interface for setting values related to movement and position.
@@ -246,13 +212,14 @@ func (m *MovementValues) Bytes() []byte {
 	binary.Write(&bytesBuf, binary.LittleEndian, m.buf.updateFlag)
 
 	if m.buf.updateFlag&MovementUpdateLiving > 0 {
-		flags := m.buf.livingFlags
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingFlags)
 
-		binary.Write(&bytesBuf, binary.LittleEndian, flags)
-		// Living flags are stored as 8 bytes but written as 6. Discard the last two bytes
+		// The flag is 6 bytes but stored as 8, discard the last 2 bytes.
 		bytesBuf.Truncate(bytesBuf.Len() - 2)
 
-		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.living1)
+		// First section of common data
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.Timestamp)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.PositionRotation)
 
 		if m.buf.transportPassengerInterpolated != nil {
 			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.transportPassengerInterpolated)
@@ -264,7 +231,8 @@ func (m *MovementValues) Bytes() []byte {
 			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.pitch)
 		}
 
-		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.living2)
+		// Second section of common data
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.FallTime)
 
 		if m.buf.fall != nil {
 			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.fall)
@@ -273,7 +241,16 @@ func (m *MovementValues) Bytes() []byte {
 			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.splineElevation)
 		}
 
-		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.living3)
+		// Third section of common data
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.WalkSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.RunSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.ReverseSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.SwimSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.SwimReverseSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.FlightSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.FlightReverseSpeed)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.TurnRate)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.livingData.PitchRate)
 
 		if m.buf.spline != nil {
 			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.spline)
@@ -312,6 +289,7 @@ func (m *MovementValues) Living() *LivingMovementBuilder {
 		m.livingBuilder = &LivingMovementBuilder{buf: &m.buf}
 		m.buf.updateFlag |= MovementUpdateLiving
 	}
+
 	return m.livingBuilder
 }
 
@@ -319,75 +297,83 @@ func (m *MovementValues) Self() {
 	m.buf.updateFlag |= MovementUpdateSelf
 }
 
-func (m *MovementValues) Position(data *PositionData) {
+func (m *MovementValues) Position(data *positionData) {
 	if data == nil {
 		m.buf.updateFlag &= ^MovementUpdatePosition
 	} else {
 		m.buf.updateFlag |= MovementUpdatePosition
 	}
+
 	m.buf.positionData = data
 }
 
-func (m *MovementValues) HasPosition(data *HasPositionData) {
+func (m *MovementValues) HasPosition(data *hasPositionData) {
 	if data == nil {
 		m.buf.updateFlag &= ^MovementUpdateHasPosition
 	} else {
 		m.buf.updateFlag |= MovementUpdateHasPosition
 	}
+
 	m.buf.hasPositionData = data
 }
 
-func (b *MovementValues) HighGuid(data *HighGuidData) {
+func (b *MovementValues) HighGuid(data *highGuidData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateHighGuid
 	} else {
 		b.buf.updateFlag |= MovementUpdateHighGuid
 	}
+
 	b.buf.highGuidData = data
 }
 
-func (b *MovementValues) LowGuid(data *LowGuidData) {
+func (b *MovementValues) LowGuid(data *lowGuidData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateLowGuid
 	} else {
 		b.buf.updateFlag |= MovementUpdateLowGuid
 	}
+
 	b.buf.lowGuidData = data
 }
 
-func (b *MovementValues) AttackingTarget(data *AttackingTargetData) {
+func (b *MovementValues) AttackingTarget(data *attackingTargetData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateHasAttackingTarget
 	} else {
 		b.buf.updateFlag |= MovementUpdateHasAttackingTarget
 	}
+
 	b.buf.attackingTargetData = data
 }
 
-func (b *MovementValues) Transport(data *TransportData) {
+func (b *MovementValues) Transport(data *transportData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateTransport
 	} else {
 		b.buf.updateFlag |= MovementUpdateTransport
 	}
+
 	b.buf.transportData = data
 }
 
-func (b *MovementValues) Vehicle(data *VehicleData) {
+func (b *MovementValues) Vehicle(data *vehicleData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateVehicle
 	} else {
 		b.buf.updateFlag |= MovementUpdateVehicle
 	}
+
 	b.buf.vehicleData = data
 }
 
-func (b *MovementValues) Rotation(data *RotationData) {
+func (b *MovementValues) Rotation(data *rotationData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateRotation
 	} else {
 		b.buf.updateFlag |= MovementUpdateRotation
 	}
+
 	b.buf.rotationData = data
 }
 
@@ -395,87 +381,93 @@ type LivingMovementBuilder struct {
 	buf *movementBuffer
 }
 
-// Common sets the fields always present in the living block. Panics if data is nil.
-func (b *LivingMovementBuilder) Common(data *LivingDataCommon) error {
+// Data sets the fields always present in the living block. Panics if data is nil.
+func (b *LivingMovementBuilder) Data(data *LivingData) error {
 	if data == nil {
 		panic("data cannot be nil")
 	}
 
-	b.buf.living1 = &data.LivingCommonData1
-	b.buf.living2 = &data.LivingCommonData2
-	b.buf.living3 = &data.LivingCommonData3
+	b.buf.livingData = data
 
 	return nil
 }
 
-func (b *LivingMovementBuilder) TransportPassengerMovement(data *TransportPassengerInterpolatedData) {
+func (b *LivingMovementBuilder) TransportPassengerMovement(data *transportPassengerInterpolatedData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagTransportInterpolatedMovement
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagTransportInterpolatedMovement
 	}
+
 	b.buf.transportPassengerInterpolated = data
 }
 
-func (b *LivingMovementBuilder) TransportPassenger(data *TransportPassengerData) {
+func (b *LivingMovementBuilder) TransportPassenger(data *transportPassengerData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagOnTransport
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagOnTransport
 	}
+
 	b.buf.transportPassenger = data
 }
 
-func (b *LivingMovementBuilder) Swimming(data *PitchData) {
+func (b *LivingMovementBuilder) Swimming(data *pitchData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagSwimming
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagSwimming
 	}
+
 	b.buf.pitch = data
 }
 
-func (b *LivingMovementBuilder) Flying(data *PitchData) {
+func (b *LivingMovementBuilder) Flying(data *pitchData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagFlying
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagFlying
 	}
+
 	b.buf.pitch = data
 }
 
-func (b *LivingMovementBuilder) ForcePitch(data *PitchData) {
+func (b *LivingMovementBuilder) ForcePitch(data *pitchData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagAlwaysAllowPitching
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagAlwaysAllowPitching
 	}
+
 	b.buf.pitch = data
 }
 
-func (b *LivingMovementBuilder) Falling(data *FallData) {
+func (b *LivingMovementBuilder) Falling(data *fallData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagFalling
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagFalling
 	}
+
 	b.buf.fall = data
 }
 
-func (b *LivingMovementBuilder) SplineElevation(data *SplineElevationData) {
+func (b *LivingMovementBuilder) SplineElevation(data *splineElevationData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagSplineElevation
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagSplineElevation
 	}
+
 	b.buf.splineElevation = data
 }
 
-func (b *LivingMovementBuilder) Spline(data *SplineData) {
+func (b *LivingMovementBuilder) Spline(data *splineData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagSplineEnabled
 	} else {
 		b.buf.livingFlags |= LivingMovementFlagSplineEnabled
 	}
+
 	b.buf.spline = data
 }
