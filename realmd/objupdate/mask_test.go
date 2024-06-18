@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValueMask(t *testing.T) {
+func TestValuesMask(t *testing.T) {
 	cases := []struct {
 		masks    []o.FieldMask
 		expected []uint32
