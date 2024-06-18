@@ -98,8 +98,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		log.Printf("read %d bytes\n", n)
-
 		if err := s.handlePacket(client, buf[:n]); err != nil {
 			log.Printf("error handling packet: %v\n", err)
 			conn.Close()
@@ -117,6 +115,8 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("RECV  op=0x%-4x dsize=%d hsize=%d  \n", header.Opcode, len(data), header.Size)
 
 	packet := &realmd.ClientPacket{
 		Header:  header,
@@ -150,6 +150,9 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 
 	case realmd.OpClientLogout:
 		return session.LogoutHandler(c)
+
+	case realmd.OpClientLogoutCancel:
+		return session.LogoutCancelHandler(c)
 
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)

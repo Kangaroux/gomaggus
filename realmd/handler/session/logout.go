@@ -23,12 +23,13 @@ type logoutResponse struct {
 }
 
 const (
+	// The 20 second timer is set by the client
 	logoutDelay = time.Second * 20
 )
 
 func LogoutHandler(client *realmd.Client) error {
 	// TODO: lookup player in world, check rested state
-	resp := logoutResponse{Result: logoutSuccess, Instant: true}
+	resp := logoutResponse{Result: logoutSuccess, Instant: false}
 	if err := client.SendPacket(realmd.OpServerLogout, &resp); err != nil {
 		return err
 	}
@@ -41,6 +42,18 @@ func LogoutHandler(client *realmd.Client) error {
 		go logoutAfterDelay(context.TODO(), client)
 	}
 
+	return nil
+}
+
+func LogoutCancelHandler(client *realmd.Client) error {
+	client.CancelPendingLogout()
+
+	// Always send an ACK even if there was no logout pending.
+	if err := client.SendPacket(realmd.OpServerLogoutCancelACK, nil); err != nil {
+		return err
+	}
+
+	log.Println("sent logout cancel ack response")
 	return nil
 }
 

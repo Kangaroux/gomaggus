@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/kangaroux/gomaggus/internal"
@@ -154,6 +155,8 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("SENT  op=0x%-4x  size=%d\n", opcode, len(data))
 
 	// log.Println("--- PACKET ---")
 	// log.Printf("Opcode: %x\n", opcode)
