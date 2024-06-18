@@ -70,7 +70,7 @@ var (
 	FieldMaskUnitTarget                            = FieldMask{Size: 2, Offset: 0x12}
 	FieldMaskUnitChannelObject                     = FieldMask{Size: 2, Offset: 0x14}
 	FieldMaskUnitChannelSpell                      = FieldMask{Size: 1, Offset: 0x16}
-	FieldMaskUnitBytes0                            = FieldMask{Size: 1, Offset: 0x17}
+	FieldMaskUnitRaceClassGenderPower              = FieldMask{Size: 1, Offset: 0x17} // Bytes0
 	FieldMaskUnitHealth                            = FieldMask{Size: 1, Offset: 0x18}
 	FieldMaskUnitPower1                            = FieldMask{Size: 1, Offset: 0x19}
 	FieldMaskUnitPower2                            = FieldMask{Size: 1, Offset: 0x1A}

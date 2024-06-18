@@ -38,7 +38,7 @@ const (
 	RaceGnome             Race = 7
 	RaceTroll             Race = 8
 	RaceGoblin            Race = 9
-	RaceBlood_elf         Race = 10
+	RaceBloodElf          Race = 10
 	RaceDraenei           Race = 11
 	RaceFelOrc            Race = 12
 	RaceNaga              Race = 13

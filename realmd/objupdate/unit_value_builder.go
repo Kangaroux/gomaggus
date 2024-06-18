@@ -15,10 +15,10 @@ func (b *UnitValueBuilder) RaceClassGenderPower(race model.Race, class model.Cla
 	val := uint32(race) |
 		uint32(class)<<8 |
 		uint32(gender)<<16 |
-		uint32(realmd.PowerTypeForClass(class))<<24
+		uint32(powerType)<<24
 
 	b.buf.addField(&valueField{
-		mask:  FieldMaskUnitBytes0,
+		mask:  FieldMaskUnitRaceClassGenderPower,
 		value: []uint32{val},
 	})
 }
