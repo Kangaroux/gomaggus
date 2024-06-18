@@ -2,6 +2,7 @@ package realmd
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
@@ -35,6 +36,10 @@ type Client struct {
 	// is nil if the client has not yet authenticated.
 	HeaderCrypto *HeaderCrypto
 
+	// Cancels a pending logout, if there is one. This func is safe to call when there is no pending logout.
+	CancelPendingLogout context.CancelFunc
+	LogoutPending       bool
+
 	Account   *model.Account
 	Character *model.Character
 	Realm     *model.Realm
@@ -50,6 +55,9 @@ func NewClient(conn net.Conn) (*Client, error) {
 	c := &Client{
 		Conn:       conn,
 		ServerSeed: seed,
+
+		// Use a placeholder func so the caller doesn't have to check if it's nil
+		CancelPendingLogout: internal.DoNothing,
 	}
 
 	return c, nil
@@ -125,12 +133,18 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 
 // SendPacket encodes data and sends it to the client. SendPacket expects data to not contain header information.
 func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
-	buf := bytes.Buffer{}
-	if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, data); err != nil {
-		return err
+	var dataBytes []byte
+
+	if data != nil {
+		buf := bytes.Buffer{}
+		if _, err := binarystruct.Write(&buf, binarystruct.LittleEndian, data); err != nil {
+			return err
+		}
+
+		dataBytes = buf.Bytes()
 	}
 
-	return c.SendPacketBytes(opcode, buf.Bytes())
+	return c.SendPacketBytes(opcode, dataBytes)
 }
 
 // SendPacketBytes generates a header and sends a packet containing the header + data. In most cases,
@@ -146,6 +160,6 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 	// log.Printf("%x\n", data)
 	// log.Println("--- END PACKET ---")
 
-	_, err = c.Conn.Write(internal.ConcatBytes(header, data))
+	_, err = c.Conn.Write(append(header, data...))
 	return err
 }

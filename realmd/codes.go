@@ -18,6 +18,9 @@ const (
 	OpServerSystemFeatures       ServerOpcode = 0x3C9
 	OpServerHearthLocation       ServerOpcode = 0x155 // SMSG_BINDPOINTUPDATE
 	OpServerPlayCinematic        ServerOpcode = 0xFA  // SMSG_TRIGGER_CINEMATIC
+	OpServerLogout               ServerOpcode = 0x4C
+	OpServerLogoutComplete       ServerOpcode = 0x4D
+	OpServerLogoutCancelACK      ServerOpcode = 0x4F
 )
 
 type ClientOpcode uint32
@@ -31,6 +34,8 @@ const (
 	OpClientCharDelete               ClientOpcode = 0x38
 	OpClientPlayerLogin              ClientOpcode = 0x3D
 	OpClientReadyForAccountDataTimes ClientOpcode = 0x4FF
+	OpClientLogout                   ClientOpcode = 0x4B
+	OpClientLogoutCancel             ClientOpcode = 0x4E
 )
 
 type ResponseCode byte

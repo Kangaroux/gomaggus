@@ -148,6 +148,9 @@ func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
 	case realmd.OpClientPlayerLogin:
 		return session.LoginHandler(s.services, c, packet)
 
+	case realmd.OpClientLogout:
+		return session.LogoutHandler(c)
+
 	default:
 		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 		return nil
