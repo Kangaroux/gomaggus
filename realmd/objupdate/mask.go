@@ -347,8 +347,8 @@ var (
 	FieldMaskCorpseDynamicFlags = FieldMask{Size: 1, Offset: 0x22}
 )
 
-// ValueMask stores the mask that communicates what fields are set in a ValueBuffer.
-type ValueMask struct {
+// ValuesMask stores the byte mask that specifices which value fields are set.
+type ValuesMask struct {
 	// Tracks whether any bits in the mask have been set. Used to disambiguate between no bits set
 	// and only the first bit set
 	anyBits    bool
@@ -361,7 +361,7 @@ const (
 )
 
 // Bit returns whether the provided bit has been set.
-func (m *ValueMask) Bit(bit uint32) bool {
+func (m *ValuesMask) Bit(bit uint32) bool {
 	if !m.anyBits || bit > m.largestBit {
 		return false
 	}
@@ -373,7 +373,7 @@ func (m *ValueMask) Bit(bit uint32) bool {
 }
 
 // Bytes returns a little-endian byte array of the value mask. The first byte is the size of the mask.
-func (m *ValueMask) Bytes() []byte {
+func (m *ValuesMask) Bytes() []byte {
 	buf := bytes.Buffer{}
 	size := m.Len()
 	buf.WriteByte(byte(size))
@@ -383,7 +383,7 @@ func (m *ValueMask) Bytes() []byte {
 }
 
 // FieldMask returns whether all the bits for the provided mask have been set.
-func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
+func (m *ValuesMask) FieldMask(fieldMask FieldMask) bool {
 	for i := uint32(0); i < fieldMask.Size; i++ {
 		if !m.Bit(fieldMask.Offset + i) {
 			return false
@@ -394,7 +394,7 @@ func (m *ValueMask) FieldMask(fieldMask FieldMask) bool {
 }
 
 // Len returns the number of uint32s used to represent the mask.
-func (m *ValueMask) Len() int {
+func (m *ValuesMask) Len() int {
 	size := m.largestBit / 32
 
 	if m.anyBits {
@@ -405,14 +405,14 @@ func (m *ValueMask) Len() int {
 }
 
 // SetFieldMask sets all the bits necessary for the provided field mask.
-func (m *ValueMask) SetFieldMask(fieldMask FieldMask) {
+func (m *ValuesMask) SetFieldMask(fieldMask FieldMask) {
 	for i := uint32(0); i < fieldMask.Size; i++ {
 		m.SetBit(fieldMask.Offset + i)
 	}
 }
 
 // SetBit sets the nth bit in the update mask. The bit is zero-indexed with the first bit being zero.
-func (m *ValueMask) SetBit(bit uint32) {
+func (m *ValuesMask) SetBit(bit uint32) {
 	index := bit / 32
 	bitPos := bit % 32
 	m.resize(index + 1)
@@ -426,7 +426,7 @@ func (m *ValueMask) SetBit(bit uint32) {
 }
 
 // Resizes the mask to fit up to n uint32s.
-func (m *ValueMask) resize(n uint32) {
+func (m *ValuesMask) resize(n uint32) {
 	maskLen := uint32(len(m.mask))
 
 	if maskLen > n {

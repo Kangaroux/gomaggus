@@ -59,7 +59,7 @@ func TestValueMask(t *testing.T) {
 	buf := bytes.Buffer{}
 
 	for _, c := range cases {
-		vm := o.ValueMask{}
+		vm := o.ValuesMask{}
 
 		for _, fm := range c.masks {
 			vm.SetFieldMask(fm)

@@ -9,8 +9,8 @@ import (
 )
 
 func TestRaceClassGenderPower(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.RaceClassGenderPower(4, 3, 2, 1)
+	v := UnitValues{buf: &Values{}}
+	v.RaceClassGenderPower(4, 3, 2, 1)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitRaceClassGenderPower),
@@ -19,12 +19,12 @@ func TestRaceClassGenderPower(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }
 
 func TestHealth(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.Health(123)
+	v := UnitValues{buf: &Values{}}
+	v.Health(123)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitHealth),
@@ -33,12 +33,12 @@ func TestHealth(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }
 
 func TestMaxHealth(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.MaxHealth(123)
+	v := UnitValues{buf: &Values{}}
+	v.MaxHealth(123)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitMaxHealth),
@@ -47,12 +47,12 @@ func TestMaxHealth(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }
 
 func TestLevel(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.Level(123)
+	v := UnitValues{buf: &Values{}}
+	v.Level(123)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitLevel),
@@ -61,12 +61,12 @@ func TestLevel(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }
 
 func TestFaction(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.Faction(123)
+	v := UnitValues{buf: &Values{}}
+	v.Faction(123)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitFactionTemplate),
@@ -75,12 +75,12 @@ func TestFaction(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }
 
 func TestDisplayModel(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.DisplayModel(123)
+	v := UnitValues{buf: &Values{}}
+	v.DisplayModel(123)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitDisplayId),
@@ -89,12 +89,12 @@ func TestDisplayModel(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }
 
 func TestNativeDisplayModel(t *testing.T) {
-	b := UnitValueBuilder{buf: &ValueBuffer{}}
-	b.NativeDisplayModel(123)
+	v := UnitValues{buf: &Values{}}
+	v.NativeDisplayModel(123)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitNativeDisplayId),
@@ -103,5 +103,5 @@ func TestNativeDisplayModel(t *testing.T) {
 		binarystruct.LittleEndian,
 	)
 
-	assert.Equal(t, expected, b.buf.Bytes())
+	assert.Equal(t, expected, v.buf.Bytes())
 }

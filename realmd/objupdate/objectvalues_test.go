@@ -15,13 +15,13 @@ type valueBlock struct {
 }
 
 func makeMask(fieldMask FieldMask) []byte {
-	vm := ValueMask{}
+	vm := ValuesMask{}
 	vm.SetFieldMask(fieldMask)
 	return vm.Bytes()
 }
 
 func TestObjectGuid(t *testing.T) {
-	b := ObjectValueBuilder{buf: &ValueBuffer{}}
+	b := ObjectValues{buf: &Values{}}
 	b.Guid(0xDEADBEEF11C0FFEE)
 	expected := internal.MustMarshal(
 		&valueBlock{
@@ -35,7 +35,7 @@ func TestObjectGuid(t *testing.T) {
 }
 
 func TestObjectType(t *testing.T) {
-	b := ObjectValueBuilder{buf: &ValueBuffer{}}
+	b := ObjectValues{buf: &Values{}}
 	b.Type(ObjectTypePlayer)
 	expected := internal.MustMarshal(
 		&valueBlock{
@@ -49,7 +49,7 @@ func TestObjectType(t *testing.T) {
 }
 
 func TestObjectScaleX(t *testing.T) {
-	b := ObjectValueBuilder{buf: &ValueBuffer{}}
+	b := ObjectValues{buf: &Values{}}
 	b.ScaleX(123.45)
 	expected := internal.MustMarshal(
 		&valueBlock{

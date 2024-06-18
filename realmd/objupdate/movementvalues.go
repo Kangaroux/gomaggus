@@ -232,111 +232,112 @@ type movementBuffer struct {
 	rotationData        *RotationData
 }
 
-// MovementBuild builds the movement block.
+// MovementValues provides an interface for setting values related to movement and position.
+// Values can be added in any order.
 // https://gtker.com/wow_messages/docs/movementblock.html#client-version-335
-type MovementBuilder struct {
+type MovementValues struct {
 	buf           movementBuffer
 	livingBuilder *LivingMovementBuilder
 }
 
 // Bytes returns the movement block as a little-endian byte array.
-func (b *MovementBuilder) Bytes() []byte {
+func (m *MovementValues) Bytes() []byte {
 	bytesBuf := bytes.Buffer{}
-	binary.Write(&bytesBuf, binary.LittleEndian, b.buf.updateFlag)
+	binary.Write(&bytesBuf, binary.LittleEndian, m.buf.updateFlag)
 
-	if b.buf.updateFlag&MovementUpdateLiving > 0 {
-		flags := b.buf.livingFlags
+	if m.buf.updateFlag&MovementUpdateLiving > 0 {
+		flags := m.buf.livingFlags
 
 		binary.Write(&bytesBuf, binary.LittleEndian, flags)
 		// Living flags are stored as 8 bytes but written as 6. Discard the last two bytes
 		bytesBuf.Truncate(bytesBuf.Len() - 2)
 
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living1)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.living1)
 
-		if b.buf.transportPassengerInterpolated != nil {
-			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.transportPassengerInterpolated)
+		if m.buf.transportPassengerInterpolated != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.transportPassengerInterpolated)
 		}
-		if b.buf.transportPassenger != nil {
-			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.transportPassenger)
+		if m.buf.transportPassenger != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.transportPassenger)
 		}
-		if b.buf.pitch != nil {
-			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.pitch)
-		}
-
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living2)
-
-		if b.buf.fall != nil {
-			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.fall)
-		}
-		if b.buf.splineElevation != nil {
-			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.splineElevation)
+		if m.buf.pitch != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.pitch)
 		}
 
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.living3)
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.living2)
 
-		if b.buf.spline != nil {
-			binary.Write(&bytesBuf, binary.LittleEndian, b.buf.spline)
+		if m.buf.fall != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.fall)
 		}
-	} else if b.buf.updateFlag&MovementUpdatePosition > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.positionData)
-	} else if b.buf.updateFlag&MovementUpdateHasPosition > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.hasPositionData)
+		if m.buf.splineElevation != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.splineElevation)
+		}
+
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.living3)
+
+		if m.buf.spline != nil {
+			binary.Write(&bytesBuf, binary.LittleEndian, m.buf.spline)
+		}
+	} else if m.buf.updateFlag&MovementUpdatePosition > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.positionData)
+	} else if m.buf.updateFlag&MovementUpdateHasPosition > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.hasPositionData)
 	}
 
-	if b.buf.updateFlag&MovementUpdateHighGuid > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.highGuidData)
+	if m.buf.updateFlag&MovementUpdateHighGuid > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.highGuidData)
 	}
-	if b.buf.updateFlag&MovementUpdateLowGuid > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.lowGuidData)
+	if m.buf.updateFlag&MovementUpdateLowGuid > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.lowGuidData)
 	}
-	if b.buf.updateFlag&MovementUpdateHasAttackingTarget > 0 {
-		bytesBuf.Write(b.buf.attackingTargetData.Guid)
+	if m.buf.updateFlag&MovementUpdateHasAttackingTarget > 0 {
+		bytesBuf.Write(m.buf.attackingTargetData.Guid)
 	}
-	if b.buf.updateFlag&MovementUpdateTransport > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.transportData)
+	if m.buf.updateFlag&MovementUpdateTransport > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.transportData)
 	}
-	if b.buf.updateFlag&MovementUpdateVehicle > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.vehicleData)
+	if m.buf.updateFlag&MovementUpdateVehicle > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.vehicleData)
 	}
-	if b.buf.updateFlag&MovementUpdateRotation > 0 {
-		binary.Write(&bytesBuf, binary.LittleEndian, b.buf.rotationData)
+	if m.buf.updateFlag&MovementUpdateRotation > 0 {
+		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.rotationData)
 	}
 
 	return bytesBuf.Bytes()
 }
 
 // Living returns a builder for building the block related to living units. It also sets the living flag.
-func (b *MovementBuilder) Living() *LivingMovementBuilder {
-	if b.livingBuilder == nil {
-		b.livingBuilder = &LivingMovementBuilder{buf: &b.buf}
-		b.buf.updateFlag |= MovementUpdateLiving
+func (m *MovementValues) Living() *LivingMovementBuilder {
+	if m.livingBuilder == nil {
+		m.livingBuilder = &LivingMovementBuilder{buf: &m.buf}
+		m.buf.updateFlag |= MovementUpdateLiving
 	}
-	return b.livingBuilder
+	return m.livingBuilder
 }
 
-func (b *MovementBuilder) Self() {
-	b.buf.updateFlag |= MovementUpdateSelf
+func (m *MovementValues) Self() {
+	m.buf.updateFlag |= MovementUpdateSelf
 }
 
-func (b *MovementBuilder) Position(data *PositionData) {
+func (m *MovementValues) Position(data *PositionData) {
 	if data == nil {
-		b.buf.updateFlag &= ^MovementUpdatePosition
+		m.buf.updateFlag &= ^MovementUpdatePosition
 	} else {
-		b.buf.updateFlag |= MovementUpdatePosition
+		m.buf.updateFlag |= MovementUpdatePosition
 	}
-	b.buf.positionData = data
+	m.buf.positionData = data
 }
 
-func (b *MovementBuilder) HasPosition(data *HasPositionData) {
+func (m *MovementValues) HasPosition(data *HasPositionData) {
 	if data == nil {
-		b.buf.updateFlag &= ^MovementUpdateHasPosition
+		m.buf.updateFlag &= ^MovementUpdateHasPosition
 	} else {
-		b.buf.updateFlag |= MovementUpdateHasPosition
+		m.buf.updateFlag |= MovementUpdateHasPosition
 	}
-	b.buf.hasPositionData = data
+	m.buf.hasPositionData = data
 }
 
-func (b *MovementBuilder) HighGuid(data *HighGuidData) {
+func (b *MovementValues) HighGuid(data *HighGuidData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateHighGuid
 	} else {
@@ -345,7 +346,7 @@ func (b *MovementBuilder) HighGuid(data *HighGuidData) {
 	b.buf.highGuidData = data
 }
 
-func (b *MovementBuilder) LowGuid(data *LowGuidData) {
+func (b *MovementValues) LowGuid(data *LowGuidData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateLowGuid
 	} else {
@@ -354,7 +355,7 @@ func (b *MovementBuilder) LowGuid(data *LowGuidData) {
 	b.buf.lowGuidData = data
 }
 
-func (b *MovementBuilder) AttackingTarget(data *AttackingTargetData) {
+func (b *MovementValues) AttackingTarget(data *AttackingTargetData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateHasAttackingTarget
 	} else {
@@ -363,7 +364,7 @@ func (b *MovementBuilder) AttackingTarget(data *AttackingTargetData) {
 	b.buf.attackingTargetData = data
 }
 
-func (b *MovementBuilder) Transport(data *TransportData) {
+func (b *MovementValues) Transport(data *TransportData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateTransport
 	} else {
@@ -372,7 +373,7 @@ func (b *MovementBuilder) Transport(data *TransportData) {
 	b.buf.transportData = data
 }
 
-func (b *MovementBuilder) Vehicle(data *VehicleData) {
+func (b *MovementValues) Vehicle(data *VehicleData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateVehicle
 	} else {
@@ -381,7 +382,7 @@ func (b *MovementBuilder) Vehicle(data *VehicleData) {
 	b.buf.vehicleData = data
 }
 
-func (b *MovementBuilder) Rotation(data *RotationData) {
+func (b *MovementValues) Rotation(data *RotationData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateRotation
 	} else {

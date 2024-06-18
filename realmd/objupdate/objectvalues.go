@@ -19,20 +19,20 @@ const (
 	ObjectTypeCorpse        ObjectType = 7
 )
 
-// ObjectValueBuilder builds the values for OBJECT_* types.
+// ObjectValues provides an interface for setting values for objects. Values can be added in any order.
 // https://gtker.com/wow_messages/types/update-mask.html#version-335
-type ObjectValueBuilder struct {
-	buf *ValueBuffer
+type ObjectValues struct {
+	buf *Values
 }
 
-func (b *ObjectValueBuilder) Guid(guid realmd.Guid) {
-	b.buf.addField(&valueField{
+func (v *ObjectValues) Guid(guid realmd.Guid) {
+	v.buf.addField(&valueField{
 		mask:  FieldMaskObjectGuid,
 		value: []uint32{uint32(guid), uint32(guid >> 32)},
 	})
 }
 
-func (b *ObjectValueBuilder) Type(types ...ObjectType) {
+func (v *ObjectValues) Type(types ...ObjectType) {
 	val := uint32(0)
 
 	// Convert types to bitmask
@@ -40,14 +40,14 @@ func (b *ObjectValueBuilder) Type(types ...ObjectType) {
 		val |= 1 << t
 	}
 
-	b.buf.addField(&valueField{
+	v.buf.addField(&valueField{
 		mask:  FieldMaskObjectType,
 		value: []uint32{val},
 	})
 }
 
-func (b *ObjectValueBuilder) ScaleX(val float32) {
-	b.buf.addField(&valueField{
+func (v *ObjectValues) ScaleX(val float32) {
+	v.buf.addField(&valueField{
 		mask:  FieldMaskObjectScaleX,
 		value: []uint32{math.Float32bits(val)},
 	})

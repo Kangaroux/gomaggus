@@ -196,7 +196,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	inner.Write(realmd.PackGuid(uint64(char.Id)))            // packed guid
 	inner.WriteByte(byte(objupdate.ObjectTypePlayer))
 
-	movement := objupdate.MovementBuilder{}
+	movement := objupdate.MovementValues{}
 	movement.Self()
 
 	living := movement.Living()
@@ -228,7 +228,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 
 	inner.Write(movement.Bytes())
 
-	values := objupdate.ValueBuffer{}
+	values := objupdate.Values{}
 	obj := values.Object()
 	obj.Guid(realmd.Guid(char.Id))
 	obj.Type(objupdate.ObjectTypeObject, objupdate.ObjectTypeUnit, objupdate.ObjectTypePlayer)
