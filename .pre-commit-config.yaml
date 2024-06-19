@@ -3,11 +3,13 @@ repos:
     hooks:
     -   id: tidy
         name: go mod tidy
-        entry: /bin/bash go mod tidy
+        entry: go mod tidy
         language: system
-        types: [go, go-mod]
+        types_or: [go, go-mod]
+        pass_filenames: false
     -   id: test
         name: go test
-        entry: /bin/bash go test ./...
+        entry: go test ./...
         language: system
-        types: [go, go-mod]
+        types_or: [go, go-mod]
+        pass_filenames: false
