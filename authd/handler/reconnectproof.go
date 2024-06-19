@@ -92,7 +92,7 @@ func (h *ReconnectProof) Handle() error {
 			Connected:     1,
 			ConnectedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 		}
-		if err := h.Sessions.UpdateOrCreate(&session); err != nil {
+		if _, err := h.Sessions.UpdateOrCreate(&session); err != nil {
 			return err
 		}
 		h.Client.State = authd.StateAuthenticated

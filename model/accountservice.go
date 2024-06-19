@@ -40,7 +40,7 @@ type DbAccountService struct {
 
 var _ AccountService = (*DbAccountService)(nil)
 
-func NewDbAccountService(db *sqlx.DB) *DbAccountService {
+func NewDbAccountService(db *sqlx.DB) AccountService {
 	return &DbAccountService{db}
 }
 

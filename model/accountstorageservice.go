@@ -8,8 +8,14 @@ import (
 )
 
 type AccountStorageService interface {
+	// List returns all storage belonging to accountID whose type matches mask. List may return fewer
+	// results than specified in the mask. The results are not ordered.
 	List(uint32, StorageMask) ([]*AccountStorage, error)
-	UpdateOrCreate(*AccountStorage) error
+
+	// UpdateOrCreate tries to update tje storage if it exists, otherwise it's created. UpdateOrCreate
+	// reports whether the storage was created. If the error is nil and created is false, then it
+	// was updated.
+	UpdateOrCreate(*AccountStorage) (bool, error)
 }
 
 type DbAccountStorageService struct {
@@ -18,7 +24,7 @@ type DbAccountStorageService struct {
 
 var _ AccountStorageService = (*DbAccountStorageService)(nil)
 
-func NewDbAccountStorageService(db *sqlx.DB) *DbAccountStorageService {
+func NewDbAccountStorageService(db *sqlx.DB) AccountStorageService {
 	return &DbAccountStorageService{db}
 }
 
@@ -82,20 +88,23 @@ func (s *DbAccountStorageService) update(db updater, storage *AccountStorage) (b
 	return n > 0, nil
 }
 
-func (s *DbAccountStorageService) UpdateOrCreate(storage *AccountStorage) error {
+func (s *DbAccountStorageService) UpdateOrCreate(storage *AccountStorage) (bool, error) {
 	tx, err := s.db.Beginx()
 	if err != nil {
-		return err
+		return false, err
 	}
+	defer func() {
+		tx.Rollback()
+	}()
 
 	updated, err := s.update(tx, storage)
 	if err != nil {
-		return err
+		return false, err
 	} else if !updated {
 		if err := s.create(tx, storage); err != nil {
-			return err
+			return false, err
 		}
 	}
 
-	return tx.Commit()
+	return !updated, tx.Commit()
 }

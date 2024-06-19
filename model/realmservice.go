@@ -29,7 +29,7 @@ type DbRealmService struct {
 
 var _ RealmService = (*DbRealmService)(nil)
 
-func NewDbRealmService(db *sqlx.DB) *DbRealmService {
+func NewDbRealmService(db *sqlx.DB) RealmService {
 	return &DbRealmService{db}
 }
 

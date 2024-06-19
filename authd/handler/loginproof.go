@@ -110,7 +110,7 @@ func (h *LoginProof) Handle() error {
 	log.Println("Replied to login proof")
 
 	if authenticated {
-		err := h.Sessions.UpdateOrCreate(&model.Session{
+		_, err := h.Sessions.UpdateOrCreate(&model.Session{
 			AccountId:     h.Client.Account.Id,
 			SessionKeyHex: hex.EncodeToString(h.Client.SessionKey),
 			Connected:     1,

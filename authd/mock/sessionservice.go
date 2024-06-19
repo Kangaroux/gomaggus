@@ -7,7 +7,7 @@ type SessionService struct {
 	OnCreate         func(*model.Session) error
 	OnUpdate         func(*model.Session) (bool, error)
 	OnDelete         func(uint32) (bool, error)
-	OnUpdateOrCreate func(*model.Session) error
+	OnUpdateOrCreate func(*model.Session) (bool, error)
 }
 
 var _ model.SessionService = (*SessionService)(nil)
@@ -40,9 +40,9 @@ func (s *SessionService) Delete(id uint32) (bool, error) {
 	return s.OnDelete(id)
 }
 
-func (s *SessionService) UpdateOrCreate(session *model.Session) error {
+func (s *SessionService) UpdateOrCreate(session *model.Session) (bool, error) {
 	if s.OnUpdateOrCreate == nil {
-		return nil
+		return false, nil
 	}
 	return s.OnUpdateOrCreate(session)
 }

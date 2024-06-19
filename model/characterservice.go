@@ -49,7 +49,7 @@ type DbCharacterService struct {
 
 var _ CharacterService = (*DbCharacterService)(nil)
 
-func NewDbCharacterService(db *sqlx.DB) *DbCharacterService {
+func NewDbCharacterService(db *sqlx.DB) CharacterService {
 	return &DbCharacterService{db}
 }
 

@@ -19,9 +19,10 @@ type SessionService interface {
 	// Delete tries to delete an existing session by account id and returns if it was deleted.
 	Delete(uint32) (bool, error)
 
-	// UpdateOrCreate tries to update an existing session with the given account id. If no session
-	// for that account exists, it creates one.
-	UpdateOrCreate(*Session) error
+	// UpdateOrCreate tries to update the session if it exists, otherwise it's created. UpdateOrCreate
+	// reports whether the session was created. If the error is nil and created is false, then it
+	// was updated.
+	UpdateOrCreate(*Session) (bool, error)
 }
 
 type DbSessionService struct {
@@ -30,7 +31,7 @@ type DbSessionService struct {
 
 var _ SessionService = (*DbSessionService)(nil)
 
-func NewDbSessionService(db *sqlx.DB) *DbSessionService {
+func NewDbSessionService(db *sqlx.DB) SessionService {
 	return &DbSessionService{db}
 }
 
@@ -104,20 +105,23 @@ func (s *DbSessionService) delete(db deleter, accountId uint32) (bool, error) {
 	return n > 0, err
 }
 
-func (s *DbSessionService) UpdateOrCreate(session *Session) error {
+func (s *DbSessionService) UpdateOrCreate(session *Session) (bool, error) {
 	tx, err := s.db.Beginx()
 	if err != nil {
-		return err
+		return false, err
 	}
+	defer func() {
+		tx.Rollback()
+	}()
 
 	updated, err := s.update(tx, session)
 	if err != nil {
-		return err
+		return false, err
 	} else if !updated {
 		if err := s.create(tx, session); err != nil {
-			return err
+			return false, err
 		}
 	}
 
-	return tx.Commit()
+	return !updated, tx.Commit()
 }

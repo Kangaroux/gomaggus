@@ -19,7 +19,7 @@ const (
 	CharacterChat     StorageType = 7
 )
 
-type StorageMask = byte
+type StorageMask byte
 
 const (
 	StorageMaskAccount   StorageMask = (1 << AccountData) | (1 << AccountKeybinds) | (1 << AccountMacros)
