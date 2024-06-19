@@ -87,23 +87,22 @@ func (s *Server) handleConnection(conn net.Conn) {
 	}
 
 	var header *realmd.ClientHeader
+	chunk := make([]byte, 4096)
 	readBuf := bytes.Buffer{}
-	headerBuf := make([]byte, realmd.ClientHeaderSize)
 	packetBuf := bytes.Buffer{}
+	headerBuf := make([]byte, realmd.ClientHeaderSize)
 
 	for {
-		n, err := io.Copy(&readBuf, conn)
-		if err != nil {
+		n, err := conn.Read(chunk)
+		if err != nil && err != io.EOF {
 			log.Printf("error reading from client: %v\n", err)
-			conn.Close()
-			return
-		} else if n == 0 {
-			log.Println("client disconnected (closed by client)")
 			return
 		}
 
+		readBuf.Write(chunk[:n])
+
 		// Process the read buffer while it has at least enough data for a packet header
-		for readBuf.Len() > realmd.ClientHeaderSize {
+		for readBuf.Len() >= realmd.ClientHeaderSize {
 
 			// Ready to process a new packet, read the header
 			if header == nil {
@@ -119,17 +118,13 @@ func (s *Server) handleConnection(conn net.Conn) {
 			}
 
 			// The buffer contains a partial packet, go back to reading
-			if readBuf.Len() < int(header.Size) {
+			if bufLen := readBuf.Len(); bufLen < int(header.Size) {
 				break
 			}
 
 			io.CopyN(&packetBuf, &readBuf, int64(header.Size))
 
-			data := packetBuf.Bytes()
-
-			log.Printf("%d: %x\n", len(data), data)
-
-			if err := s.handlePacket(client, header, data); err != nil {
+			if err := s.handlePacket(client, header, packetBuf.Bytes()); err != nil {
 				log.Printf("error handling packet: %v\n", err)
 				conn.Close()
 				return
@@ -137,6 +132,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 			header = nil
 			packetBuf.Reset()
+		}
+
+		// TODO: use cancel context?
+		if err == io.EOF {
+			log.Println("client disconnected (closed by client)")
+			return
 		}
 	}
 }

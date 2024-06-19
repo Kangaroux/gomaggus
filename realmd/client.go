@@ -120,7 +120,10 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	}
 
 	h := &ClientHeader{
-		Size:   binary.BigEndian.Uint16(header[:2]),
+		// The value of size in the packet includes the opcode, however for packet parsing the opcode
+		// is considered part of the header. Subtracting 4 from the size gives the correct size for
+		// everything after the header.
+		Size:   binary.BigEndian.Uint16(header[:2]) - 4,
 		Opcode: ClientOpcode(binary.LittleEndian.Uint32(header[2:6])),
 	}
 
