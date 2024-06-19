@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/rc4"
 	"errors"
+	"sync"
 )
 
 const (
@@ -35,6 +36,9 @@ type HeaderCrypto struct {
 	decryptCipher *rc4.Cipher
 	encryptCipher *rc4.Cipher
 	sessionKey    []byte
+
+	decryptMutex sync.Mutex
+	encryptMutex sync.Mutex
 }
 
 func NewHeaderCrypto(sessionKey []byte) *HeaderCrypto {
@@ -65,21 +69,31 @@ func (h *HeaderCrypto) InitKeys(decryptKey, encryptKey []byte) error {
 	return nil
 }
 
+// Decrypt decrypts a client header in-place. If the decrypt cipher is not initialized, Decrypt returns
+// ErrCryptoNotInitialized. Decrypt is safe to use concurrently.
 func (h *HeaderCrypto) Decrypt(data []byte) error {
 	if h.decryptCipher == nil {
 		return ErrCryptoNotInitialized
 	}
 
+	h.decryptMutex.Lock()
 	h.decryptCipher.XORKeyStream(data, data)
+	h.decryptMutex.Unlock()
+
 	return nil
 }
 
+// Encrypt encrypts a server header in-place. If the encrypt cipher is not initialized, Encrypt returns
+// ErrCryptoNotInitialized. Encrypt is safe to use concurrently.
 func (h *HeaderCrypto) Encrypt(data []byte) error {
 	if h.encryptCipher == nil {
 		return ErrCryptoNotInitialized
 	}
 
+	h.encryptMutex.Lock()
 	h.encryptCipher.XORKeyStream(data, data)
+	h.encryptMutex.Unlock()
+
 	return nil
 }
 

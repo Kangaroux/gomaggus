@@ -89,7 +89,6 @@ func logoutAfterDelay(ctx context.Context, client *realmd.Client) {
 		return
 	case <-time.After(logoutDelay):
 		// TODO: handle error
-		// FIXME: concurrent writing is not safe
 		completeLogout(client)
 	}
 }
