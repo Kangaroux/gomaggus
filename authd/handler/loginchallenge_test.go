@@ -32,14 +32,15 @@ func TestLoginChallenge(t *testing.T) {
 	t.Run("invalid state", func(t *testing.T) {
 		h := newHandler()
 		client.State = authd.StateAuthenticated
-		err, ok := h.Handle([]byte{}).(*ErrWrongState)
+		err, ok := h.Handle().(*ErrWrongState)
 
 		assert.Error(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("malformed packet", func(t *testing.T) {
-		assert.Equal(t, io.EOF, newHandler().Handle([]byte{}))
+		_, err := newHandler().Read([]byte{})
+		assert.Equal(t, io.EOF, err)
 	})
 
 	t.Run("account service error", func(t *testing.T) {
@@ -54,8 +55,10 @@ func TestLoginChallenge(t *testing.T) {
 			Username:       "a",
 		}
 		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
+		_, err := h.Read(request)
+		assert.NoError(t, err)
 
-		assert.Equal(t, expectedErr, h.Handle(request))
+		assert.Equal(t, expectedErr, h.Handle())
 	})
 
 	t.Run("unknown username fake response", func(t *testing.T) {
@@ -69,11 +72,12 @@ func TestLoginChallenge(t *testing.T) {
 			return nil, nil
 		}
 		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
-
-		assert.NoError(t, h.Handle(request))
-		assert.Equal(t, authd.StateAuthProof, client.State)
+		_, err := h.Read(request)
+		assert.NoError(t, err)
+		assert.NoError(t, h.Handle())
 
 		// The client's account/username will remain empty if it's faked
+		assert.Equal(t, authd.StateAuthProof, client.State)
 		assert.Nil(t, client.Account)
 		assert.Empty(t, client.Username)
 	})
@@ -90,8 +94,10 @@ func TestLoginChallenge(t *testing.T) {
 			return mockAccount, nil
 		}
 		request := internal.MustMarshal(packet, binarystruct.LittleEndian)
+		_, err := h.Read(request)
+		assert.NoError(t, err)
+		assert.NoError(t, h.Handle())
 
-		assert.NoError(t, h.Handle(request))
 		assert.Equal(t, authd.StateAuthProof, client.State)
 		assert.Equal(t, mockAccount, client.Account)
 		assert.Equal(t, packet.Username, client.Username)

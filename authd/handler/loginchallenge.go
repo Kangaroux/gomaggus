@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/binary"
+	"errors"
+	"io"
 	"log"
 	mrand "math/rand"
 
@@ -51,9 +53,10 @@ type loginChallengeResponse struct {
 type LoginChallenge struct {
 	Client   *authd.Client
 	Accounts model.AccountService
+	request  loginChallengeRequest
 }
 
-func (h *LoginChallenge) Handle(data []byte) error {
+func (h *LoginChallenge) Handle() error {
 	if h.Client.State != authd.StateAuthChallenge {
 		return &ErrWrongState{
 			Handler:  "LoginChallenge",
@@ -63,15 +66,9 @@ func (h *LoginChallenge) Handle(data []byte) error {
 	}
 
 	log.Println("Starting login challenge")
+	log.Printf("client trying to login as '%s'\n", h.request.Username)
 
-	req := loginChallengeRequest{}
-	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
-		return err
-	}
-
-	log.Printf("client trying to login as '%s'\n", req.Username)
-
-	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: req.Username})
+	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: h.request.Username})
 	if err != nil {
 		return err
 	}
@@ -138,10 +135,24 @@ func (h *LoginChallenge) Handle(data []byte) error {
 
 	if !faked {
 		h.Client.Account = acct
-		h.Client.Username = req.Username
+		h.Client.Username = h.request.Username
 	}
 
 	h.Client.State = authd.StateAuthProof
 
 	return nil
+}
+
+// Read reads the packet data and parses it as a login challenge request. If data is too small then
+// Read returns io.EOF.
+func (h *LoginChallenge) Read(data []byte) (int, error) {
+	n, err := binarystruct.Unmarshal(data, binary.LittleEndian, &h.request)
+
+	if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
+		return 0, io.EOF
+	} else if err != nil {
+		return 0, err
+	}
+
+	return n, nil
 }

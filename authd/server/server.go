@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -83,29 +84,36 @@ func (srv *Server) handleConnection(conn net.Conn) {
 		return
 	}
 
-	buf := make([]byte, 4096)
+	chunk := make([]byte, 256)
+	buf := bytes.Buffer{}
 
 	for {
-		n, err := client.Conn.Read(buf)
-
-		if err == io.EOF {
-			log.Println("client disconnected (closed by client)")
-			return
-		} else if err != nil {
-			log.Printf("error reading from client: %v\n", err)
+		readN, readErr := client.Conn.Read(chunk)
+		if readErr != nil && readErr != io.EOF {
+			log.Printf("error reading from client: %v\n", readErr)
 			return
 		}
 
-		log.Printf("read %d bytes\n", n)
+		log.Printf("read %d bytes\n", readN)
 
-		if err := srv.handlePacket(client, buf[:n]); err != nil {
+		handleN, err := srv.handlePacket(client, buf.Bytes())
+		if err != nil {
 			log.Println(err)
+			return
+		}
+
+		// Discard the bytes that were used to handle the packet. This behaves similar to buf.Read,
+		// but only commits to reading the data if the packet was handled successfully.
+		io.CopyN(io.Discard, &buf, int64(handleN))
+
+		if readErr == io.EOF {
+			log.Println("client disconnected (closed by client)")
 			return
 		}
 	}
 }
 
-func (srv *Server) handlePacket(c *authd.Client, data []byte) error {
+func (srv *Server) handlePacket(c *authd.Client, data []byte) (int, error) {
 	opcode := authd.Opcode(data[0])
 
 	switch opcode {
@@ -114,37 +122,43 @@ func (srv *Server) handlePacket(c *authd.Client, data []byte) error {
 			Client:   c,
 			Accounts: srv.Accounts,
 		}
-		return h.Handle(data)
+
+		n, err := h.Read(data)
+		if err != nil {
+			return n, err
+		}
+
+		return n, h.Handle()
 
 	case authd.OpcodeLoginProof:
 		h := handler.LoginProof{
 			Client:   c,
 			Sessions: srv.Sessions,
 		}
-		return h.Handle(data)
+		return 0, h.Handle(data)
 
 	case authd.OpcodeReconnectChallenge:
 		h := handler.ReconnectChallenge{
 			Client:   c,
 			Accounts: srv.Accounts,
 		}
-		return h.Handle(data)
+		return 0, h.Handle(data)
 
 	case authd.OpcodeReconnectProof:
 		h := handler.ReconnectProof{
 			Client:   c,
 			Sessions: srv.Sessions,
 		}
-		return h.Handle(data)
+		return 0, h.Handle(data)
 
 	case authd.OpcodeRealmList:
 		h := handler.RealmList{
 			Client: c,
 			Realms: srv.Realms,
 		}
-		return h.Handle()
+		return 0, h.Handle()
 
 	default:
-		return fmt.Errorf("handlePacket: unknown opcode %x", opcode)
+		return 0, fmt.Errorf("handlePacket: unknown opcode %x", opcode)
 	}
 }

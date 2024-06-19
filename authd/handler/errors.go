@@ -6,18 +6,6 @@ import (
 	"github.com/kangaroux/gomaggus/authd"
 )
 
-type ErrPacketUnreadBytes struct {
-	Handler     string
-	UnreadCount int
-}
-
-func (e *ErrPacketUnreadBytes) Error() string {
-	return fmt.Sprintf(
-		"%s: parsed packet but there's still %d unread bytes",
-		e.Handler, e.UnreadCount,
-	)
-}
-
 type ErrWrongState struct {
 	Handler  string
 	Expected authd.ClientState
