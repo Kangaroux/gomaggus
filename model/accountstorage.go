@@ -19,10 +19,18 @@ const (
 	CharacterChat     StorageType = 7
 )
 
+type StorageMask = byte
+
+const (
+	StorageMaskAccount   StorageMask = (1 << AccountData) | (1 << AccountKeybinds) | (1 << AccountMacros)
+	StorageMaskCharacter StorageMask = (1 << CharacterConfig) | (1 << CharacterKeybinds) | (1 << CharacterMacros) | (1 << CharacterLayout) | (1 << CharacterChat)
+	StorageMaskAll       StorageMask = StorageMaskAccount | StorageMaskCharacter
+)
+
 // AccountStorage stores compressed client data.
 type AccountStorage struct {
-	AccountId uint32
-	UpdatedAt time.Time
+	AccountId uint32    `db:"account_id"`
+	UpdatedAt time.Time `db:"updated_at"`
 	Type      StorageType
 	Data      sql.RawBytes
 }

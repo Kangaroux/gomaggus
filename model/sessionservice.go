@@ -57,10 +57,6 @@ func (s *DbSessionService) Create(session *Session) error {
 	return s.create(s.db, session)
 }
 
-type creater interface {
-	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
-}
-
 func (s *DbSessionService) create(db creater, session *Session) error {
 	q := `
 	INSERT INTO sessions (account_id, session_key, connected, connected_at, disconnected_at)
@@ -73,20 +69,19 @@ func (s *DbSessionService) Update(session *Session) (bool, error) {
 	return s.update(s.db, session)
 }
 
-type updater interface {
-	NamedExec(query string, arg interface{}) (sql.Result, error)
-}
-
 func (s *DbSessionService) update(db updater, session *Session) (bool, error) {
 	q := `
-	UPDATE sessions SET
-	session_key=:session_key, connected=:connected, connected_at=:connected_at, disconnected_at=:disconnected_at
+	UPDATE sessions
+	SET session_key=:session_key, connected=:connected, connected_at=:connected_at, disconnected_at=:disconnected_at
 	WHERE account_id=:account_id`
+
 	result, err := db.NamedExec(q, session)
 	if err != nil {
 		return false, err
 	}
+
 	n, _ := result.RowsAffected()
+
 	return n > 0, err
 }
 
@@ -103,7 +98,9 @@ func (s *DbSessionService) delete(db deleter, accountId uint32) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	n, _ := result.RowsAffected()
+
 	return n > 0, err
 }
 
