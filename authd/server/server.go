@@ -118,6 +118,8 @@ func (srv *Server) handleConnection(conn net.Conn) {
 	}
 }
 
+// handlePacket parses and handles data sent by the client. It returns the number of bytes that were
+// parsed. If the packet is incomplete and needs more data, handlePacket returns handler.ErrPacketReadEOF.
 func (srv *Server) handlePacket(c *authd.Client, data []byte) (int, error) {
 	opcode := authd.Opcode(data[0])
 
