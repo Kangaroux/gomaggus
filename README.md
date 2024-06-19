@@ -27,3 +27,4 @@ $ bin/goose -dir migration -s create MIGRATION_NAME sql
 - [WoW dev wiki](https://wowdev.wiki) - good general resource, lots of info
 - [WoW messages](https://gtker.com/wow_messages/) - networking docs that describe every packet payload, absolute lifesaver
 - [Wireshark](https://www.wireshark.org/) - packet sniffer for debugging networking
+- [How to read from a TCP socket (but were too afraid to ask)](https://incoherency.co.uk/blog/stories/reading-tcp-sockets.html) - great writeup on the gotchas of TCP
