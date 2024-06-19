@@ -18,9 +18,9 @@ type deleteResponse struct {
 	ResponseCode realmd.ResponseCode
 }
 
-func DeleteHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
+func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	req := deleteRequest{}
-	if _, err := binarystruct.Unmarshal(data.Payload, binary.LittleEndian, &req); err != nil {
+	if _, err := binarystruct.Unmarshal(data, binary.LittleEndian, &req); err != nil {
 		return err
 	}
 

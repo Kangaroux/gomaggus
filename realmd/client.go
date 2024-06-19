@@ -23,11 +23,6 @@ type ClientHeader struct {
 	Opcode ClientOpcode
 }
 
-type ClientPacket struct {
-	Header  *ClientHeader
-	Payload []byte
-}
-
 type Client struct {
 	Conn          net.Conn
 	ServerSeed    []byte

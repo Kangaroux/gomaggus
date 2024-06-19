@@ -18,9 +18,9 @@ type pingResponse struct {
 	SequenceId uint32
 }
 
-func PingHandler(client *realmd.Client, data *realmd.ClientPacket) error {
+func PingHandler(client *realmd.Client, data []byte) error {
 	req := pingRequest{}
-	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
 

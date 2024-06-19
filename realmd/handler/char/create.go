@@ -27,7 +27,7 @@ type createResponse struct {
 	ResponseCode realmd.ResponseCode
 }
 
-func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
+func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	// TODO: check if account is full
 	// accountChars, err := s.charsDb.List(&model.CharacterListParams{
 	// 	AccountId: c.account.Id,
@@ -38,7 +38,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data *realmd.Clie
 	// }
 
 	req := createRequest{}
-	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
 

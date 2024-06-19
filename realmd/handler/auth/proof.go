@@ -56,9 +56,9 @@ type proofSuccess struct {
 // 	HasFreeCharMigration bool
 // }
 
-func ProofHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
+func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	req := proofRequest{}
-	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
 

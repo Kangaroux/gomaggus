@@ -27,9 +27,9 @@ type splitResponse struct {
 	SplitDate string `binary:"zstring"`
 }
 
-func SplitInfoHandler(client *realmd.Client, data *realmd.ClientPacket) error {
+func SplitInfoHandler(client *realmd.Client, data []byte) error {
 	req := splitRequest{}
-	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
 

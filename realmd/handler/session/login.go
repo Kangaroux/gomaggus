@@ -22,9 +22,9 @@ type loginFailed struct {
 	ResponseCode realmd.ResponseCode
 }
 
-func LoginHandler(svc *realmd.Service, client *realmd.Client, data *realmd.ClientPacket) error {
+func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error {
 	req := loginRequest{}
-	if _, err := binarystruct.Unmarshal(data.Payload, binarystruct.LittleEndian, &req); err != nil {
+	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
 		return err
 	}
 

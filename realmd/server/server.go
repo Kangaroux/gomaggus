@@ -144,50 +144,30 @@ func (s *Server) handleConnection(conn net.Conn) {
 func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, data []byte) error {
 	log.Printf("RECV  op=0x%-4x dsize=%d hsize=%d  \n", header.Opcode, len(data), header.Size)
 
-	packet := &realmd.ClientPacket{
-		Header:  header,
-		Payload: data,
-	}
-
 	switch header.Opcode {
 	case realmd.OpClientPing:
-		return session.PingHandler(c, packet)
+		return session.PingHandler(c, data)
 
 	case realmd.OpClientAuthSession:
-		return auth.ProofHandler(s.services, c, packet)
+		return auth.ProofHandler(s.services, c, data)
 
 	case realmd.OpClientCharList:
 		return char.ListHandler(s.services, c)
 
 	case realmd.OpClientRealmSplit:
-		return realm.SplitInfoHandler(c, packet)
+		return realm.SplitInfoHandler(c, data)
 
 	case realmd.OpClientCharCreate:
-		return char.CreateHandler(s.services, c, packet)
+		return char.CreateHandler(s.services, c, data)
 
 	case realmd.OpClientCharDelete:
-		return char.DeleteHandler(s.services, c, packet)
+		return char.DeleteHandler(s.services, c, data)
 
 	case realmd.OpClientReadyForAccountDataTimes:
 		return session.DataTimesHandler(c)
 
-	// FIXME: Sometimes the login packet header is garbled, and it consistently happens when receiving
-	// the login packet. Once this happens, all future incoming headers are garbled. I'm not sure which
-	// side is causing it, but the RC4 stream is getting out of sync and makes the connection useless.
-	//
-	// I suspect the reason it only happens sometimes is because the cipher is seeded using the session key.
-	// This could be verified by replaying the packets with the same session key and seeing if it
-	// consistently breaks. If it's reproducible based on the session key, there may be a pattern that
-	// can be identified by generating random keys and seeing which break. For example, a leading or
-	// trailing zero in the key.
-	//
-	// 2024/06/18 18:59:05 RECV  op=0x38c   dsize=92     hsize=8
-	// 2024/06/18 18:59:05 SENT  op=0x38b   size=17
-	// 2024/06/18 18:59:05 sent realm split
-	// 2024/06/18 18:59:09 RECV  op=0x6e5b92f8  dsize=14     hsize=1396
-	// 2024/06/18 18:59:09 unknown opcode: 0x6e5b92f8
 	case realmd.OpClientPlayerLogin:
-		return session.LoginHandler(s.services, c, packet)
+		return session.LoginHandler(s.services, c, data)
 
 	case realmd.OpClientLogout:
 		return session.LogoutHandler(c)
