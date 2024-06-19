@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bytes"
-	"io"
 	"testing"
 
 	"github.com/kangaroux/gomaggus/authd"
@@ -34,14 +33,15 @@ func TestLoginProof(t *testing.T) {
 	t.Run("invalid state", func(t *testing.T) {
 		h := newHandler()
 		client.State = authd.StateAuthChallenge
-		err, ok := h.Handle([]byte{}).(*ErrWrongState)
+		err, ok := h.Handle().(*ErrWrongState)
 
 		assert.Error(t, err)
 		assert.True(t, ok)
 	})
 
 	t.Run("malformed packet", func(t *testing.T) {
-		assert.Equal(t, io.EOF, newHandler().Handle([]byte{}))
+		_, err := newHandler().Read([]byte{})
+		assert.Equal(t, ErrPacketReadEOF, err)
 	})
 
 	t.Run("from fake challenge response", func(t *testing.T) {
@@ -52,6 +52,8 @@ func TestLoginProof(t *testing.T) {
 		}
 		expectedResp := internal.MustMarshal(packet, binarystruct.LittleEndian)
 		request := internal.MustMarshal(loginProofRequest{}, binarystruct.LittleEndian)
+		_, err := h.Read(request)
+		assert.NoError(t, err)
 
 		conn.OnWrite = func(actual []byte) (int, error) {
 			// Server sent the expected bytes
@@ -61,7 +63,7 @@ func TestLoginProof(t *testing.T) {
 		// A nil account means the challenge response was faked
 		client.Account = nil
 
-		assert.NoError(t, h.Handle(request))
+		assert.NoError(t, h.Handle())
 		assert.Equal(t, authd.StateInvalid, client.State) // invalid state
 	})
 
@@ -73,6 +75,8 @@ func TestLoginProof(t *testing.T) {
 			ClientProof: [20]byte(internal.MustDecodeHex("9E224007DEE3D15873D71FCF7D8CD8D94C53DCAA")),
 		}
 		request := internal.MustMarshal(requestPacket, binarystruct.LittleEndian)
+		_, err := h.Read(request)
+		assert.NoError(t, err)
 
 		respPacket := &loginProofSuccess{
 			Opcode:           authd.OpcodeLoginProof,
@@ -91,7 +95,7 @@ func TestLoginProof(t *testing.T) {
 		client.Account = &model.Account{}
 		client.Account.DecodeSrp()
 
-		assert.NoError(t, h.Handle(request))
+		assert.NoError(t, h.Handle())
 		assert.Equal(t, authd.StateAuthenticated, client.State) // authenticated
 	})
 }

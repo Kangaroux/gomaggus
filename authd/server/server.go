@@ -54,8 +54,6 @@ func (srv *Server) Start() {
 			log.Fatal(err)
 		}
 
-		log.Printf("client connected from %s\n", conn.RemoteAddr().String())
-
 		go srv.handleConnection(conn)
 	}
 }
@@ -95,9 +93,13 @@ func (srv *Server) handleConnection(conn net.Conn) {
 		}
 
 		log.Printf("read %d bytes\n", readN)
+		buf.Write(chunk[:readN])
 
 		handleN, err := srv.handlePacket(client, buf.Bytes())
-		if err != nil {
+		if err == handler.ErrPacketReadEOF {
+			log.Println("handler wants more data, reading...")
+			continue
+		} else if err != nil {
 			log.Println(err)
 			return
 		}
@@ -125,7 +127,7 @@ func (srv *Server) handlePacket(c *authd.Client, data []byte) (int, error) {
 
 		n, err := h.Read(data)
 		if err != nil {
-			return n, err
+			return 0, err
 		}
 
 		return n, h.Handle()
@@ -135,28 +137,52 @@ func (srv *Server) handlePacket(c *authd.Client, data []byte) (int, error) {
 			Client:   c,
 			Sessions: srv.Sessions,
 		}
-		return 0, h.Handle(data)
+
+		n, err := h.Read(data)
+		if err != nil {
+			return 0, err
+		}
+
+		return n, h.Handle()
 
 	case authd.OpcodeReconnectChallenge:
 		h := handler.ReconnectChallenge{
 			Client:   c,
 			Accounts: srv.Accounts,
 		}
-		return 0, h.Handle(data)
+
+		n, err := h.Read(data)
+		if err != nil {
+			return 0, err
+		}
+
+		return n, h.Handle()
 
 	case authd.OpcodeReconnectProof:
 		h := handler.ReconnectProof{
 			Client:   c,
 			Sessions: srv.Sessions,
 		}
-		return 0, h.Handle(data)
+
+		n, err := h.Read(data)
+		if err != nil {
+			return 0, err
+		}
+
+		return n, h.Handle()
 
 	case authd.OpcodeRealmList:
 		h := handler.RealmList{
 			Client: c,
 			Realms: srv.Realms,
 		}
-		return 0, h.Handle()
+
+		n, err := h.Read(data)
+		if err != nil {
+			return 0, err
+		}
+
+		return n, h.Handle()
 
 	default:
 		return 0, fmt.Errorf("handlePacket: unknown opcode %x", opcode)

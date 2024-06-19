@@ -144,12 +144,12 @@ func (h *LoginChallenge) Handle() error {
 }
 
 // Read reads the packet data and parses it as a login challenge request. If data is too small then
-// Read returns io.EOF.
+// Read returns ErrPacketReadEOF.
 func (h *LoginChallenge) Read(data []byte) (int, error) {
 	n, err := binarystruct.Unmarshal(data, binary.LittleEndian, &h.request)
 
 	if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
-		return 0, io.EOF
+		return 0, ErrPacketReadEOF
 	} else if err != nil {
 		return 0, err
 	}

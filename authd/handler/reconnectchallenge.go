@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/binary"
+	"errors"
+	"io"
 	"log"
 
 	"github.com/kangaroux/gomaggus/authd"
@@ -28,9 +30,10 @@ type reconnectChallengeResponse struct {
 type ReconnectChallenge struct {
 	Client   *authd.Client
 	Accounts model.AccountService
+	request  *reconnectChallengeRequest
 }
 
-func (h *ReconnectChallenge) Handle(data []byte) error {
+func (h *ReconnectChallenge) Handle() error {
 	if h.Client.State != authd.StateAuthChallenge {
 		return &ErrWrongState{
 			Handler:  "RealmList",
@@ -40,15 +43,9 @@ func (h *ReconnectChallenge) Handle(data []byte) error {
 	}
 
 	log.Println("Starting reconnect challenge")
+	log.Printf("client trying to reconnect as '%s'\n", h.request.Username)
 
-	req := reconnectChallengeRequest{}
-	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
-		return err
-	}
-
-	log.Printf("client trying to reconnect as '%s'\n", req.Username)
-
-	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: req.Username})
+	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: h.request.Username})
 	if err != nil {
 		return err
 	}
@@ -78,10 +75,24 @@ func (h *ReconnectChallenge) Handle(data []byte) error {
 
 	if acct != nil {
 		h.Client.Account = acct
-		h.Client.Username = req.Username
+		h.Client.Username = h.request.Username
 	}
 
 	h.Client.State = authd.StateReconnectProof
 
 	return nil
+}
+
+// Read reads the packet data and parses it as a reconnect challenge request. If data is too small then
+// Read returns ErrPacketReadEOF.
+func (h *ReconnectChallenge) Read(data []byte) (int, error) {
+	n, err := binarystruct.Unmarshal(data, binary.LittleEndian, &h.request)
+
+	if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
+		return 0, ErrPacketReadEOF
+	} else if err != nil {
+		return 0, err
+	}
+
+	return n, nil
 }

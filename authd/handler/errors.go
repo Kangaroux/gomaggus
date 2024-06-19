@@ -1,9 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/kangaroux/gomaggus/authd"
+)
+
+var (
+	ErrPacketReadEOF = errors.New("unexpected EOF while reading packet")
 )
 
 type ErrWrongState struct {

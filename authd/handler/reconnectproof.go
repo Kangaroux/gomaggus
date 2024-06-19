@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
+	"io"
 	"log"
 	"time"
 
@@ -33,9 +35,10 @@ type reconnectProofResponse struct {
 type ReconnectProof struct {
 	Client   *authd.Client
 	Sessions model.SessionService
+	request  *reconnectProofRequest
 }
 
-func (h *ReconnectProof) Handle(data []byte) error {
+func (h *ReconnectProof) Handle() error {
 	if h.Client.State != authd.StateAuthProof {
 		return &ErrWrongState{
 			Handler:  "RealmList",
@@ -60,13 +63,8 @@ func (h *ReconnectProof) Handle(data []byte) error {
 			}
 			h.Client.SessionKey = session.SessionKey()
 
-			req := reconnectProofRequest{}
-			if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
-				return err
-			}
-
-			serverProof := srp.CalculateReconnectProof(h.Client.Username, req.ProofData[:], h.Client.ReconnectData, h.Client.SessionKey)
-			authenticated = bytes.Equal(serverProof, req.ClientProof[:])
+			serverProof := srp.CalculateReconnectProof(h.Client.Username, h.request.ProofData[:], h.Client.ReconnectData, h.Client.SessionKey)
+			authenticated = bytes.Equal(serverProof, h.request.ClientProof[:])
 		}
 	}
 
@@ -103,4 +101,18 @@ func (h *ReconnectProof) Handle(data []byte) error {
 	}
 
 	return nil
+}
+
+// Read reads the packet data and parses it as a reconnect proof request. If data is too small then
+// Read returns ErrPacketReadEOF.
+func (h *ReconnectProof) Read(data []byte) (int, error) {
+	n, err := binarystruct.Unmarshal(data, binary.LittleEndian, &h.request)
+
+	if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
+		return 0, ErrPacketReadEOF
+	} else if err != nil {
+		return 0, err
+	}
+
+	return n, nil
 }

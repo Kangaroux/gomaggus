@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"io"
 	"testing"
 
 	"github.com/kangaroux/gomaggus/authd"
@@ -40,7 +39,7 @@ func TestLoginChallenge(t *testing.T) {
 
 	t.Run("malformed packet", func(t *testing.T) {
 		_, err := newHandler().Read([]byte{})
-		assert.Equal(t, io.EOF, err)
+		assert.Equal(t, ErrPacketReadEOF, err)
 	})
 
 	t.Run("account service error", func(t *testing.T) {

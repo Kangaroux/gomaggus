@@ -2,12 +2,20 @@ package handler
 
 import (
 	"bytes"
+	"encoding/binary"
 	"log"
 
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/mixcode/binarystruct"
 )
+
+type realmListRequest struct {
+	_ authd.Opcode
+	_ [4]byte // Padding
+}
+
+var realmListRequestSize = binary.Size(realmListRequest{})
 
 // https://gtker.com/wow_messages/docs/cmd_realm_list_server.html#protocol-version-8
 type realmListHeader struct {
@@ -98,4 +106,12 @@ func (h *RealmList) Handle() error {
 	log.Println("Replied to realm list")
 
 	return nil
+}
+
+// Read verifies data is large enough, but does not use it. If data is too small, Read returns ErrPacketReadEOF.
+func (h *RealmList) Read(data []byte) (int, error) {
+	if len(data) < realmListRequestSize {
+		return 0, ErrPacketReadEOF
+	}
+	return realmListRequestSize, nil
 }

@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
+	"io"
 	"log"
 	"time"
 
@@ -42,9 +44,10 @@ type loginProofSuccess struct {
 type LoginProof struct {
 	Client   *authd.Client
 	Sessions model.SessionService
+	request  loginProofRequest
 }
 
-func (h *LoginProof) Handle(data []byte) error {
+func (h *LoginProof) Handle() error {
 	if h.Client.State != authd.StateAuthProof {
 		return &ErrWrongState{
 			Handler:  "LoginProof",
@@ -58,24 +61,17 @@ func (h *LoginProof) Handle(data []byte) error {
 	var serverProof []byte
 	authenticated := false
 
-	// This data is only used if the challenge response wasn't faked, however it should still be parsed
-	// to ensure the request wasn't malformed
-	req := loginProofRequest{}
-	if _, err := binarystruct.Unmarshal(data, binarystruct.LittleEndian, &req); err != nil {
-		return err
-	}
-
 	if h.Client.Account != nil {
 		c := h.Client
 		acct := h.Client.Account
 
-		c.ClientPublicKey = req.ClientPublicKey[:]
+		c.ClientPublicKey = h.request.ClientPublicKey[:]
 		c.SessionKey = srp.CalculateServerSessionKey(c.ClientPublicKey, c.ServerPublicKey, c.PrivateKey, acct.Verifier())
 		calculatedClientProof := srp.CalculateClientProof(acct.Username, acct.Salt(), c.ClientPublicKey, c.ServerPublicKey, c.SessionKey)
-		authenticated = bytes.Equal(calculatedClientProof, req.ClientProof[:])
+		authenticated = bytes.Equal(calculatedClientProof, h.request.ClientProof[:])
 
 		if authenticated {
-			serverProof = srp.CalculateServerProof(c.ClientPublicKey, req.ClientProof[:], c.SessionKey)
+			serverProof = srp.CalculateServerProof(c.ClientPublicKey, h.request.ClientProof[:], c.SessionKey)
 		}
 	}
 
@@ -121,4 +117,18 @@ func (h *LoginProof) Handle(data []byte) error {
 	}
 
 	return nil
+}
+
+// Read reads the packet data and parses it as a login proof request. If data is too small then
+// Read returns ErrPacketReadEOF.
+func (h *LoginProof) Read(data []byte) (int, error) {
+	n, err := binarystruct.Unmarshal(data, binary.LittleEndian, &h.request)
+
+	if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
+		return 0, ErrPacketReadEOF
+	} else if err != nil {
+		return 0, err
+	}
+
+	return n, nil
 }
