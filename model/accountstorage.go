@@ -1,7 +1,6 @@
 package model
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -32,5 +31,5 @@ type AccountStorage struct {
 	AccountId uint32    `db:"account_id"`
 	UpdatedAt time.Time `db:"updated_at"`
 	Type      StorageType
-	Data      sql.RawBytes
+	Data      []byte
 }
