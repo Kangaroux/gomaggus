@@ -16,6 +16,13 @@ import (
 	"github.com/mixcode/binarystruct"
 )
 
+type telemetryKey struct {
+	Unknown    uint16
+	Unknown2   uint32
+	Unknown3   [4]byte
+	CDKeyProof [20]byte
+}
+
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_h.Client.html#protocol-version-8
 type loginProofRequest struct {
 	Opcode           authd.Opcode // OpLoginProof
@@ -23,6 +30,8 @@ type loginProofRequest struct {
 	ClientProof      [srp.ProofSize]byte
 	CRCHash          [20]byte
 	NumTelemetryKeys uint8
+	_                []telemetryKey `binary:"[NumTelemetryKeys]Any"`
+	SecurityFlag     uint8
 }
 
 // https://gtker.com/wow_messages/docs/cmd_auth_logon_proof_server.html#protocol-version-8

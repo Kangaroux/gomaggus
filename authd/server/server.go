@@ -45,7 +45,7 @@ func (srv *Server) Start() {
 	}
 
 	defer listener.Close()
-	log.Printf("listening on %s\n", listener.Addr().String())
+	log.Println("listening on", listener.Addr().String())
 
 	for {
 		conn, err := listener.Accept()
@@ -61,16 +61,16 @@ func (srv *Server) Start() {
 func (srv *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("recovered from panic: %v\n", err)
+			log.Println("recovered from panic:", err)
 			debug.PrintStack()
 
 			if err := conn.Close(); err != nil {
-				log.Printf("error closing after recover: %v\n", err)
+				log.Println("error closing after recover:", err)
 			}
 		}
 	}()
 
-	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
+	log.Println("client connected from", conn.RemoteAddr().String())
 
 	client := &authd.Client{
 		Conn:          conn,
@@ -88,7 +88,10 @@ func (srv *Server) handleConnection(conn net.Conn) {
 	for {
 		readN, readErr := client.Conn.Read(chunk)
 		if readErr != nil && readErr != io.EOF {
-			log.Printf("error reading from client: %v\n", readErr)
+			log.Println("error reading from client:", readErr)
+			return
+		} else if readN == 0 {
+			log.Println("client disconnected (closed by client)")
 			return
 		}
 
@@ -100,7 +103,7 @@ func (srv *Server) handleConnection(conn net.Conn) {
 			log.Println("handler wants more data, reading...")
 			continue
 		} else if err != nil {
-			log.Println(err)
+			log.Println("error handling packet:", err)
 			return
 		}
 
