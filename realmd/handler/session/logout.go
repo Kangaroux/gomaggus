@@ -29,7 +29,7 @@ const (
 
 func LogoutHandler(client *realmd.Client) error {
 	// TODO: lookup player in world, check rested state
-	resp := logoutResponse{Result: logoutSuccess, Instant: false}
+	resp := logoutResponse{Result: logoutSuccess, Instant: true}
 	if err := client.SendPacket(realmd.OpServerLogout, &resp); err != nil {
 		return err
 	}
@@ -89,6 +89,7 @@ func logoutAfterDelay(ctx context.Context, client *realmd.Client) {
 		return
 	case <-time.After(logoutDelay):
 		// TODO: handle error
+		// FIXME: concurrent writing is not safe
 		completeLogout(client)
 	}
 }

@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"bytes"
 	"io"
 	"log"
 	"net"
@@ -27,6 +27,7 @@ type Server struct {
 }
 
 func New(db *sqlx.DB, listenAddr string) *Server {
+	log.SetFlags(log.Lmicroseconds)
 	return &Server{
 		listenAddr: listenAddr,
 		services: &realmd.Service{
@@ -39,7 +40,7 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 }
 
 func (s *Server) Start() {
-	listener, err := net.Listen("tcp4", s.listenAddr)
+	listener, err := net.Listen("tcp", s.listenAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,42 +86,67 @@ func (s *Server) handleConnection(conn net.Conn) {
 		return
 	}
 
-	buf := make([]byte, 4096)
+	var header *realmd.ClientHeader
+	readBuf := bytes.Buffer{}
+	headerBuf := make([]byte, realmd.ClientHeaderSize)
+	packetBuf := bytes.Buffer{}
 
 	for {
-		n, err := conn.Read(buf)
-		if err == io.EOF {
-			log.Println("client disconnected (closed by client)")
-			return
-		} else if err != nil {
+		n, err := io.Copy(&readBuf, conn)
+		if err != nil {
 			log.Printf("error reading from client: %v\n", err)
 			conn.Close()
 			return
+		} else if n == 0 {
+			log.Println("client disconnected (closed by client)")
+			return
 		}
 
-		if err := s.handlePacket(client, buf[:n]); err != nil {
-			log.Printf("error handling packet: %v\n", err)
-			conn.Close()
-			return
+		// Process the read buffer while it has at least enough data for a packet header
+		for readBuf.Len() > realmd.ClientHeaderSize {
+
+			// Ready to process a new packet, read the header
+			if header == nil {
+				readBuf.Read(headerBuf)
+
+				h, err := client.ParseHeader(headerBuf)
+				if err != nil {
+					log.Printf("failed to parse header: %v\n", err)
+					conn.Close()
+					return
+				}
+				header = h
+			}
+
+			// The buffer contains a partial packet, go back to reading
+			if readBuf.Len() < int(header.Size) {
+				break
+			}
+
+			io.CopyN(&packetBuf, &readBuf, int64(header.Size))
+
+			data := packetBuf.Bytes()
+
+			log.Printf("%d: %x\n", len(data), data)
+
+			if err := s.handlePacket(client, header, data); err != nil {
+				log.Printf("error handling packet: %v\n", err)
+				conn.Close()
+				return
+			}
+
+			header = nil
+			packetBuf.Reset()
 		}
 	}
 }
 
-func (s *Server) handlePacket(c *realmd.Client, data []byte) error {
-	if len(data) == 0 {
-		return fmt.Errorf("handlePacket: packet is empty")
-	}
-
-	header, err := c.ParseHeader(data)
-	if err != nil {
-		return err
-	}
-
+func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, data []byte) error {
 	log.Printf("RECV  op=0x%-4x dsize=%d hsize=%d  \n", header.Opcode, len(data), header.Size)
 
 	packet := &realmd.ClientPacket{
 		Header:  header,
-		Payload: data[realmd.ClientHeaderSize:],
+		Payload: data,
 	}
 
 	switch header.Opcode {

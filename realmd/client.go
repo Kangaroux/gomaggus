@@ -116,7 +116,7 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 		return nil, fmt.Errorf("ParseHeader: payload should be at least 6 bytes but it's only %d", len(data))
 	}
 
-	header := data[:6]
+	header := data[:ClientHeaderSize]
 
 	if c.Authenticated {
 		if err := c.HeaderCrypto.Decrypt(header); err != nil {
