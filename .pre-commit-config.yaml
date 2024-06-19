@@ -1,6 +1,13 @@
 repos:
--   repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.1
+-   repo: local
     hooks:
-    -   id: go-mod-tidy
-    -   id: go-unit-tests
+    -   id: tidy
+        name: go mod tidy
+        entry: /bin/bash go mod tidy
+        language: system
+        types: [go, go-mod]
+    -   id: test
+        name: go test
+        entry: /bin/bash go test ./...
+        language: system
+        types: [go, go-mod]
