@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -145,7 +146,15 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, data []byte) error {
-	log.Printf("RECV  op=0x%-4x dsize=%d hsize=%d  \n", header.Opcode, len(data), header.Size)
+	var opName string
+
+	if header.Opcode.IsAClientOpcode() {
+		opName = header.Opcode.String()
+	} else {
+		opName = fmt.Sprintf("UNKNOWN(0x%x)", uint32(header.Opcode))
+	}
+
+	log.Printf("[IN]    %s size=%d", opName, header.Size)
 
 	switch header.Opcode {
 	case realmd.OpClientPing:
@@ -179,7 +188,6 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 		return session.LogoutCancelHandler(c)
 
 	default:
-		log.Printf("unknown opcode: 0x%x\n", header.Opcode)
 		return nil
 	}
 }
