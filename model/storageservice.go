@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -10,7 +9,7 @@ import (
 type AccountStorageService interface {
 	// List returns all storage belonging to accountID whose type matches mask. List may return fewer
 	// results than specified in the mask. The results are not ordered.
-	List(uint32, StorageMask) ([]*AccountStorage, error)
+	List(uint32, uint8) ([]*AccountStorage, error)
 
 	// UpdateOrCreate tries to update tje storage if it exists, otherwise it's created. UpdateOrCreate
 	// reports whether the storage was created. If the error is nil and created is false, then it
@@ -28,22 +27,25 @@ func NewDbAccountStorageService(db *sqlx.DB) AccountStorageService {
 	return &DbAccountStorageService{db}
 }
 
-func (s *DbAccountStorageService) List(accountID uint32, mask StorageMask) ([]*AccountStorage, error) {
+func (s *DbAccountStorageService) List(accountID uint32, mask uint8) ([]*AccountStorage, error) {
 	var result []*AccountStorage
-	var types []StorageType
+	var types []AccountStorageType
 
-	// Convert type mask to discrete values
-	for i := 0; i < 8; i++ {
-		if mask%(1<<i) > 0 {
-			types = append(types, StorageType(i))
-		}
+	if mask&uint8(AccountData) > 0 {
+		types = append(types, AccountData)
+	}
+	if mask&uint8(AccountKeybinds) > 0 {
+		types = append(types, AccountKeybinds)
+	}
+	if mask&uint8(AccountMacros) > 0 {
+		types = append(types, AccountMacros)
 	}
 
 	if len(types) == 0 {
 		return nil, nil
 	}
 
-	q, args, err := sqlx.In(`SELECT * FROM account_storage WHERE type IN (?)`, types)
+	q, args, err := sqlx.In(`SELECT * FROM account_storage WHERE type IN (?) AND account_id = ?`, types, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,12 +62,17 @@ func (s *DbAccountStorageService) List(accountID uint32, mask StorageMask) ([]*A
 }
 
 func (s *DbAccountStorageService) create(db creater, storage *AccountStorage) error {
-	q := `INSERT INTO account_storage (account_id, type, data) VALUES (:account_id, :type, :data)`
-	if _, err := db.NamedQuery(q, storage); err != nil {
+	q := `
+	INSERT INTO account_storage (account_id, type, data)
+	VALUES (:account_id, :type, :data)
+	RETURNING updated_at`
+	result, err := db.NamedQuery(q, storage)
+	if err != nil {
 		return err
 	}
 
-	storage.UpdatedAt = time.Now()
+	result.Next()
+	result.Scan(&storage.UpdatedAt)
 	return nil
 }
 
@@ -73,19 +80,20 @@ func (s *DbAccountStorageService) update(db updater, storage *AccountStorage) (b
 	q := `
 	UPDATE account_storage
 	SET data=:data, updated_at=now()
-	WHERE account_id=:account_id AND type=:type`
-
-	result, err := db.NamedExec(q, storage)
+	WHERE account_id=:account_id AND type=:type
+	RETURNING updated_at`
+	result, err := db.NamedQuery(q, storage)
 	if err != nil {
 		return false, err
 	}
 
-	n, _ := result.RowsAffected()
-	if n > 0 {
-		storage.UpdatedAt = time.Now()
+	// Was a row updated?
+	if result.Next() {
+		result.Scan(&storage.UpdatedAt)
+		return true, nil
 	}
 
-	return n > 0, nil
+	return false, nil
 }
 
 func (s *DbAccountStorageService) UpdateOrCreate(storage *AccountStorage) (bool, error) {

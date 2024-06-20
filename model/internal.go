@@ -12,4 +12,5 @@ type creater interface {
 
 type updater interface {
 	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
 }
