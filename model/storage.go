@@ -23,8 +23,10 @@ const (
 )
 
 const (
-	AllAccountStorage   = (1 << AccountData) | (1 << AccountKeybinds) | (1 << AccountMacros)
-	AllCharacterStorage = (1 << CharacterConfig) | (1 << CharacterKeybinds) | (1 << CharacterMacros) | (1 << CharacterLayout) | (1 << CharacterChat)
+	AccountStorageCount   = 3
+	CharacterStorageCount = 5
+	AllAccountStorage     = (1 << AccountData) | (1 << AccountKeybinds) | (1 << AccountMacros)
+	AllCharacterStorage   = (1 << CharacterConfig) | (1 << CharacterKeybinds) | (1 << CharacterMacros) | (1 << CharacterLayout) | (1 << CharacterChat)
 )
 
 // AccountStorage stores compressed data from the client that is linked to their account.

@@ -12,13 +12,13 @@ import (
 type storageTimesResponse struct {
 	Time         uint32
 	Activated    bool
-	StorageMask  model.StorageMask `binary:"uint32"` // encoded as 4 bytes
+	StorageMask  uint32
 	StorageTimes []uint32
 }
 
 func StorageTimesHandler(svc *realmd.Service, client *realmd.Client) error {
-	times := make([]uint32, 8)
-	storages, err := svc.AccountStorage.List(client.Account.Id, model.StorageMaskAll)
+	times := make([]uint32, model.AccountStorageCount)
+	storages, err := svc.AccountStorage.List(client.Account.Id, model.AllAccountStorage)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func StorageTimesHandler(svc *realmd.Service, client *realmd.Client) error {
 	resp := storageTimesResponse{
 		Time:         uint32(time.Now().Unix()),
 		Activated:    true,
-		StorageMask:  model.StorageMaskAll,
+		StorageMask:  model.AllAccountStorage,
 		StorageTimes: times,
 	}
 	if err := client.SendPacket(realmd.OpServerAccountStorageTimes, &resp); err != nil {
