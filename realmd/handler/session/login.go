@@ -95,12 +95,7 @@ func sendVerifyWorld(client *realmd.Client) error {
 		},
 	}
 
-	if err := client.SendPacket(realmd.OpServerCharLoginVerifyWorld, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent verify world")
-	return nil
+	return client.SendPacket(realmd.OpServerCharLoginVerifyWorld, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
@@ -111,12 +106,7 @@ type tutorialFlags struct {
 func sendTutorialFlags(client *realmd.Client) error {
 	// Enable all tutorial flags
 	resp := tutorialFlags{Flags: bytes.Repeat([]byte{0xFF}, 32)}
-	if err := client.SendPacket(realmd.OpServerTutorialFlags, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent tutorial flags")
-	return nil
+	return client.SendPacket(realmd.OpServerTutorialFlags, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_feature_system_status.html#client-version-335
@@ -131,12 +121,7 @@ func sendSystemFeatures(client *realmd.Client) error {
 		ComplaintStatus: 0x2,
 		VoipEnabled:     false,
 	}
-	if err := client.SendPacket(realmd.OpServerSystemFeatures, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent system features")
-	return nil
+	return client.SendPacket(realmd.OpServerSystemFeatures, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_bindpointupdate.html#client-version-335
@@ -156,12 +141,7 @@ func sendHearthLocation(client *realmd.Client) error {
 		Map:  0x0, // Eastern kingdoms
 		Area: 0xB, // Elwynn forest
 	}
-	if err := client.SendPacket(realmd.OpServerHearthLocation, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent hearth location")
-	return nil
+	return client.SendPacket(realmd.OpServerHearthLocation, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_trigger_cinematic.html
@@ -176,12 +156,7 @@ func sendIntroCinematic(client *realmd.Client) error {
 	}
 
 	resp := playCinematic{CinematicId: 81} // 81 = human
-	if err := client.SendPacket(realmd.OpServerPlayCinematic, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent intro cinematic")
-	return nil
+	return client.SendPacket(realmd.OpServerPlayCinematic, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
@@ -243,6 +218,6 @@ func sendSpawnPlayer(client *realmd.Client) error {
 		return err
 	}
 
-	log.Println("sent spawn player")
+	log.Println("Spawned", char.String())
 	return nil
 }

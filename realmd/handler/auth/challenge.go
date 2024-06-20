@@ -2,7 +2,6 @@ package auth
 
 import (
 	"crypto/rand"
-	"log"
 
 	"github.com/kangaroux/gomaggus/realmd"
 )
@@ -26,10 +25,5 @@ func SendChallenge(client *realmd.Client) error {
 		return err
 	}
 
-	if err := client.SendPacket(realmd.OpServerAuthChallenge, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent auth challenge")
-	return nil
+	return client.SendPacket(realmd.OpServerAuthChallenge, &resp)
 }

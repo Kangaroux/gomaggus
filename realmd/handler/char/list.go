@@ -1,8 +1,6 @@
 package char
 
 import (
-	"log"
-
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 )
@@ -98,10 +96,5 @@ func ListHandler(svc *realmd.Service, client *realmd.Client) error {
 		resp.Characters[i] = char
 	}
 
-	if err := client.SendPacket(realmd.OpServerCharList, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent character list")
-	return nil
+	return client.SendPacket(realmd.OpServerCharList, &resp)
 }

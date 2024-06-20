@@ -2,7 +2,6 @@ package session
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
@@ -34,8 +33,6 @@ func LogoutHandler(client *realmd.Client) error {
 		return err
 	}
 
-	log.Println("sent logout response")
-
 	if resp.Instant {
 		return completeLogout(client)
 	} else {
@@ -49,23 +46,13 @@ func LogoutCancelHandler(client *realmd.Client) error {
 	client.CancelPendingLogout()
 
 	// Always send an ACK even if there was no logout pending.
-	if err := client.SendPacket(realmd.OpServerLogoutCancelACK, nil); err != nil {
-		return err
-	}
-
-	log.Println("sent logout cancel ack response")
-	return nil
+	return client.SendPacket(realmd.OpServerLogoutCancelACK, nil)
 }
 
 // completeLogout notifies the client they should logout (or exit game) immediately.
 func completeLogout(client *realmd.Client) error {
 	// TODO: remove player from world
-	if err := client.SendPacket(realmd.OpServerLogoutComplete, nil); err != nil {
-		return err
-	}
-
-	log.Println("sent logout complete response")
-	return nil
+	return client.SendPacket(realmd.OpServerLogoutComplete, nil)
 }
 
 // logoutAfterDelay notifies the client to logout after a delay. During that delay, the logout is

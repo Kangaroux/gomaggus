@@ -1,8 +1,6 @@
 package session
 
 import (
-	"log"
-
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/mixcode/binarystruct"
 )
@@ -25,10 +23,5 @@ func PingHandler(client *realmd.Client, data []byte) error {
 	}
 
 	resp := pingResponse{SequenceId: req.SequenceId}
-	if err := client.SendPacket(realmd.OpServerPong, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent pong")
-	return nil
+	return client.SendPacket(realmd.OpServerPong, &resp)
 }

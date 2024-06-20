@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -24,6 +25,10 @@ type Character struct {
 	// Facial hair, piercings, etc.
 	ExtraCosmetic byte `db:"extra_cosmetic"`
 	OutfitId      byte `db:"outfit_id"`
+}
+
+func (c *Character) String() string {
+	return fmt.Sprintf("Character(%d, %s)", c.Id, c.Name)
 }
 
 type Race byte

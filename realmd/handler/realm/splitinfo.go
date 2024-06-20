@@ -1,8 +1,6 @@
 package realm
 
 import (
-	"log"
-
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/mixcode/binarystruct"
 )
@@ -38,10 +36,5 @@ func SplitInfoHandler(client *realmd.Client, data []byte) error {
 		State:     splitNormal,
 		SplitDate: "01/01/01",
 	}
-	if err := client.SendPacket(realmd.OpServerRealmSplit, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent realm split")
-	return nil
+	return client.SendPacket(realmd.OpServerRealmSplit, &resp)
 }

@@ -1,7 +1,6 @@
 package account
 
 import (
-	"log"
 	"time"
 
 	"github.com/kangaroux/gomaggus/model"
@@ -34,10 +33,5 @@ func StorageTimesHandler(svc *realmd.Service, client *realmd.Client) error {
 		StorageMask:  model.AllAccountStorage,
 		StorageTimes: times,
 	}
-	if err := client.SendPacket(realmd.OpServerAccountStorageTimes, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent account storage times")
-	return nil
+	return client.SendPacket(realmd.OpServerAccountStorageTimes, &resp)
 }

@@ -88,12 +88,7 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		BillingRested: 0,
 		Expansion:     realmd.ExpansionWrath,
 	}
-	if err := client.SendPacket(realmd.OpServerAuthResponse, &resp); err != nil {
-		return err
-	}
-
-	log.Println("sent auth response")
-	return nil
+	return client.SendPacket(realmd.OpServerAuthResponse, &resp)
 }
 
 // authenticateClient reports whether the client's proof is valid.
