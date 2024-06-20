@@ -10,6 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/kangaroux/gomaggus/realmd/handler/account"
 	"github.com/kangaroux/gomaggus/realmd/handler/auth"
 	"github.com/kangaroux/gomaggus/realmd/handler/char"
 	"github.com/kangaroux/gomaggus/realmd/handler/realm"
@@ -31,10 +32,11 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		services: &realmd.Service{
-			Accounts: model.NewDbAccountService(db),
-			Chars:    model.NewDbCharacterService(db),
-			Realms:   model.NewDbRealmService(db),
-			Sessions: model.NewDbSessionService(db),
+			Accounts:       model.NewDbAccountService(db),
+			AccountStorage: model.NewDbAccountStorageService(db),
+			Chars:          model.NewDbCharacterService(db),
+			Realms:         model.NewDbRealmService(db),
+			Sessions:       model.NewDbSessionService(db),
 		},
 	}
 }
@@ -165,7 +167,7 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 		return char.DeleteHandler(s.services, c, data)
 
 	case realmd.OpClientReadyForAccountDataTimes:
-		return session.DataTimesHandler(c)
+		return account.StorageTimesHandler(s.services, c)
 
 	case realmd.OpClientPlayerLogin:
 		return session.LoginHandler(s.services, c, data)

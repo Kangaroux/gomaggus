@@ -6,7 +6,7 @@ const (
 	OpServerAuthChallenge        ServerOpcode = 0x1EC
 	OpServerAuthResponse         ServerOpcode = 0x1EE
 	OpServerPong                 ServerOpcode = 0x1DD
-	OpServerAccountDataTimes     ServerOpcode = 0x209
+	OpServerAccountStorageTimes  ServerOpcode = 0x209
 	OpServerCharList             ServerOpcode = 0x3B
 	OpServerRealmSplit           ServerOpcode = 0x38B
 	OpServerCharCreate           ServerOpcode = 0x3A
