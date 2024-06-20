@@ -11,7 +11,7 @@ type AccountStorageService interface {
 	// results than specified in the mask. The results are not ordered.
 	List(uint32, uint8) ([]*AccountStorage, error)
 
-	// UpdateOrCreate tries to update tje storage if it exists, otherwise it's created. UpdateOrCreate
+	// UpdateOrCreate tries to update the storage if it exists, otherwise it's created. UpdateOrCreate
 	// reports whether the storage was created. If the error is nil and created is false, then it
 	// was updated.
 	UpdateOrCreate(*AccountStorage) (bool, error)
@@ -97,6 +97,123 @@ func (s *DbAccountStorageService) update(db updater, storage *AccountStorage) (b
 }
 
 func (s *DbAccountStorageService) UpdateOrCreate(storage *AccountStorage) (bool, error) {
+	tx, err := s.db.Beginx()
+	if err != nil {
+		return false, err
+	}
+	defer func() {
+		tx.Rollback()
+	}()
+
+	updated, err := s.update(tx, storage)
+	if err != nil {
+		return false, err
+	} else if !updated {
+		if err := s.create(tx, storage); err != nil {
+			return false, err
+		}
+	}
+
+	return !updated, tx.Commit()
+}
+
+type CharacterStorageService interface {
+	// List returns all storage belonging to characterID whose type matches mask. List may return fewer
+	// results than specified in the mask. The results are not ordered.
+	List(uint32, uint8) ([]*CharacterStorage, error)
+
+	// UpdateOrCreate tries to update the storage if it exists, otherwise it's created. UpdateOrCreate
+	// reports whether the storage was created. If the error is nil and created is false, then it
+	// was updated.
+	UpdateOrCreate(*CharacterStorage) (bool, error)
+}
+
+type DbCharacterStorageService struct {
+	db *sqlx.DB
+}
+
+var _ CharacterStorageService = (*DbCharacterStorageService)(nil)
+
+func NewDbCharacterStorageService(db *sqlx.DB) CharacterStorageService {
+	return &DbCharacterStorageService{db}
+}
+
+func (s *DbCharacterStorageService) List(characterID uint32, mask uint8) ([]*CharacterStorage, error) {
+	var result []*CharacterStorage
+	var types []CharacterStorageType
+
+	if mask&uint8(CharacterConfig) > 0 {
+		types = append(types, CharacterConfig)
+	}
+	if mask&uint8(CharacterKeybinds) > 0 {
+		types = append(types, CharacterKeybinds)
+	}
+	if mask&uint8(CharacterMacros) > 0 {
+		types = append(types, CharacterMacros)
+	}
+	if mask&uint8(CharacterLayout) > 0 {
+		types = append(types, CharacterLayout)
+	}
+	if mask&uint8(CharacterChat) > 0 {
+		types = append(types, CharacterChat)
+	}
+
+	if len(types) == 0 {
+		return nil, nil
+	}
+
+	q, args, err := sqlx.In(`SELECT * FROM character_storage WHERE type IN (?) AND character_id = ?`, types, characterID)
+	if err != nil {
+		return nil, err
+	}
+
+	q = s.db.Rebind(q)
+	if err := s.db.Select(&result, q, args...); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (s *DbCharacterStorageService) create(db creater, storage *CharacterStorage) error {
+	q := `
+	INSERT INTO character_storage (character_id, type, data)
+	VALUES (:character_id, :type, :data)
+	RETURNING updated_at`
+	result, err := db.NamedQuery(q, storage)
+	if err != nil {
+		return err
+	}
+
+	result.Next()
+	result.Scan(&storage.UpdatedAt)
+	return nil
+}
+
+func (s *DbCharacterStorageService) update(db updater, storage *CharacterStorage) (bool, error) {
+	q := `
+	UPDATE character_storage
+	SET data=:data, updated_at=now()
+	WHERE character_id=:character_id AND type=:type
+	RETURNING updated_at`
+	result, err := db.NamedQuery(q, storage)
+	if err != nil {
+		return false, err
+	}
+
+	// Was a row updated?
+	if result.Next() {
+		result.Scan(&storage.UpdatedAt)
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (s *DbCharacterStorageService) UpdateOrCreate(storage *CharacterStorage) (bool, error) {
 	tx, err := s.db.Beginx()
 	if err != nil {
 		return false, err
