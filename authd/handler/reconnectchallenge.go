@@ -43,7 +43,7 @@ func (h *ReconnectChallenge) Handle() error {
 	}
 
 	log.Println("Starting reconnect challenge")
-	log.Printf("client trying to reconnect as '%s'\n", h.request.Username)
+	log.Printf("client trying to reconnect as '%s'", h.request.Username)
 
 	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: h.request.Username})
 	if err != nil {

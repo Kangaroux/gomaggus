@@ -49,7 +49,7 @@ func (s *Server) Start() {
 	}
 
 	defer listener.Close()
-	log.Printf("listening on %s\n", listener.Addr().String())
+	log.Println("listening on", listener.Addr().String())
 
 	for {
 		conn, err := listener.Accept()
@@ -64,27 +64,27 @@ func (s *Server) Start() {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Printf("recovered from panic: %v\n", err)
+			log.Println("recovered from panic:", err)
 			debug.PrintStack()
 
 			if err := conn.Close(); err != nil {
-				log.Printf("error closing after recover: %v\n", err)
+				log.Println("error closing after recover:", err)
 			}
 		}
 	}()
 
-	log.Printf("client connected from %v\n", conn.RemoteAddr().String())
+	log.Println("client connected from", conn.RemoteAddr().String())
 
 	client, err := realmd.NewClient(conn)
 	if err != nil {
-		log.Printf("error setting up client: %v\n", err)
+		log.Println("error setting up client:", err)
 		conn.Close()
 		return
 	}
 
 	// In realmd the server initiates the auth challenge
 	if err := auth.SendChallenge(client); err != nil {
-		log.Printf("error sending auth challenge: %v\n", err)
+		log.Println("error sending auth challenge:", err)
 		conn.Close()
 		return
 	}
@@ -98,7 +98,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for {
 		n, err := conn.Read(chunk)
 		if err != nil && err != io.EOF {
-			log.Printf("error reading from client: %v\n", err)
+			log.Println("error reading from client:", err)
 			return
 		}
 
@@ -113,7 +113,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 				h, err := client.ParseHeader(headerBuf)
 				if err != nil {
-					log.Printf("failed to parse header: %v\n", err)
+					log.Println("failed to parse header:", err)
 					conn.Close()
 					return
 				}
@@ -128,7 +128,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			io.CopyN(&packetBuf, &readBuf, int64(header.Size))
 
 			if err := s.handlePacket(client, header, packetBuf.Bytes()); err != nil {
-				log.Printf("error handling packet: %v\n", err)
+				log.Println("error handling packet:", err)
 				conn.Close()
 				return
 			}

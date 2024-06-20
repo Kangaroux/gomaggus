@@ -66,7 +66,7 @@ func (h *LoginChallenge) Handle() error {
 	}
 
 	log.Println("Starting login challenge")
-	log.Printf("client trying to login as '%s'\n", h.request.Username)
+	log.Printf("client trying to login as '%s'", h.request.Username)
 
 	acct, err := h.Accounts.Get(&model.AccountGetParams{Username: h.request.Username})
 	if err != nil {

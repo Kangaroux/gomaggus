@@ -156,11 +156,6 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 
 	log.Printf("[OUT]   %s size=%d", opcode.String(), len(data))
 
-	// log.Println("--- PACKET ---")
-	// log.Printf("Opcode: %x\n", opcode)
-	// log.Printf("%x\n", data)
-	// log.Println("--- END PACKET ---")
-
 	_, err = c.Conn.Write(append(header, data...))
 	return err
 }

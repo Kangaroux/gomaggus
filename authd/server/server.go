@@ -95,7 +95,7 @@ func (srv *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		log.Printf("read %d bytes\n", readN)
+		log.Printf("read %d bytes", readN)
 		buf.Write(chunk[:readN])
 
 		handleN, err := srv.handlePacket(client, buf.Bytes())
