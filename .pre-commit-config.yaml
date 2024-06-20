@@ -7,6 +7,14 @@ repos:
         language: system
         types_or: [go, go-mod]
         pass_filenames: false
+
+    -   id: generate
+        name: go generate
+        entry: go generate ./...
+        language: system
+        types_or: [go, go-mod]
+        pass_filenames: false
+
     -   id: test
         name: go test
         entry: go test ./...
