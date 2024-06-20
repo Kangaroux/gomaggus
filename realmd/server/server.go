@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"runtime/debug"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/model"
@@ -49,7 +50,7 @@ func (s *Server) Start() {
 	}
 
 	defer listener.Close()
-	log.Println("listening on", listener.Addr().String())
+	log.Println("listening on", listener.Addr())
 
 	for {
 		conn, err := listener.Accept()
@@ -73,7 +74,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		}
 	}()
 
-	log.Println("client connected from", conn.RemoteAddr().String())
+	log.Println("client connected from", conn.RemoteAddr())
 
 	client, err := realmd.NewClient(conn)
 	if err != nil {
@@ -139,7 +140,21 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 		// TODO: use cancel context?
 		if err == io.EOF {
-			log.Println("client disconnected (closed by client)")
+			var msg strings.Builder
+			msg.WriteString("Disconnected ")
+
+			if client.Account != nil {
+				msg.WriteString(client.Account.String())
+			} else {
+				msg.WriteString("<unknown>")
+			}
+
+			if client.Realm != nil {
+				msg.WriteString(" from ")
+				msg.WriteString(client.Realm.String())
+			}
+
+			log.Println(msg)
 			return
 		}
 	}

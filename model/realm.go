@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -12,6 +13,10 @@ type Realm struct {
 	Type   RealmType
 	Host   string
 	Region RealmRegion
+}
+
+func (r *Realm) String() string {
+	return fmt.Sprintf("Realm(\"%s\" id=%d)", r.Name, r.Id)
 }
 
 type RealmFlag uint8

@@ -74,7 +74,8 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		return err
 	}
 
-	log.Println("finished character login")
+	log.Println("Login", client.Character, client.Account, "on", client.Realm)
+
 	return nil
 }
 
@@ -214,10 +215,5 @@ func sendSpawnPlayer(client *realmd.Client) error {
 
 	inner.Write(values.Bytes())
 
-	if err := client.SendPacketBytes(realmd.OpServerUpdateObject, inner.Bytes()); err != nil {
-		return err
-	}
-
-	log.Println("Spawned", char.String())
-	return nil
+	return client.SendPacketBytes(realmd.OpServerUpdateObject, inner.Bytes())
 }

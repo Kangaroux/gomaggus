@@ -45,7 +45,7 @@ func (srv *Server) Start() {
 	}
 
 	defer listener.Close()
-	log.Println("listening on", listener.Addr().String())
+	log.Println("listening on", listener.Addr())
 
 	for {
 		conn, err := listener.Accept()
@@ -70,7 +70,7 @@ func (srv *Server) handleConnection(conn net.Conn) {
 		}
 	}()
 
-	log.Println("client connected from", conn.RemoteAddr().String())
+	log.Println("client connected from", conn.RemoteAddr())
 
 	client := &authd.Client{
 		Conn:          conn,

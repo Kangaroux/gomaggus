@@ -1,10 +1,5 @@
 package internal
 
-import (
-	"bytes"
-	"strings"
-)
-
 // Pad adds zero-bytes as padding to a byte array if the array is smaller than the given length.
 // If the array doesn't need padding, the original array is returned, otherwise a copy with padding
 // included is returned.
@@ -26,23 +21,4 @@ func Reverse(data []byte) []byte {
 		newData[i] = data[n-i-1]
 	}
 	return newData
-}
-
-// TODO: remove me?
-func ReadCString(r *bytes.Reader) (string, error) {
-	s := strings.Builder{}
-
-	for {
-		b, err := r.ReadByte()
-
-		if err != nil {
-			return "", err
-		} else if b == 0x0 {
-			break
-		}
-
-		s.WriteByte(b)
-	}
-
-	return s.String(), nil
 }

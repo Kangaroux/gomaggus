@@ -43,6 +43,8 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		if err != nil {
 			return err
 		}
+
+		log.Println("Deleted", char)
 	}
 
 	resp := deleteResponse{}
@@ -53,10 +55,5 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		resp.ResponseCode = realmd.RespCodeCharDeleteFailed
 	}
 
-	if err := client.SendPacket(realmd.OpServerCharCreate, &resp); err != nil {
-		return err
-	}
-
-	log.Println("finished character delete")
-	return nil
+	return client.SendPacket(realmd.OpServerCharCreate, &resp)
 }

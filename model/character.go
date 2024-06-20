@@ -28,7 +28,7 @@ type Character struct {
 }
 
 func (c *Character) String() string {
-	return fmt.Sprintf("Character(%d, %s)", c.Id, c.Name)
+	return fmt.Sprintf("Character(\"%s\" id=%d aid=%d rid=%d)", c.Name, c.Id, c.AccountId, c.RealmId)
 }
 
 type Race byte

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"time"
 
 	"github.com/kangaroux/gomaggus/srp"
@@ -21,6 +22,10 @@ type Account struct {
 
 	srpSalt     []byte
 	srpVerifier []byte
+}
+
+func (a *Account) String() string {
+	return fmt.Sprintf("Account(\"%s\" id=%d)", a.Username, a.Id)
 }
 
 func (acc *Account) SetUsernamePassword(username, password string) error {

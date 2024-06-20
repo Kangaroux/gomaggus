@@ -72,14 +72,9 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			return err
 		}
 
-		log.Println("created char with id", char.Id)
+		log.Println("Created new", char)
 		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
 	}
 
-	if err := client.SendPacket(realmd.OpServerCharCreate, &resp); err != nil {
-		return err
-	}
-
-	log.Println("finished character create")
-	return nil
+	return client.SendPacket(realmd.OpServerCharCreate, &resp)
 }

@@ -134,7 +134,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	client.Realm = realm
 	client.Session = session
 
-	log.Println("client authenticated successfully")
+	log.Println("Authenticated", client.Account, "on", client.Realm)
 
 	return true, nil
 }
