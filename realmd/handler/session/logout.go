@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"log"
+	golog "log"
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
@@ -57,7 +57,7 @@ func completeLogout(client *realmd.Client) error {
 		return err
 	}
 
-	log.Println("Logout", client.Character, client.Account, "on", client.Realm)
+	golog.Println("Logout", client.Character, client.Account, "on", client.Realm)
 	client.Character = nil
 
 	return nil

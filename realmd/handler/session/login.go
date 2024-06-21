@@ -3,7 +3,7 @@ package session
 import (
 	"bytes"
 	"database/sql"
-	"log"
+	golog "log"
 	"math"
 	"time"
 
@@ -74,7 +74,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		return err
 	}
 
-	log.Println("Login", client.Character, client.Account, "on", client.Realm)
+	golog.Println("Login", client.Character, client.Account, "on", client.Realm)
 
 	return nil
 }

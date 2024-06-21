@@ -2,7 +2,7 @@ package char
 
 import (
 	"encoding/binary"
-	"log"
+	golog "log"
 
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/mixcode/binarystruct"
@@ -32,11 +32,11 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 	deleted := false
 
 	if char == nil {
-		log.Println("client tried to delete non-existent character:", req.CharacterId)
+		golog.Println("client tried to delete non-existent character:", req.CharacterId)
 	} else if char.AccountId != client.Account.Id {
-		log.Println("client tried to delete character from another account:", req.CharacterId)
+		golog.Println("client tried to delete character from another account:", req.CharacterId)
 	} else if char.RealmId != client.Realm.Id {
-		log.Println("client tried to delete character from another realm:", req.CharacterId)
+		golog.Println("client tried to delete character from another realm:", req.CharacterId)
 	} else {
 		deleted, err = svc.Chars.Delete(char.Id)
 
@@ -44,7 +44,7 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			return err
 		}
 
-		log.Println("Deleted", char)
+		golog.Println("Deleted", char)
 	}
 
 	resp := deleteResponse{}

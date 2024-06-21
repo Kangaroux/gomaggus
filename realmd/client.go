@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
-	"log"
+	golog "log"
 	"net"
 
 	"github.com/kangaroux/gomaggus/internal"
@@ -154,7 +154,7 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 		return err
 	}
 
-	log.Printf("[OUT]   %s size=%d", opcode, len(data))
+	golog.Printf("[OUT]   %s size=%d", opcode, len(data))
 
 	_, err = c.Conn.Write(append(header, data...))
 	return err

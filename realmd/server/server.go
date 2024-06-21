@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
+	golog "log"
 	"net"
 	"runtime/debug"
 	"strings"
@@ -30,7 +30,7 @@ type Server struct {
 }
 
 func New(db *sqlx.DB, listenAddr string) *Server {
-	log.SetFlags(log.Lmicroseconds)
+	golog.SetFlags(golog.Lmicroseconds)
 	return &Server{
 		listenAddr: listenAddr,
 		services: &realmd.Service{
@@ -46,16 +46,16 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 func (s *Server) Start() {
 	listener, err := net.Listen("tcp", s.listenAddr)
 	if err != nil {
-		log.Fatal(err)
+		golog.Fatal(err)
 	}
 
 	defer listener.Close()
-	log.Println("listening on", listener.Addr())
+	golog.Println("listening on", listener.Addr())
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Fatal(err)
+			golog.Fatal(err)
 		}
 
 		go s.handleConnection(conn)
@@ -65,27 +65,27 @@ func (s *Server) Start() {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("recovered from panic:", err)
+			golog.Println("recovered from panic:", err)
 			debug.PrintStack()
 
 			if err := conn.Close(); err != nil {
-				log.Println("error closing after recover:", err)
+				golog.Println("error closing after recover:", err)
 			}
 		}
 	}()
 
-	log.Println("client connected from", conn.RemoteAddr())
+	golog.Println("client connected from", conn.RemoteAddr())
 
 	client, err := realmd.NewClient(conn)
 	if err != nil {
-		log.Println("error setting up client:", err)
+		golog.Println("error setting up client:", err)
 		conn.Close()
 		return
 	}
 
 	// In realmd the server initiates the auth challenge
 	if err := auth.SendChallenge(client); err != nil {
-		log.Println("error sending auth challenge:", err)
+		golog.Println("error sending auth challenge:", err)
 		conn.Close()
 		return
 	}
@@ -99,7 +99,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for {
 		n, err := conn.Read(chunk)
 		if err != nil && err != io.EOF {
-			log.Println("error reading from client:", err)
+			golog.Println("error reading from client:", err)
 			return
 		}
 
@@ -114,7 +114,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 				h, err := client.ParseHeader(headerBuf)
 				if err != nil {
-					log.Println("failed to parse header:", err)
+					golog.Println("failed to parse header:", err)
 					conn.Close()
 					return
 				}
@@ -129,7 +129,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			io.CopyN(&packetBuf, &readBuf, int64(header.Size))
 
 			if err := s.handlePacket(client, header, packetBuf.Bytes()); err != nil {
-				log.Println("error handling packet:", err)
+				golog.Println("error handling packet:", err)
 				conn.Close()
 				return
 			}
@@ -154,7 +154,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				msg.WriteString(client.Realm.String())
 			}
 
-			log.Println(msg)
+			golog.Println(msg)
 			return
 		}
 	}
@@ -169,7 +169,7 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 		opName = fmt.Sprintf("UNKNOWN(0x%x)", uint32(header.Opcode))
 	}
 
-	log.Printf("[IN]    %s size=%d", opName, header.Size)
+	golog.Printf("[IN]    %s size=%d", opName, header.Size)
 
 	switch header.Opcode {
 	case realmd.OpClientPing:

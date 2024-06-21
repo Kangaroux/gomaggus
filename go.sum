@@ -16,6 +16,8 @@ github.com/mixcode/binarystruct v0.0.11 h1:JqXBwkN5mk2CV1DvoDnUUam94mIMycYXjqu4t
 github.com/mixcode/binarystruct v0.0.11/go.mod h1:nKlJcJOd7xxrfrlTLasJ4rM0kzBL3OtYsSqUAX0gZ4U=
 github.com/pascaldekloe/name v1.0.0 h1:n7LKFgHixETzxpRv2R77YgPUFo85QHGZKrdaYm7eY5U=
 github.com/pascaldekloe/name v1.0.0/go.mod h1:Z//MfYJnH4jVpQ9wkclwu2I2MkHmXTlT9wR5UZScttM=
+github.com/phuslu/log v1.0.106 h1:3SBSDdd+sxkT1ZzZWoarl2A7ANOwxYd6LdTbZu7DYH0=
+github.com/phuslu/log v1.0.106/go.mod h1:F8osGJADo5qLK/0F88djWwdyoZZ9xDJQL1HYRHFEkS0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=

@@ -3,7 +3,7 @@ package objupdate
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
+	golog "log"
 	"sort"
 )
 
@@ -79,7 +79,7 @@ func (v *Values) addField(field *valueField) {
 		for i := range v.fields {
 			if v.fields[i].mask == field.mask {
 				// Log this since it shouldn't happen and is likely a logical error
-				log.Printf("warning: overwrote field mask %v (old=%v new=%v)", field.mask, v.fields[i].value, field.value)
+				golog.Printf("warning: overwrote field mask %v (old=%v new=%v)", field.mask, v.fields[i].value, field.value)
 				v.fields[i] = field
 				return
 			}

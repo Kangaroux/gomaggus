@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	golog "log"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kangaroux/gomaggus/realmd/server"
@@ -14,7 +14,7 @@ func main() {
 		"postgres://gomaggus:password@localhost:5432/gomaggus?sslmode=disable",
 	)
 	if err != nil {
-		log.Fatal(err)
+		golog.Fatal(err)
 	}
 	server := server.New(db, server.DefaultListenAddr)
 	server.Start()

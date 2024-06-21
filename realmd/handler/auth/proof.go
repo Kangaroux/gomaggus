@@ -3,7 +3,7 @@ package auth
 import (
 	"bytes"
 	"errors"
-	"log"
+	golog "log"
 
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
@@ -97,7 +97,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	if err != nil {
 		return false, err
 	} else if acct == nil {
-		log.Printf("authenticateClient: no account with username %s exists", p.Username)
+		golog.Printf("authenticateClient: no account with username %s exists", p.Username)
 		return false, nil
 	}
 
@@ -105,7 +105,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	if err != nil {
 		return false, err
 	} else if realm == nil {
-		log.Printf("authenticateClient: no realm with id %d exists", p.RealmId)
+		golog.Printf("authenticateClient: no realm with id %d exists", p.RealmId)
 		return false, nil
 	}
 
@@ -114,7 +114,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	if err != nil {
 		return false, err
 	} else if session == nil {
-		log.Printf("authenticateClient: no session for username %s exists", acct.Username)
+		golog.Printf("authenticateClient: no session for username %s exists", acct.Username)
 		return false, nil
 	}
 
@@ -126,7 +126,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 
 	// Did the client authenticate with authd first?
 	if !bytes.Equal(proof, p.ClientProof[:]) {
-		log.Println("authenticateClient: invalid proof")
+		golog.Println("authenticateClient: invalid proof")
 		return false, nil
 	}
 
@@ -134,7 +134,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	client.Realm = realm
 	client.Session = session
 
-	log.Println("Authenticated", client.Account, "on", client.Realm)
+	golog.Println("Authenticated", client.Account, "on", client.Realm)
 
 	return true, nil
 }

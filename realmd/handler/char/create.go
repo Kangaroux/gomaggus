@@ -1,7 +1,7 @@
 package char
 
 import (
-	"log"
+	golog "log"
 
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
@@ -42,7 +42,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		return err
 	}
 
-	log.Println("client wants to create character", req.Name)
+	golog.Println("client wants to create character", req.Name)
 
 	existing, err := svc.Chars.GetName(req.Name, client.Realm.Id)
 	if err != nil {
@@ -72,7 +72,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			return err
 		}
 
-		log.Println("Created new", char)
+		golog.Println("Created new", char)
 		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
 	}
 
