@@ -83,7 +83,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		Str("ip", ip).
 		Value()
 
-	client.Log.Info().Str("ip", conn.RemoteAddr().String()).Msg("client connected")
+	client.Log.Info().Msg("client connected")
 
 	// In realmd the server initiates the auth challenge
 	if err := auth.SendChallenge(client); err != nil {
