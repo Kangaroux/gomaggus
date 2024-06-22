@@ -6,7 +6,6 @@ import (
 	"io"
 	golog "log"
 	"net"
-	"runtime/debug"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -17,6 +16,7 @@ import (
 	"github.com/kangaroux/gomaggus/realmd/handler/char"
 	"github.com/kangaroux/gomaggus/realmd/handler/realm"
 	"github.com/kangaroux/gomaggus/realmd/handler/session"
+	"github.com/phuslu/log"
 )
 
 const (
@@ -50,7 +50,7 @@ func (s *Server) Start() {
 	}
 
 	defer listener.Close()
-	golog.Println("listening on", listener.Addr())
+	log.Info().Str("listen", listener.Addr().String()).Msg("realmd start")
 
 	for {
 		conn, err := listener.Accept()
@@ -65,28 +65,31 @@ func (s *Server) Start() {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer func() {
 		if err := recover(); err != nil {
-			golog.Println("recovered from panic:", err)
-			debug.PrintStack()
-
-			if err := conn.Close(); err != nil {
-				golog.Println("error closing after recover:", err)
-			}
+			log.Warn().Stack().Any("err", err).Msg("recovered from panic")
 		}
+		conn.Close()
 	}()
-
-	golog.Println("client connected from", conn.RemoteAddr())
 
 	client, err := realmd.NewClient(conn)
 	if err != nil {
-		golog.Println("error setting up client:", err)
-		conn.Close()
+		log.Error().Err(err).Msg("error setting up client")
 		return
 	}
 
+	ip := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
+
+	// Create a logger for the client that includes the client's ID/IP
+	*client.Log = log.DefaultLogger
+	client.Log.Context = log.NewContext(nil).
+		Int64("cid", client.ID).
+		Str("ip", ip).
+		Value()
+
+	client.Log.Info().Str("ip", conn.RemoteAddr().String()).Msg("client connected")
+
 	// In realmd the server initiates the auth challenge
 	if err := auth.SendChallenge(client); err != nil {
-		golog.Println("error sending auth challenge:", err)
-		conn.Close()
+		client.Log.Error().Err(err).Msg("error sending auth challenge")
 		return
 	}
 
@@ -99,7 +102,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for {
 		n, err := conn.Read(chunk)
 		if err != nil && err != io.EOF {
-			golog.Println("error reading from client:", err)
+			client.Log.Error().Err(err).Msg("error reading socket")
 			return
 		}
 
@@ -114,8 +117,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 				h, err := client.ParseHeader(headerBuf)
 				if err != nil {
-					golog.Println("failed to parse header:", err)
-					conn.Close()
+					client.Log.Error().Err(err).Msg("error parsing packet header")
 					return
 				}
 				header = h
@@ -129,8 +131,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			io.CopyN(&packetBuf, &readBuf, int64(header.Size))
 
 			if err := s.handlePacket(client, header, packetBuf.Bytes()); err != nil {
-				golog.Println("error handling packet:", err)
-				conn.Close()
+				client.Log.Error().Err(err).Msg("error handling packet")
 				return
 			}
 
@@ -138,23 +139,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 			packetBuf.Reset()
 		}
 
-		// TODO: use cancel context?
 		if err == io.EOF {
-			var msg strings.Builder
-			msg.WriteString("Disconnected ")
-
-			if client.Account != nil {
-				msg.WriteString(client.Account.String())
-			} else {
-				msg.WriteString("<unknown>")
-			}
-
-			if client.Realm != nil {
-				msg.WriteString(" from ")
-				msg.WriteString(client.Realm.String())
-			}
-
-			golog.Println(msg)
+			client.Log.Info().Msg("client disconnected")
 			return
 		}
 	}
@@ -169,7 +155,7 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 		opName = fmt.Sprintf("UNKNOWN(0x%x)", uint32(header.Opcode))
 	}
 
-	golog.Printf("[IN]    %s size=%d", opName, header.Size)
+	c.Log.Debug().Str("op", opName).Uint16("size", header.Size).Msg("packet recv")
 
 	switch header.Opcode {
 	case realmd.OpClientPing:

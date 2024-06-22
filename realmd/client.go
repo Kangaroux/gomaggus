@@ -6,16 +6,21 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
-	golog "log"
 	"net"
+	"sync/atomic"
 
 	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/mixcode/binarystruct"
+	"github.com/phuslu/log"
 )
 
 const (
 	ClientHeaderSize = 6
+)
+
+var (
+	nextID atomic.Int64
 )
 
 type ClientHeader struct {
@@ -24,9 +29,11 @@ type ClientHeader struct {
 }
 
 type Client struct {
+	ID            int64
 	Conn          net.Conn
 	ServerSeed    []byte
 	Authenticated bool
+	Log           *log.Logger
 
 	// HeaderCrypto decrypts incoming packet headers and encrypts outgoing packet headers. HeaderCrypto
 	// is nil if the client has not yet authenticated.
@@ -49,8 +56,10 @@ func NewClient(conn net.Conn) (*Client, error) {
 	}
 
 	c := &Client{
+		ID:         nextID.Add(1),
 		Conn:       conn,
 		ServerSeed: seed,
+		Log:        &log.Logger{},
 
 		// Use a placeholder func so the caller doesn't have to check if it's nil
 		CancelPendingLogout: internal.DoNothing,
@@ -154,7 +163,7 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 		return err
 	}
 
-	golog.Printf("[OUT]   %s size=%d", opcode, len(data))
+	c.Log.Debug().Str("op", opcode.String()).Int("size", len(data)).Msg("packet send")
 
 	_, err = c.Conn.Write(append(header, data...))
 	return err
