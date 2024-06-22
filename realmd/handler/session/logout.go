@@ -2,10 +2,10 @@ package session
 
 import (
 	"context"
-	golog "log"
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/phuslu/log"
 )
 
 type logoutResult uint32
@@ -57,7 +57,7 @@ func completeLogout(client *realmd.Client) error {
 		return err
 	}
 
-	golog.Println("Logout", client.Character, client.Account, "on", client.Realm)
+	log.Info().Str("char", client.Character.String()).Msg("player logout")
 	client.Character = nil
 
 	return nil

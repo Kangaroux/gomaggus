@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	golog "log"
 	"net"
 	"strings"
 
@@ -30,7 +29,6 @@ type Server struct {
 }
 
 func New(db *sqlx.DB, listenAddr string) *Server {
-	golog.SetFlags(golog.Lmicroseconds)
 	return &Server{
 		listenAddr: listenAddr,
 		services: &realmd.Service{
@@ -46,7 +44,7 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 func (s *Server) Start() {
 	listener, err := net.Listen("tcp", s.listenAddr)
 	if err != nil {
-		golog.Fatal(err)
+		log.Fatal().Err(err).Msg("error setting up tcp server")
 	}
 
 	defer listener.Close()
@@ -55,7 +53,7 @@ func (s *Server) Start() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			golog.Fatal(err)
+			log.Error().Err(err).Msg("error accepting client")
 		}
 
 		go s.handleConnection(conn)

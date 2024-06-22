@@ -1,9 +1,8 @@
 package realmd
 
 import (
-	golog "log"
-
 	"github.com/kangaroux/gomaggus/model"
+	"github.com/phuslu/log"
 )
 
 type PowerType byte
@@ -28,7 +27,7 @@ func PowerTypeForClass(c model.Class) PowerType {
 		return PowerTypeEnergy
 
 	default:
-		golog.Println("PowerTypeForClass: got unexpected class", c)
+		log.Warn().Byte("class", byte(c)).Msg("invalid class")
 		return PowerTypeMana
 	}
 }

@@ -3,13 +3,13 @@ package session
 import (
 	"bytes"
 	"database/sql"
-	golog "log"
 	"math"
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/realmd/objupdate"
 	"github.com/mixcode/binarystruct"
+	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_player_login.html
@@ -41,8 +41,10 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 			return err
 		}
 
+		log.Warn().Uint64("char", req.CharacterId).Msg("client tried logging in as invalid character")
+
 		// TODO: set client state as invalid / close connection
-		return nil
+		return realmd.ErrKickClient
 	}
 
 	client.Character = char
@@ -74,7 +76,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		return err
 	}
 
-	golog.Println("Login", client.Character, client.Account, "on", client.Realm)
+	log.Info().Str("char", client.Character.String()).Msg("player login")
 
 	return nil
 }

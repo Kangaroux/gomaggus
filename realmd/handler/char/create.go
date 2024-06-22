@@ -1,11 +1,10 @@
 package char
 
 import (
-	golog "log"
-
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/mixcode/binarystruct"
+	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
@@ -42,8 +41,6 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		return err
 	}
 
-	golog.Println("client wants to create character", req.Name)
-
 	existing, err := svc.Chars.GetName(req.Name, client.Realm.Id)
 	if err != nil {
 		return err
@@ -72,7 +69,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			return err
 		}
 
-		golog.Println("Created new", char)
+		log.Info().Str("char", char.String()).Msg("new character")
 		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
 	}
 

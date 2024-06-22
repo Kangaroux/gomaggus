@@ -3,12 +3,12 @@ package auth
 import (
 	"bytes"
 	"errors"
-	golog "log"
 
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/srp"
 	"github.com/mixcode/binarystruct"
+	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/billingplanflags.html
@@ -97,7 +97,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	if err != nil {
 		return false, err
 	} else if acct == nil {
-		golog.Printf("authenticateClient: no account with username %s exists", p.Username)
+		client.Log.Warn().Str("username", p.Username).Msg("username does not exist")
 		return false, nil
 	}
 
@@ -105,7 +105,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	if err != nil {
 		return false, err
 	} else if realm == nil {
-		golog.Printf("authenticateClient: no realm with id %d exists", p.RealmId)
+		client.Log.Warn().Uint32("realm", p.RealmId).Msg("realm does not exist")
 		return false, nil
 	}
 
@@ -114,7 +114,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	if err != nil {
 		return false, err
 	} else if session == nil {
-		golog.Printf("authenticateClient: no session for username %s exists", acct.Username)
+		client.Log.Warn().Str("username", p.Username).Msg("session does not exist")
 		return false, nil
 	}
 
@@ -126,7 +126,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 
 	// Did the client authenticate with authd first?
 	if !bytes.Equal(proof, p.ClientProof[:]) {
-		golog.Println("authenticateClient: invalid proof")
+		client.Log.Warn().Msg("invalid proof")
 		return false, nil
 	}
 
@@ -134,7 +134,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	client.Realm = realm
 	client.Session = session
 
-	golog.Println("Authenticated", client.Account, "on", client.Realm)
+	log.Info().Str("realm", client.Realm.String()).Msg("client authenticated")
 
 	return true, nil
 }

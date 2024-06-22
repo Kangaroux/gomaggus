@@ -3,8 +3,9 @@ package objupdate
 import (
 	"bytes"
 	"encoding/binary"
-	golog "log"
 	"sort"
+
+	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/updateflag.html#client-version-335
@@ -78,8 +79,13 @@ func (v *Values) addField(field *valueField) {
 		// Find and replace the field
 		for i := range v.fields {
 			if v.fields[i].mask == field.mask {
-				// Log this since it shouldn't happen and is likely a logical error
-				golog.Printf("warning: overwrote field mask %v (old=%v new=%v)", field.mask, v.fields[i].value, field.value)
+				// Setting the same field twice smells like a logic error
+				log.Warn().
+					Str("mask", field.mask.String()).
+					Any("oldval", v.fields[i].value).
+					Any("newval", v.fields[i].value).
+					Msg("overwrote existing field")
+
 				v.fields[i] = field
 				return
 			}
