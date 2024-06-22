@@ -43,8 +43,8 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 
 		log.Warn().Uint64("char", req.CharacterId).Msg("client tried logging in as invalid character")
 
-		// TODO: set client state as invalid / close connection
-		return realmd.ErrKickClient
+		// TODO: set client state as invalid
+		return &realmd.ErrKickClient{Reason: "invalid login"}
 	}
 
 	client.Character = char

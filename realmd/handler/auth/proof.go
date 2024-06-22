@@ -2,7 +2,6 @@ package auth
 
 import (
 	"bytes"
-	"errors"
 
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
@@ -70,7 +69,7 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if !authenticated {
 		// The client expects the proof response to be successful (since it just authenticated with authd).
 		// If the authentication failed, no response is returned and the connection is closed.
-		return errors.New("client could not be authenticated")
+		return &realmd.ErrKickClient{Reason: "auth failed"}
 	}
 
 	client.Authenticated = true

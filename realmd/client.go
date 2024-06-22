@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"net"
 	"sync/atomic"
@@ -22,10 +21,6 @@ const (
 
 var (
 	nextID atomic.Int64
-
-	// A catch-all error that can be used to kick the client. Useful when the client does something
-	// invalid and there isn't a related error message.
-	ErrKickClient = errors.New("server is requesting to kick the client")
 )
 
 type ClientHeader struct {

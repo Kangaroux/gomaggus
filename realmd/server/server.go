@@ -129,6 +129,11 @@ func (s *Server) handleConnection(conn net.Conn) {
 			io.CopyN(&packetBuf, &readBuf, int64(header.Size))
 
 			if err := s.handlePacket(client, header, packetBuf.Bytes()); err != nil {
+				if err, ok := err.(*realmd.ErrKickClient); ok {
+					client.Log.Warn().Str("reason", err.Reason).Msg("kicking client")
+					return
+				}
+
 				client.Log.Error().Err(err).Msg("error handling packet")
 				return
 			}

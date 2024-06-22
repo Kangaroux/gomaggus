@@ -33,15 +33,15 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 
 	if char == nil {
 		log.Warn().Uint64("char", req.CharacterId).Msg("tried to delete non-existent character")
-		return realmd.ErrKickClient
+		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else if char.AccountId != client.Account.Id {
 		log.Warn().Str("char", char.String()).Msg("tried to delete character from another account")
-		return realmd.ErrKickClient
+		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else if char.RealmId != client.Realm.Id {
 		log.Warn().Str("char", char.String()).Msg("tried to delete character on another realm")
-		return realmd.ErrKickClient
+		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else {
 		deleted, err = svc.Chars.Delete(char.Id)
