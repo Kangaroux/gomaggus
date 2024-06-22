@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/kangaroux/gomaggus/realmd"
-	"github.com/phuslu/log"
 )
 
 type logoutResult uint32
@@ -57,7 +56,7 @@ func completeLogout(client *realmd.Client) error {
 		return err
 	}
 
-	log.Info().Str("char", client.Character.String()).Msg("player logout")
+	client.Log.Info().Str("char", client.Character.String()).Msg("player logout")
 	client.Character = nil
 
 	return nil

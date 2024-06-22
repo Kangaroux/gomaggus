@@ -7,7 +7,6 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/srp"
 	"github.com/mixcode/binarystruct"
-	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/billingplanflags.html
@@ -133,7 +132,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 	client.Realm = realm
 	client.Session = session
 
-	log.Info().Str("realm", client.Realm.String()).Msg("client authenticated")
+	client.Log.Info().Str("realm", client.Realm.String()).Msg("client authenticated")
 
 	return true, nil
 }

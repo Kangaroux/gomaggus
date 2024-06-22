@@ -5,7 +5,6 @@ import (
 
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/mixcode/binarystruct"
-	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_char_delete.html
@@ -32,15 +31,15 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 	deleted := false
 
 	if char == nil {
-		log.Warn().Uint64("char", req.CharacterId).Msg("tried to delete non-existent character")
+		client.Log.Warn().Uint64("char", req.CharacterId).Msg("tried to delete non-existent character")
 		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else if char.AccountId != client.Account.Id {
-		log.Warn().Str("char", char.String()).Msg("tried to delete character from another account")
+		client.Log.Warn().Str("char", char.String()).Msg("tried to delete character from another account")
 		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else if char.RealmId != client.Realm.Id {
-		log.Warn().Str("char", char.String()).Msg("tried to delete character on another realm")
+		client.Log.Warn().Str("char", char.String()).Msg("tried to delete character on another realm")
 		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else {
@@ -50,7 +49,7 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			return err
 		}
 
-		log.Info().Str("char", char.String()).Msg("character deleted")
+		client.Log.Info().Str("char", char.String()).Msg("character deleted")
 	}
 
 	resp := deleteResponse{}

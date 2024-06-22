@@ -9,7 +9,6 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/realmd/objupdate"
 	"github.com/mixcode/binarystruct"
-	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_player_login.html
@@ -41,7 +40,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 			return err
 		}
 
-		log.Warn().Uint64("char", req.CharacterId).Msg("client tried logging in as invalid character")
+		client.Log.Warn().Uint64("char", req.CharacterId).Msg("client tried logging in as invalid character")
 
 		// TODO: set client state as invalid
 		return &realmd.ErrKickClient{Reason: "invalid login"}
@@ -76,7 +75,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		return err
 	}
 
-	log.Info().Str("char", client.Character.String()).Msg("player login")
+	client.Log.Info().Str("char", client.Character.String()).Msg("player login")
 
 	return nil
 }

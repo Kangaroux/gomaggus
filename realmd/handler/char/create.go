@@ -4,7 +4,6 @@ import (
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/mixcode/binarystruct"
-	"github.com/phuslu/log"
 )
 
 // https://gtker.com/wow_messages/docs/cmsg_char_create.html#client-version-32-client-version-33
@@ -69,7 +68,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			return err
 		}
 
-		log.Info().Str("char", char.String()).Msg("new character")
+		client.Log.Info().Str("char", char.String()).Msg("new character")
 		resp.ResponseCode = realmd.RespCodeCharCreateSuccess
 	}
 
