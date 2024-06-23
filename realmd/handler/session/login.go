@@ -178,7 +178,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 
 	living := movement.Living()
 	living.Data(&objupdate.LivingData{
-		Timestamp: uint32(time.Now().Unix()),
+		Timestamp: uint32(time.Now().UnixMilli()),
 		PositionRotation: realmd.Vector4{
 			X:        float32(-8949.95),
 			Y:        float32(-132.493),
