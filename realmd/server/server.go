@@ -195,7 +195,14 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 		return session.LogoutCancelHandler(c)
 
 	case realmd.OpClientPutStorage:
-		h := &account.StorageHandler{
+		h := &account.StoragePutHandler{
+			Client:  c,
+			Service: s.services,
+		}
+		return h.Handle(data)
+
+	case realmd.OpClientGetStorage:
+		h := &account.StorageGetHandler{
 			Client:  c,
 			Service: s.services,
 		}
