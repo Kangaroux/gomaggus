@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
@@ -32,11 +33,12 @@ func New(db *sqlx.DB, listenAddr string) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		services: &realmd.Service{
-			Accounts:       model.NewDbAccountService(db),
-			AccountStorage: model.NewDbAccountStorageService(db),
-			Chars:          model.NewDbCharacterService(db),
-			Realms:         model.NewDbRealmService(db),
-			Sessions:       model.NewDbSessionService(db),
+			Accounts:         model.NewDbAccountService(db),
+			AccountStorage:   model.NewDbAccountStorageService(db),
+			CharacterStorage: model.NewDbCharacterStorageService(db),
+			Characters:       model.NewDbCharacterService(db),
+			Realms:           model.NewDbRealmService(db),
+			Sessions:         model.NewDbSessionService(db),
 		},
 	}
 }
@@ -159,6 +161,7 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 	}
 
 	c.Log.Debug().Str("op", opName).Uint16("size", header.Size).Msg("packet recv")
+	c.Log.Trace().Str("data", hex.EncodeToString(data)).Msg("packet data")
 
 	switch header.Opcode {
 	case realmd.OpClientPing:
@@ -190,6 +193,13 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 
 	case realmd.OpClientLogoutCancel:
 		return session.LogoutCancelHandler(c)
+
+	case realmd.OpClientPutStorage:
+		h := &account.StorageHandler{
+			Client:  c,
+			Service: s.services,
+		}
+		return h.Handle(data)
 
 	default:
 		return nil

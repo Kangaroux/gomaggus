@@ -46,7 +46,7 @@ type listResponse struct {
 }
 
 func ListHandler(svc *realmd.Service, client *realmd.Client) error {
-	accountChars, err := svc.Chars.List(&model.CharacterListParams{
+	accountChars, err := svc.Characters.List(&model.CharacterListParams{
 		AccountId: client.Account.Id,
 		RealmId:   client.Realm.Id,
 		Sort:      model.OldestToNewest,

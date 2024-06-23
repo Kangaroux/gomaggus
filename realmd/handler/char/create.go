@@ -40,7 +40,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		return err
 	}
 
-	existing, err := svc.Chars.GetName(req.Name, client.Realm.Id)
+	existing, err := svc.Characters.GetName(req.Name, client.Realm.Id)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func CreateHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 			ExtraCosmetic: req.ExtraCosmetic,
 			OutfitId:      req.OutfitId,
 		}
-		if err := svc.Chars.Create(char); err != nil {
+		if err := svc.Characters.Create(char); err != nil {
 			return err
 		}
 

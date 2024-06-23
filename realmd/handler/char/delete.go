@@ -23,7 +23,7 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		return err
 	}
 
-	char, err := svc.Chars.Get(uint32(req.CharacterId))
+	char, err := svc.Characters.Get(uint32(req.CharacterId))
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func DeleteHandler(svc *realmd.Service, client *realmd.Client, data []byte) erro
 		return &realmd.ErrKickClient{Reason: "invalid char delete"}
 
 	} else {
-		deleted, err = svc.Chars.Delete(char.Id)
+		deleted, err = svc.Characters.Delete(char.Id)
 
 		if err != nil {
 			return err

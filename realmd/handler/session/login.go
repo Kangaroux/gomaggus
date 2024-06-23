@@ -27,7 +27,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		return err
 	}
 
-	char, err := svc.Chars.Get(uint32(req.CharacterId))
+	char, err := svc.Characters.Get(uint32(req.CharacterId))
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		Time:  time.Now(),
 		Valid: true,
 	}
-	if _, err := svc.Chars.Update(client.Character); err != nil {
+	if _, err := svc.Characters.Update(client.Character); err != nil {
 		return err
 	}
 

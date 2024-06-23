@@ -21,6 +21,7 @@ const (
 	OpServerLogout               ServerOpcode = 0x4C
 	OpServerLogoutComplete       ServerOpcode = 0x4D
 	OpServerLogoutCancelACK      ServerOpcode = 0x4F
+	OpServerPutStorageOK         ServerOpcode = 0x463 // SMSG_UPDATE_ACCOUNT_DATA_COMPLETE
 )
 
 type ClientOpcode uint32
@@ -36,6 +37,7 @@ const (
 	OpClientReadyForAccountDataTimes ClientOpcode = 0x4FF
 	OpClientLogout                   ClientOpcode = 0x4B
 	OpClientLogoutCancel             ClientOpcode = 0x4E
+	OpClientPutStorage               ClientOpcode = 0x20B // CMSG_UPDATE_ACCOUNT_DATA
 )
 
 type ResponseCode byte

@@ -20,10 +20,12 @@ const (
 	_ClientOpcodeLowerName_4 = "clientping"
 	_ClientOpcodeName_5      = "ClientAuthSession"
 	_ClientOpcodeLowerName_5 = "clientauthsession"
-	_ClientOpcodeName_6      = "ClientRealmSplit"
-	_ClientOpcodeLowerName_6 = "clientrealmsplit"
-	_ClientOpcodeName_7      = "ClientReadyForAccountDataTimes"
-	_ClientOpcodeLowerName_7 = "clientreadyforaccountdatatimes"
+	_ClientOpcodeName_6      = "ClientPutStorage"
+	_ClientOpcodeLowerName_6 = "clientputstorage"
+	_ClientOpcodeName_7      = "ClientRealmSplit"
+	_ClientOpcodeLowerName_7 = "clientrealmsplit"
+	_ClientOpcodeName_8      = "ClientReadyForAccountDataTimes"
+	_ClientOpcodeLowerName_8 = "clientreadyforaccountdatatimes"
 )
 
 var (
@@ -34,7 +36,8 @@ var (
 	_ClientOpcodeIndex_4 = [...]uint8{0, 10}
 	_ClientOpcodeIndex_5 = [...]uint8{0, 17}
 	_ClientOpcodeIndex_6 = [...]uint8{0, 16}
-	_ClientOpcodeIndex_7 = [...]uint8{0, 30}
+	_ClientOpcodeIndex_7 = [...]uint8{0, 16}
+	_ClientOpcodeIndex_8 = [...]uint8{0, 30}
 )
 
 func (i ClientOpcode) String() string {
@@ -52,10 +55,12 @@ func (i ClientOpcode) String() string {
 		return _ClientOpcodeName_4
 	case i == 493:
 		return _ClientOpcodeName_5
-	case i == 908:
+	case i == 523:
 		return _ClientOpcodeName_6
-	case i == 1279:
+	case i == 908:
 		return _ClientOpcodeName_7
+	case i == 1279:
+		return _ClientOpcodeName_8
 	default:
 		return fmt.Sprintf("ClientOpcode(%d)", i)
 	}
@@ -73,11 +78,12 @@ func _ClientOpcodeNoOp() {
 	_ = x[OpClientLogoutCancel-(78)]
 	_ = x[OpClientPing-(476)]
 	_ = x[OpClientAuthSession-(493)]
+	_ = x[OpClientPutStorage-(523)]
 	_ = x[OpClientRealmSplit-(908)]
 	_ = x[OpClientReadyForAccountDataTimes-(1279)]
 }
 
-var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogout, OpClientLogoutCancel, OpClientPing, OpClientAuthSession, OpClientRealmSplit, OpClientReadyForAccountDataTimes}
+var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogout, OpClientLogoutCancel, OpClientPing, OpClientAuthSession, OpClientPutStorage, OpClientRealmSplit, OpClientReadyForAccountDataTimes}
 
 var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeName_0[0:16]:       OpClientCharCreate,
@@ -96,10 +102,12 @@ var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeLowerName_4[0:10]:  OpClientPing,
 	_ClientOpcodeName_5[0:17]:       OpClientAuthSession,
 	_ClientOpcodeLowerName_5[0:17]:  OpClientAuthSession,
-	_ClientOpcodeName_6[0:16]:       OpClientRealmSplit,
-	_ClientOpcodeLowerName_6[0:16]:  OpClientRealmSplit,
-	_ClientOpcodeName_7[0:30]:       OpClientReadyForAccountDataTimes,
-	_ClientOpcodeLowerName_7[0:30]:  OpClientReadyForAccountDataTimes,
+	_ClientOpcodeName_6[0:16]:       OpClientPutStorage,
+	_ClientOpcodeLowerName_6[0:16]:  OpClientPutStorage,
+	_ClientOpcodeName_7[0:16]:       OpClientRealmSplit,
+	_ClientOpcodeLowerName_7[0:16]:  OpClientRealmSplit,
+	_ClientOpcodeName_8[0:30]:       OpClientReadyForAccountDataTimes,
+	_ClientOpcodeLowerName_8[0:30]:  OpClientReadyForAccountDataTimes,
 }
 
 var _ClientOpcodeNames = []string{
@@ -112,7 +120,8 @@ var _ClientOpcodeNames = []string{
 	_ClientOpcodeName_4[0:10],
 	_ClientOpcodeName_5[0:17],
 	_ClientOpcodeName_6[0:16],
-	_ClientOpcodeName_7[0:30],
+	_ClientOpcodeName_7[0:16],
+	_ClientOpcodeName_8[0:30],
 }
 
 // ClientOpcodeString retrieves an enum value from the enum constants string name.
@@ -150,28 +159,29 @@ func (i ClientOpcode) IsAClientOpcode() bool {
 	return false
 }
 
-const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerHearthLocationServerPongServerAuthChallengeServerAuthResponseServerAccountStorageTimesServerCharLoginVerifyWorldServerRealmSplitServerSystemFeatures"
-const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserverlogoutserverlogoutcompleteserverlogoutcancelackserverupdateobjectserverplaycinematicservertutorialflagsserverhearthlocationserverpongserverauthchallengeserverauthresponseserveraccountstoragetimesservercharloginverifyworldserverrealmsplitserversystemfeatures"
+const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerHearthLocationServerPongServerAuthChallengeServerAuthResponseServerAccountStorageTimesServerCharLoginVerifyWorldServerRealmSplitServerSystemFeaturesServerPutStorageOK"
+const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserverlogoutserverlogoutcompleteserverlogoutcancelackserverupdateobjectserverplaycinematicservertutorialflagsserverhearthlocationserverpongserverauthchallengeserverauthresponseserveraccountstoragetimesservercharloginverifyworldserverrealmsplitserversystemfeaturesserverputstorageok"
 
 var _ServerOpcodeMap = map[ServerOpcode]string{
-	58:  _ServerOpcodeName[0:16],
-	59:  _ServerOpcodeName[16:30],
-	60:  _ServerOpcodeName[30:46],
-	65:  _ServerOpcodeName[46:67],
-	76:  _ServerOpcodeName[67:79],
-	77:  _ServerOpcodeName[79:99],
-	79:  _ServerOpcodeName[99:120],
-	169: _ServerOpcodeName[120:138],
-	250: _ServerOpcodeName[138:157],
-	253: _ServerOpcodeName[157:176],
-	341: _ServerOpcodeName[176:196],
-	477: _ServerOpcodeName[196:206],
-	492: _ServerOpcodeName[206:225],
-	494: _ServerOpcodeName[225:243],
-	521: _ServerOpcodeName[243:268],
-	566: _ServerOpcodeName[268:294],
-	907: _ServerOpcodeName[294:310],
-	969: _ServerOpcodeName[310:330],
+	58:   _ServerOpcodeName[0:16],
+	59:   _ServerOpcodeName[16:30],
+	60:   _ServerOpcodeName[30:46],
+	65:   _ServerOpcodeName[46:67],
+	76:   _ServerOpcodeName[67:79],
+	77:   _ServerOpcodeName[79:99],
+	79:   _ServerOpcodeName[99:120],
+	169:  _ServerOpcodeName[120:138],
+	250:  _ServerOpcodeName[138:157],
+	253:  _ServerOpcodeName[157:176],
+	341:  _ServerOpcodeName[176:196],
+	477:  _ServerOpcodeName[196:206],
+	492:  _ServerOpcodeName[206:225],
+	494:  _ServerOpcodeName[225:243],
+	521:  _ServerOpcodeName[243:268],
+	566:  _ServerOpcodeName[268:294],
+	907:  _ServerOpcodeName[294:310],
+	969:  _ServerOpcodeName[310:330],
+	1123: _ServerOpcodeName[330:348],
 }
 
 func (i ServerOpcode) String() string {
@@ -203,9 +213,10 @@ func _ServerOpcodeNoOp() {
 	_ = x[OpServerCharLoginVerifyWorld-(566)]
 	_ = x[OpServerRealmSplit-(907)]
 	_ = x[OpServerSystemFeatures-(969)]
+	_ = x[OpServerPutStorageOK-(1123)]
 }
 
-var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerHearthLocation, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerAccountStorageTimes, OpServerCharLoginVerifyWorld, OpServerRealmSplit, OpServerSystemFeatures}
+var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerHearthLocation, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerAccountStorageTimes, OpServerCharLoginVerifyWorld, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK}
 
 var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeName[0:16]:         OpServerCharCreate,
@@ -244,6 +255,8 @@ var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeLowerName[294:310]: OpServerRealmSplit,
 	_ServerOpcodeName[310:330]:      OpServerSystemFeatures,
 	_ServerOpcodeLowerName[310:330]: OpServerSystemFeatures,
+	_ServerOpcodeName[330:348]:      OpServerPutStorageOK,
+	_ServerOpcodeLowerName[330:348]: OpServerPutStorageOK,
 }
 
 var _ServerOpcodeNames = []string{
@@ -265,6 +278,7 @@ var _ServerOpcodeNames = []string{
 	_ServerOpcodeName[268:294],
 	_ServerOpcodeName[294:310],
 	_ServerOpcodeName[310:330],
+	_ServerOpcodeName[330:348],
 }
 
 // ServerOpcodeString retrieves an enum value from the enum constants string name.
