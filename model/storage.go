@@ -31,16 +31,18 @@ const (
 
 // AccountStorage stores compressed data from the client that is linked to their account.
 type AccountStorage struct {
-	AccountId uint32    `db:"account_id"`
-	UpdatedAt time.Time `db:"updated_at"`
-	Type      AccountStorageType
-	Data      []byte
+	AccountId        uint32    `db:"account_id"`
+	UpdatedAt        time.Time `db:"updated_at"`
+	Type             AccountStorageType
+	Data             []byte
+	UncompressedSize int `db:"uncompressed_size"`
 }
 
 // CharacterStorage stores compressed data from the client that is linked to a specific character.
 type CharacterStorage struct {
-	CharacterId uint32    `db:"character_id"`
-	UpdatedAt   time.Time `db:"updated_at"`
-	Type        CharacterStorageType
-	Data        []byte
+	CharacterId      uint32    `db:"character_id"`
+	UpdatedAt        time.Time `db:"updated_at"`
+	Type             CharacterStorageType
+	Data             []byte
+	UncompressedSize int `db:"uncompressed_size"`
 }

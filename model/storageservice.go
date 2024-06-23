@@ -63,8 +63,8 @@ func (s *DbAccountStorageService) List(accountID uint32, mask uint8) ([]*Account
 
 func (s *DbAccountStorageService) create(db creater, storage *AccountStorage) error {
 	q := `
-	INSERT INTO account_storage (account_id, type, data)
-	VALUES (:account_id, :type, :data)
+	INSERT INTO account_storage (account_id, type, data, uncompressed_size)
+	VALUES (:account_id, :type, :data, :uncompressed_size)
 	RETURNING updated_at`
 	result, err := db.NamedQuery(q, storage)
 	if err != nil {
@@ -79,7 +79,7 @@ func (s *DbAccountStorageService) create(db creater, storage *AccountStorage) er
 func (s *DbAccountStorageService) update(db updater, storage *AccountStorage) (bool, error) {
 	q := `
 	UPDATE account_storage
-	SET data=:data, updated_at=now()
+	SET data=:data, uncompressed_size=:uncompressed_size, updated_at=now()
 	WHERE account_id=:account_id AND type=:type
 	RETURNING updated_at`
 	result, err := db.NamedQuery(q, storage)
@@ -180,8 +180,8 @@ func (s *DbCharacterStorageService) List(characterID uint32, mask uint8) ([]*Cha
 
 func (s *DbCharacterStorageService) create(db creater, storage *CharacterStorage) error {
 	q := `
-	INSERT INTO character_storage (character_id, type, data)
-	VALUES (:character_id, :type, :data)
+	INSERT INTO character_storage (character_id, type, data, uncompressed_size)
+	VALUES (:character_id, :type, :data, :uncompressed_size)
 	RETURNING updated_at`
 	result, err := db.NamedQuery(q, storage)
 	if err != nil {
@@ -196,7 +196,7 @@ func (s *DbCharacterStorageService) create(db creater, storage *CharacterStorage
 func (s *DbCharacterStorageService) update(db updater, storage *CharacterStorage) (bool, error) {
 	q := `
 	UPDATE character_storage
-	SET data=:data, updated_at=now()
+	SET data=:data, uncompressed_size=:uncompressed_size, updated_at=now()
 	WHERE character_id=:character_id AND type=:type
 	RETURNING updated_at`
 	result, err := db.NamedQuery(q, storage)
