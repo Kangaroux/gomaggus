@@ -1,3 +1,5 @@
+-- Removes `sessions.id` and makes the account_id the primary key.
+
 -- +goose Up
 -- +goose StatementBegin
 TRUNCATE TABLE sessions;

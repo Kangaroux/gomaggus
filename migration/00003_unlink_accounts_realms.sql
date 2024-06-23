@@ -1,3 +1,5 @@
+-- Fix accounts being associated with realms (chars are, not accounts)
+
 -- +goose Up
 -- +goose StatementBegin
 ALTER TABLE accounts DROP realm_id;

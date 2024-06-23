@@ -1,3 +1,5 @@
+-- The client stores account/char specific data on the server.
+
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS account_storage (
