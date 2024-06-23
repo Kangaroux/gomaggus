@@ -17,7 +17,7 @@ const (
 	MovementUpdateLowGuid            MovementUpdateFlag = 0x8
 	MovementUpdateHighGuid           MovementUpdateFlag = 0x10
 	MovementUpdateLiving             MovementUpdateFlag = 0x20
-	MovementUpdateHasPosition        MovementUpdateFlag = 0x40
+	MovementUpdateStationaryPosition MovementUpdateFlag = 0x40
 	MovementUpdateVehicle            MovementUpdateFlag = 0x80
 	MovementUpdatePosition           MovementUpdateFlag = 0x100
 	MovementUpdateRotation           MovementUpdateFlag = 0x200
@@ -73,7 +73,7 @@ const (
 	LivingMovementFlagTransportInterpolatedTurning  LivingMovementFlag = 0x80000000000
 	LivingMovementFlagTransportInterpolatedPitching LivingMovementFlag = 0x100000000000
 	LivingMovementFlagUnknown6                      LivingMovementFlag = 0x200000000000
-	LivingMovementFlagUnknown7                      LivingMovementFlag = 0x400000000000
+	LivingMovementFlagTransitionBetweenSwimAndFly   LivingMovementFlag = 0x400000000000
 	LivingMovementFlagUnknown8                      LivingMovementFlag = 0x800000000000
 )
 
@@ -100,24 +100,24 @@ type LivingData struct {
 }
 
 // MovementUpdateLiving (optional)
-type transportPassengerInterpolatedData struct {
+type TransportPassengerInterpolatedData struct {
 	// https://gtker.com/wow_messages/docs/transportinfo.html#wowm-representation-1
 	// TODO: TransportInfo
 	TransportTime uint32
 }
 
 // MovementUpdateLiving (optional)
-type transportPassengerData struct {
+type TransportPassengerData struct {
 	// TODO: TransportInfo
 }
 
 // MovementUpdateLiving (optional)
-type pitchData struct {
+type PitchData struct {
 	Pitch float32
 }
 
 // MovementUpdateLiving (optional)
-type fallData struct {
+type FallData struct {
 	FallSpeed       float32
 	CosAngle        float32 // TODO: name?
 	SinAngle        float32 // TODO: name?
@@ -125,53 +125,53 @@ type fallData struct {
 }
 
 // MovementUpdateLiving (optional)
-type splineElevationData struct {
+type SplineElevationData struct {
 	Elevation float32 // TODO: research
 }
 
 // MovementUpdateLiving (optional)
-type splineData struct {
+type SplineData struct {
 	// TODO
 }
 
 // MovementUpdatePosition
-type positionData struct {
+type PositionData struct {
 	// TODO
 }
 
-// MovementUpdateHasPosition
-type hasPositionData struct {
+// MovementUpdateStationaryPosition
+type StationaryPositionData struct {
 	// TODO
 }
 
 // MovementUpdateHighGuid
-type highGuidData struct {
+type HighGuidData struct {
 	HighGuid uint32
 }
 
 // MovementUpdateLowGuid
-type lowGuidData struct {
+type LowGuidData struct {
 	LowGuid uint32
 }
 
 // MovementUpdateHasAttackingTarget
-type attackingTargetData struct {
+type AttackingTargetData struct {
 	Guid realmd.PackedGuid
 }
 
 // MovementUpdateTransport
-type transportData struct {
+type TransportData struct {
 	TransportProgressMs uint32 // milliseconds
 }
 
 // MovementUpdateVehicle
-type vehicleData struct {
+type VehicleData struct {
 	Id          uint32
 	Orientation float32
 }
 
 // MovementUpdateRotation
-type rotationData struct {
+type RotationData struct {
 	PackedLocalRotation uint64 // TODO: research
 }
 
@@ -181,21 +181,21 @@ type movementBuffer struct {
 	// living block
 	livingFlags                    LivingMovementFlag
 	livingData                     *LivingData
-	transportPassengerInterpolated *transportPassengerInterpolatedData
-	transportPassenger             *transportPassengerData
-	pitch                          *pitchData
-	fall                           *fallData
-	splineElevation                *splineElevationData
-	spline                         *splineData
+	transportPassengerInterpolated *TransportPassengerInterpolatedData
+	transportPassenger             *TransportPassengerData
+	pitch                          *PitchData
+	fall                           *FallData
+	splineElevation                *SplineElevationData
+	spline                         *SplineData
 
-	positionData        *positionData    // TODO: naming
-	hasPositionData     *hasPositionData // TODO: naming
-	highGuidData        *highGuidData
-	lowGuidData         *lowGuidData
-	attackingTargetData *attackingTargetData
-	transportData       *transportData
-	vehicleData         *vehicleData
-	rotationData        *rotationData
+	positionData        *PositionData           // TODO: naming
+	hasPositionData     *StationaryPositionData // TODO: naming
+	highGuidData        *HighGuidData
+	lowGuidData         *LowGuidData
+	attackingTargetData *AttackingTargetData
+	transportData       *TransportData
+	vehicleData         *VehicleData
+	rotationData        *RotationData
 }
 
 // MovementValues provides an interface for setting values related to movement and position.
@@ -257,7 +257,7 @@ func (m *MovementValues) Bytes() []byte {
 		}
 	} else if m.buf.updateFlag&MovementUpdatePosition > 0 {
 		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.positionData)
-	} else if m.buf.updateFlag&MovementUpdateHasPosition > 0 {
+	} else if m.buf.updateFlag&MovementUpdateStationaryPosition > 0 {
 		binary.Write(&bytesBuf, binary.LittleEndian, m.buf.hasPositionData)
 	}
 
@@ -297,7 +297,7 @@ func (m *MovementValues) Self() {
 	m.buf.updateFlag |= MovementUpdateSelf
 }
 
-func (m *MovementValues) Position(data *positionData) {
+func (m *MovementValues) Position(data *PositionData) {
 	if data == nil {
 		m.buf.updateFlag &= ^MovementUpdatePosition
 	} else {
@@ -307,17 +307,17 @@ func (m *MovementValues) Position(data *positionData) {
 	m.buf.positionData = data
 }
 
-func (m *MovementValues) HasPosition(data *hasPositionData) {
+func (m *MovementValues) HasPosition(data *StationaryPositionData) {
 	if data == nil {
-		m.buf.updateFlag &= ^MovementUpdateHasPosition
+		m.buf.updateFlag &= ^MovementUpdateStationaryPosition
 	} else {
-		m.buf.updateFlag |= MovementUpdateHasPosition
+		m.buf.updateFlag |= MovementUpdateStationaryPosition
 	}
 
 	m.buf.hasPositionData = data
 }
 
-func (b *MovementValues) HighGuid(data *highGuidData) {
+func (b *MovementValues) HighGuid(data *HighGuidData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateHighGuid
 	} else {
@@ -327,7 +327,7 @@ func (b *MovementValues) HighGuid(data *highGuidData) {
 	b.buf.highGuidData = data
 }
 
-func (b *MovementValues) LowGuid(data *lowGuidData) {
+func (b *MovementValues) LowGuid(data *LowGuidData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateLowGuid
 	} else {
@@ -337,7 +337,7 @@ func (b *MovementValues) LowGuid(data *lowGuidData) {
 	b.buf.lowGuidData = data
 }
 
-func (b *MovementValues) AttackingTarget(data *attackingTargetData) {
+func (b *MovementValues) AttackingTarget(data *AttackingTargetData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateHasAttackingTarget
 	} else {
@@ -347,7 +347,7 @@ func (b *MovementValues) AttackingTarget(data *attackingTargetData) {
 	b.buf.attackingTargetData = data
 }
 
-func (b *MovementValues) Transport(data *transportData) {
+func (b *MovementValues) Transport(data *TransportData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateTransport
 	} else {
@@ -357,7 +357,7 @@ func (b *MovementValues) Transport(data *transportData) {
 	b.buf.transportData = data
 }
 
-func (b *MovementValues) Vehicle(data *vehicleData) {
+func (b *MovementValues) Vehicle(data *VehicleData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateVehicle
 	} else {
@@ -367,7 +367,7 @@ func (b *MovementValues) Vehicle(data *vehicleData) {
 	b.buf.vehicleData = data
 }
 
-func (b *MovementValues) Rotation(data *rotationData) {
+func (b *MovementValues) Rotation(data *RotationData) {
 	if data == nil {
 		b.buf.updateFlag &= ^MovementUpdateRotation
 	} else {
@@ -392,7 +392,7 @@ func (b *LivingMovementBuilder) Data(data *LivingData) error {
 	return nil
 }
 
-func (b *LivingMovementBuilder) TransportPassengerMovement(data *transportPassengerInterpolatedData) {
+func (b *LivingMovementBuilder) TransportPassengerMovement(data *TransportPassengerInterpolatedData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagTransportInterpolatedMovement
 	} else {
@@ -402,7 +402,7 @@ func (b *LivingMovementBuilder) TransportPassengerMovement(data *transportPassen
 	b.buf.transportPassengerInterpolated = data
 }
 
-func (b *LivingMovementBuilder) TransportPassenger(data *transportPassengerData) {
+func (b *LivingMovementBuilder) TransportPassenger(data *TransportPassengerData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagOnTransport
 	} else {
@@ -412,7 +412,7 @@ func (b *LivingMovementBuilder) TransportPassenger(data *transportPassengerData)
 	b.buf.transportPassenger = data
 }
 
-func (b *LivingMovementBuilder) Swimming(data *pitchData) {
+func (b *LivingMovementBuilder) Swimming(data *PitchData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagSwimming
 	} else {
@@ -422,7 +422,7 @@ func (b *LivingMovementBuilder) Swimming(data *pitchData) {
 	b.buf.pitch = data
 }
 
-func (b *LivingMovementBuilder) Flying(data *pitchData) {
+func (b *LivingMovementBuilder) Flying(data *PitchData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagFlying
 	} else {
@@ -432,7 +432,7 @@ func (b *LivingMovementBuilder) Flying(data *pitchData) {
 	b.buf.pitch = data
 }
 
-func (b *LivingMovementBuilder) ForcePitch(data *pitchData) {
+func (b *LivingMovementBuilder) ForcePitch(data *PitchData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagAlwaysAllowPitching
 	} else {
@@ -442,7 +442,7 @@ func (b *LivingMovementBuilder) ForcePitch(data *pitchData) {
 	b.buf.pitch = data
 }
 
-func (b *LivingMovementBuilder) Falling(data *fallData) {
+func (b *LivingMovementBuilder) Falling(data *FallData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagFalling
 	} else {
@@ -452,7 +452,7 @@ func (b *LivingMovementBuilder) Falling(data *fallData) {
 	b.buf.fall = data
 }
 
-func (b *LivingMovementBuilder) SplineElevation(data *splineElevationData) {
+func (b *LivingMovementBuilder) SplineElevation(data *SplineElevationData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagSplineElevation
 	} else {
@@ -462,7 +462,7 @@ func (b *LivingMovementBuilder) SplineElevation(data *splineElevationData) {
 	b.buf.splineElevation = data
 }
 
-func (b *LivingMovementBuilder) Spline(data *splineData) {
+func (b *LivingMovementBuilder) Spline(data *SplineData) {
 	if data == nil {
 		b.buf.livingFlags &= ^LivingMovementFlagSplineEnabled
 	} else {
