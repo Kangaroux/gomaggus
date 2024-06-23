@@ -23,6 +23,7 @@ const (
 	OpServerLogoutCancelACK      ServerOpcode = 0x4F
 	OpServerPutStorageOK         ServerOpcode = 0x463 // SMSG_UPDATE_ACCOUNT_DATA_COMPLETE
 	OpServerGetStorage           ServerOpcode = 0x20C // SMSG_UPDATE_ACCOUNT_DATA
+	OpServerUnixTime             ServerOpcode = 0x4F7 // SMSG_WORLD_STATE_UI_TIMER_UPDATE
 )
 
 type ClientOpcode uint32
@@ -40,6 +41,7 @@ const (
 	OpClientLogoutCancel             ClientOpcode = 0x4E
 	OpClientPutStorage               ClientOpcode = 0x20B // CMSG_UPDATE_ACCOUNT_DATA
 	OpClientGetStorage               ClientOpcode = 0x20A // CMSG_REQUEST_ACCOUNT_DATA
+	OpClientGetUnixTime              ClientOpcode = 0x4F6 // CMSG_WORLD_STATE_UI_TIMER_UPDATE
 )
 
 type ResponseCode byte

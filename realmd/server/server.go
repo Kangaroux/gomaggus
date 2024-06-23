@@ -16,6 +16,7 @@ import (
 	"github.com/kangaroux/gomaggus/realmd/handler/char"
 	"github.com/kangaroux/gomaggus/realmd/handler/realm"
 	"github.com/kangaroux/gomaggus/realmd/handler/session"
+	"github.com/kangaroux/gomaggus/realmd/handler/world"
 	"github.com/phuslu/log"
 )
 
@@ -207,6 +208,9 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 			Service: s.services,
 		}
 		return h.Handle(data)
+
+	case realmd.OpClientGetUnixTime:
+		return world.UnixTimeHandler(c)
 
 	default:
 		return nil

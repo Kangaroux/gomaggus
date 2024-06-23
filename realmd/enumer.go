@@ -24,8 +24,10 @@ const (
 	_ClientOpcodeLowerName_6 = "clientgetstorageclientputstorage"
 	_ClientOpcodeName_7      = "ClientRealmSplit"
 	_ClientOpcodeLowerName_7 = "clientrealmsplit"
-	_ClientOpcodeName_8      = "ClientReadyForAccountDataTimes"
-	_ClientOpcodeLowerName_8 = "clientreadyforaccountdatatimes"
+	_ClientOpcodeName_8      = "ClientGetUnixTime"
+	_ClientOpcodeLowerName_8 = "clientgetunixtime"
+	_ClientOpcodeName_9      = "ClientReadyForAccountDataTimes"
+	_ClientOpcodeLowerName_9 = "clientreadyforaccountdatatimes"
 )
 
 var (
@@ -37,7 +39,8 @@ var (
 	_ClientOpcodeIndex_5 = [...]uint8{0, 17}
 	_ClientOpcodeIndex_6 = [...]uint8{0, 16, 32}
 	_ClientOpcodeIndex_7 = [...]uint8{0, 16}
-	_ClientOpcodeIndex_8 = [...]uint8{0, 30}
+	_ClientOpcodeIndex_8 = [...]uint8{0, 17}
+	_ClientOpcodeIndex_9 = [...]uint8{0, 30}
 )
 
 func (i ClientOpcode) String() string {
@@ -60,8 +63,10 @@ func (i ClientOpcode) String() string {
 		return _ClientOpcodeName_6[_ClientOpcodeIndex_6[i]:_ClientOpcodeIndex_6[i+1]]
 	case i == 908:
 		return _ClientOpcodeName_7
-	case i == 1279:
+	case i == 1270:
 		return _ClientOpcodeName_8
+	case i == 1279:
+		return _ClientOpcodeName_9
 	default:
 		return fmt.Sprintf("ClientOpcode(%d)", i)
 	}
@@ -82,10 +87,11 @@ func _ClientOpcodeNoOp() {
 	_ = x[OpClientGetStorage-(522)]
 	_ = x[OpClientPutStorage-(523)]
 	_ = x[OpClientRealmSplit-(908)]
+	_ = x[OpClientGetUnixTime-(1270)]
 	_ = x[OpClientReadyForAccountDataTimes-(1279)]
 }
 
-var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogout, OpClientLogoutCancel, OpClientPing, OpClientAuthSession, OpClientGetStorage, OpClientPutStorage, OpClientRealmSplit, OpClientReadyForAccountDataTimes}
+var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogout, OpClientLogoutCancel, OpClientPing, OpClientAuthSession, OpClientGetStorage, OpClientPutStorage, OpClientRealmSplit, OpClientGetUnixTime, OpClientReadyForAccountDataTimes}
 
 var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeName_0[0:16]:       OpClientCharCreate,
@@ -110,8 +116,10 @@ var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeLowerName_6[16:32]: OpClientPutStorage,
 	_ClientOpcodeName_7[0:16]:       OpClientRealmSplit,
 	_ClientOpcodeLowerName_7[0:16]:  OpClientRealmSplit,
-	_ClientOpcodeName_8[0:30]:       OpClientReadyForAccountDataTimes,
-	_ClientOpcodeLowerName_8[0:30]:  OpClientReadyForAccountDataTimes,
+	_ClientOpcodeName_8[0:17]:       OpClientGetUnixTime,
+	_ClientOpcodeLowerName_8[0:17]:  OpClientGetUnixTime,
+	_ClientOpcodeName_9[0:30]:       OpClientReadyForAccountDataTimes,
+	_ClientOpcodeLowerName_9[0:30]:  OpClientReadyForAccountDataTimes,
 }
 
 var _ClientOpcodeNames = []string{
@@ -126,7 +134,8 @@ var _ClientOpcodeNames = []string{
 	_ClientOpcodeName_6[0:16],
 	_ClientOpcodeName_6[16:32],
 	_ClientOpcodeName_7[0:16],
-	_ClientOpcodeName_8[0:30],
+	_ClientOpcodeName_8[0:17],
+	_ClientOpcodeName_9[0:30],
 }
 
 // ClientOpcodeString retrieves an enum value from the enum constants string name.
@@ -164,8 +173,8 @@ func (i ClientOpcode) IsAClientOpcode() bool {
 	return false
 }
 
-const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerHearthLocationServerPongServerAuthChallengeServerAuthResponseServerAccountStorageTimesServerGetStorageServerCharLoginVerifyWorldServerRealmSplitServerSystemFeaturesServerPutStorageOK"
-const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserverlogoutserverlogoutcompleteserverlogoutcancelackserverupdateobjectserverplaycinematicservertutorialflagsserverhearthlocationserverpongserverauthchallengeserverauthresponseserveraccountstoragetimesservergetstorageservercharloginverifyworldserverrealmsplitserversystemfeaturesserverputstorageok"
+const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerHearthLocationServerPongServerAuthChallengeServerAuthResponseServerAccountStorageTimesServerGetStorageServerCharLoginVerifyWorldServerRealmSplitServerSystemFeaturesServerPutStorageOKServerUnixTime"
+const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserverlogoutserverlogoutcompleteserverlogoutcancelackserverupdateobjectserverplaycinematicservertutorialflagsserverhearthlocationserverpongserverauthchallengeserverauthresponseserveraccountstoragetimesservergetstorageservercharloginverifyworldserverrealmsplitserversystemfeaturesserverputstorageokserverunixtime"
 
 var _ServerOpcodeMap = map[ServerOpcode]string{
 	58:   _ServerOpcodeName[0:16],
@@ -188,6 +197,7 @@ var _ServerOpcodeMap = map[ServerOpcode]string{
 	907:  _ServerOpcodeName[310:326],
 	969:  _ServerOpcodeName[326:346],
 	1123: _ServerOpcodeName[346:364],
+	1271: _ServerOpcodeName[364:378],
 }
 
 func (i ServerOpcode) String() string {
@@ -221,9 +231,10 @@ func _ServerOpcodeNoOp() {
 	_ = x[OpServerRealmSplit-(907)]
 	_ = x[OpServerSystemFeatures-(969)]
 	_ = x[OpServerPutStorageOK-(1123)]
+	_ = x[OpServerUnixTime-(1271)]
 }
 
-var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerHearthLocation, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerAccountStorageTimes, OpServerGetStorage, OpServerCharLoginVerifyWorld, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK}
+var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerHearthLocation, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerAccountStorageTimes, OpServerGetStorage, OpServerCharLoginVerifyWorld, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK, OpServerUnixTime}
 
 var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeName[0:16]:         OpServerCharCreate,
@@ -266,6 +277,8 @@ var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeLowerName[326:346]: OpServerSystemFeatures,
 	_ServerOpcodeName[346:364]:      OpServerPutStorageOK,
 	_ServerOpcodeLowerName[346:364]: OpServerPutStorageOK,
+	_ServerOpcodeName[364:378]:      OpServerUnixTime,
+	_ServerOpcodeLowerName[364:378]: OpServerUnixTime,
 }
 
 var _ServerOpcodeNames = []string{
@@ -289,6 +302,7 @@ var _ServerOpcodeNames = []string{
 	_ServerOpcodeName[310:326],
 	_ServerOpcodeName[326:346],
 	_ServerOpcodeName[346:364],
+	_ServerOpcodeName[364:378],
 }
 
 // ServerOpcodeString retrieves an enum value from the enum constants string name.
