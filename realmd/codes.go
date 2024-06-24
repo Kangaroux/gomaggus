@@ -37,7 +37,8 @@ const (
 	OpClientCharDelete               ClientOpcode = 0x38
 	OpClientPlayerLogin              ClientOpcode = 0x3D
 	OpClientReadyForAccountDataTimes ClientOpcode = 0x4FF
-	OpClientLogout                   ClientOpcode = 0x4B
+	OpClientLogoutForce              ClientOpcode = 0x4A // CMSG_PLAYER_LOGOUT -- sent if player types `logout` in the console
+	OpClientLogoutRequest            ClientOpcode = 0x4B
 	OpClientLogoutCancel             ClientOpcode = 0x4E
 	OpClientPutStorage               ClientOpcode = 0x20B // CMSG_UPDATE_ACCOUNT_DATA
 	OpClientGetStorage               ClientOpcode = 0x20A // CMSG_REQUEST_ACCOUNT_DATA

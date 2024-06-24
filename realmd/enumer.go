@@ -12,8 +12,8 @@ const (
 	_ClientOpcodeLowerName_0 = "clientcharcreateclientcharlistclientchardelete"
 	_ClientOpcodeName_1      = "ClientPlayerLogin"
 	_ClientOpcodeLowerName_1 = "clientplayerlogin"
-	_ClientOpcodeName_2      = "ClientLogout"
-	_ClientOpcodeLowerName_2 = "clientlogout"
+	_ClientOpcodeName_2      = "ClientLogoutForceClientLogoutRequest"
+	_ClientOpcodeLowerName_2 = "clientlogoutforceclientlogoutrequest"
 	_ClientOpcodeName_3      = "ClientLogoutCancel"
 	_ClientOpcodeLowerName_3 = "clientlogoutcancel"
 	_ClientOpcodeName_4      = "ClientPing"
@@ -33,7 +33,7 @@ const (
 var (
 	_ClientOpcodeIndex_0 = [...]uint8{0, 16, 30, 46}
 	_ClientOpcodeIndex_1 = [...]uint8{0, 17}
-	_ClientOpcodeIndex_2 = [...]uint8{0, 12}
+	_ClientOpcodeIndex_2 = [...]uint8{0, 17, 36}
 	_ClientOpcodeIndex_3 = [...]uint8{0, 18}
 	_ClientOpcodeIndex_4 = [...]uint8{0, 10}
 	_ClientOpcodeIndex_5 = [...]uint8{0, 17}
@@ -50,8 +50,9 @@ func (i ClientOpcode) String() string {
 		return _ClientOpcodeName_0[_ClientOpcodeIndex_0[i]:_ClientOpcodeIndex_0[i+1]]
 	case i == 61:
 		return _ClientOpcodeName_1
-	case i == 75:
-		return _ClientOpcodeName_2
+	case 74 <= i && i <= 75:
+		i -= 74
+		return _ClientOpcodeName_2[_ClientOpcodeIndex_2[i]:_ClientOpcodeIndex_2[i+1]]
 	case i == 78:
 		return _ClientOpcodeName_3
 	case i == 476:
@@ -80,7 +81,8 @@ func _ClientOpcodeNoOp() {
 	_ = x[OpClientCharList-(55)]
 	_ = x[OpClientCharDelete-(56)]
 	_ = x[OpClientPlayerLogin-(61)]
-	_ = x[OpClientLogout-(75)]
+	_ = x[OpClientLogoutForce-(74)]
+	_ = x[OpClientLogoutRequest-(75)]
 	_ = x[OpClientLogoutCancel-(78)]
 	_ = x[OpClientPing-(476)]
 	_ = x[OpClientAuthSession-(493)]
@@ -91,7 +93,7 @@ func _ClientOpcodeNoOp() {
 	_ = x[OpClientReadyForAccountDataTimes-(1279)]
 }
 
-var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogout, OpClientLogoutCancel, OpClientPing, OpClientAuthSession, OpClientGetStorage, OpClientPutStorage, OpClientRealmSplit, OpClientGetUnixTime, OpClientReadyForAccountDataTimes}
+var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogoutForce, OpClientLogoutRequest, OpClientLogoutCancel, OpClientPing, OpClientAuthSession, OpClientGetStorage, OpClientPutStorage, OpClientRealmSplit, OpClientGetUnixTime, OpClientReadyForAccountDataTimes}
 
 var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeName_0[0:16]:       OpClientCharCreate,
@@ -102,8 +104,10 @@ var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeLowerName_0[30:46]: OpClientCharDelete,
 	_ClientOpcodeName_1[0:17]:       OpClientPlayerLogin,
 	_ClientOpcodeLowerName_1[0:17]:  OpClientPlayerLogin,
-	_ClientOpcodeName_2[0:12]:       OpClientLogout,
-	_ClientOpcodeLowerName_2[0:12]:  OpClientLogout,
+	_ClientOpcodeName_2[0:17]:       OpClientLogoutForce,
+	_ClientOpcodeLowerName_2[0:17]:  OpClientLogoutForce,
+	_ClientOpcodeName_2[17:36]:      OpClientLogoutRequest,
+	_ClientOpcodeLowerName_2[17:36]: OpClientLogoutRequest,
 	_ClientOpcodeName_3[0:18]:       OpClientLogoutCancel,
 	_ClientOpcodeLowerName_3[0:18]:  OpClientLogoutCancel,
 	_ClientOpcodeName_4[0:10]:       OpClientPing,
@@ -127,7 +131,8 @@ var _ClientOpcodeNames = []string{
 	_ClientOpcodeName_0[16:30],
 	_ClientOpcodeName_0[30:46],
 	_ClientOpcodeName_1[0:17],
-	_ClientOpcodeName_2[0:12],
+	_ClientOpcodeName_2[0:17],
+	_ClientOpcodeName_2[17:36],
 	_ClientOpcodeName_3[0:18],
 	_ClientOpcodeName_4[0:10],
 	_ClientOpcodeName_5[0:17],

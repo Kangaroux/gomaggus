@@ -165,6 +165,11 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 	c.Log.Trace().Str("data", hex.EncodeToString(data)).Msg("packet data")
 
 	switch header.Opcode {
+	// Ignored
+	case realmd.OpClientLogoutForce:
+		c.Log.Debug().Str("op", opName).Msg("packet ignored")
+		return nil
+
 	case realmd.OpClientPing:
 		return session.PingHandler(c, data)
 
@@ -189,7 +194,7 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 	case realmd.OpClientPlayerLogin:
 		return session.LoginHandler(s.services, c, data)
 
-	case realmd.OpClientLogout:
+	case realmd.OpClientLogoutRequest:
 		return session.LogoutHandler(c)
 
 	case realmd.OpClientLogoutCancel:
