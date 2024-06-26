@@ -14,6 +14,7 @@ import (
 	"github.com/kangaroux/gomaggus/realmd/handler/account"
 	"github.com/kangaroux/gomaggus/realmd/handler/auth"
 	"github.com/kangaroux/gomaggus/realmd/handler/char"
+	"github.com/kangaroux/gomaggus/realmd/handler/player"
 	"github.com/kangaroux/gomaggus/realmd/handler/realm"
 	"github.com/kangaroux/gomaggus/realmd/handler/session"
 	"github.com/kangaroux/gomaggus/realmd/handler/world"
@@ -216,6 +217,9 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 
 	case realmd.OpClientGetUnixTime:
 		return world.UnixTimeHandler(c)
+
+	case realmd.OpClientStandStateChange:
+		return player.StandStateHandler(c, data)
 
 	default:
 		return nil
