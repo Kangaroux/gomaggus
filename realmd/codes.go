@@ -25,6 +25,8 @@ const (
 	OpServerGetStorage           ServerOpcode = 0x20C // SMSG_UPDATE_ACCOUNT_DATA
 	OpServerUnixTime             ServerOpcode = 0x4F7 // SMSG_WORLD_STATE_UI_TIMER_UPDATE
 	OpServerStandState           ServerOpcode = 0x29D
+	OpServerInitialSpells        ServerOpcode = 0x12A
+	OpServerMOTD                 ServerOpcode = 0x33D
 )
 
 type ClientOpcode uint32

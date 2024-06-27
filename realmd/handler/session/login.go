@@ -63,7 +63,13 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if err := sendIntroCinematic(client); err != nil {
 		return err
 	}
+	if err := sendInitialSpells(client); err != nil {
+		return err
+	}
 	if err := sendSpawnPlayer(client); err != nil {
+		return err
+	}
+	if err := sendMOTD(client); err != nil {
 		return err
 	}
 
@@ -161,6 +167,45 @@ func sendIntroCinematic(client *realmd.Client) error {
 	return client.SendPacket(realmd.OpServerPlayCinematic, &resp)
 }
 
+type spell struct {
+	SpellID uint32
+	Unknown uint16 // gophercraft has this as TargetFlags
+}
+
+type initialSpellsResponse struct {
+	Unknown       uint8 // gophercraft has this as TalentSpec but it's unused
+	SpellCount    uint16
+	Spells        []spell `binary:"[SpellCount]Any"`
+	CooldownCount uint16
+	// TODO: CooldownSpells
+}
+
+// https://gtker.com/wow_messages/docs/smsg_initial_spells.html#client-version-335
+func sendInitialSpells(client *realmd.Client) error {
+	spells := []spell{
+		{
+			SpellID: 668, // Language (common)
+			Unknown: 0,
+		},
+		{
+			SpellID: 669, // Language (orcish)
+			Unknown: 0,
+		},
+		{
+			SpellID: 122, // Frost nova
+			Unknown: 0,
+		},
+	}
+	resp := initialSpellsResponse{
+		Unknown:       0, // always zero
+		SpellCount:    uint16(len(spells)),
+		Spells:        spells,
+		CooldownCount: 0,
+	}
+
+	return client.SendPacket(realmd.OpServerInitialSpells, &resp)
+}
+
 // https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
 // TODO: need a builder for these packets
 func sendSpawnPlayer(client *realmd.Client) error {
@@ -217,4 +262,21 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	inner.Write(values.Bytes())
 
 	return client.SendPacketBytes(realmd.OpServerUpdateObject, inner.Bytes())
+}
+
+type motdResponse struct {
+	MOTDCount uint32
+	MOTD      []string `binary:"[MOTDCount]zstring"`
+}
+
+// https://gtker.com/wow_messages/docs/smsg_motd.html#client-version-243-client-version-3
+func sendMOTD(client *realmd.Client) error {
+	motd := []string{
+		"Testing 123",
+	}
+	resp := motdResponse{
+		MOTDCount: uint32(len(motd)),
+		MOTD:      motd,
+	}
+	return client.SendPacket(realmd.OpServerMOTD, &resp)
 }
