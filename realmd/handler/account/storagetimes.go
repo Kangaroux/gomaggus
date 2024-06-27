@@ -16,14 +16,17 @@ type storageTimesResponse struct {
 }
 
 func StorageTimesHandler(svc *realmd.Service, client *realmd.Client) error {
-	times := make([]uint32, model.AccountStorageCount)
+	// The client seems to expect all 8 storage types to be included in the times, except that it
+	// only accesses the ones for the account (we can't know what char it is because they are still
+	// on the char select screen).
+	times := make([]uint32, model.AllStorageCount)
 	storages, err := svc.AccountStorage.List(client.Account.Id, model.AllAccountStorage)
 	if err != nil {
 		return err
 	}
 
-	for i, s := range storages {
-		times[i] = uint32(s.UpdatedAt.Unix())
+	for _, s := range storages {
+		times[s.Type] = uint32(s.UpdatedAt.Unix())
 	}
 
 	resp := storageTimesResponse{

@@ -25,6 +25,7 @@ const (
 const (
 	AccountStorageCount   = 3
 	CharacterStorageCount = 5
+	AllStorageCount       = 8
 	AllAccountStorage     = (1 << AccountData) | (1 << AccountKeybinds) | (1 << AccountMacros)
 	AllCharacterStorage   = (1 << CharacterConfig) | (1 << CharacterKeybinds) | (1 << CharacterMacros) | (1 << CharacterLayout) | (1 << CharacterChat)
 )

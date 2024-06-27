@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"net"
 	"sync/atomic"
@@ -164,6 +165,7 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 	}
 
 	c.Log.Debug().Str("op", opcode.String()).Int("size", len(data)).Msg("packet send")
+	c.Log.Trace().Str("data", hex.EncodeToString(data)).Msg("send data")
 
 	_, err = c.Conn.Write(append(header, data...))
 	return err

@@ -74,16 +74,13 @@ func (h *StoragePutHandler) putAccountStorage(t model.AccountStorageType) error 
 		Data:             h.req.Data,
 		UncompressedSize: int(h.req.UncompressedSize),
 	}
-
-	created, err := h.Service.AccountStorage.UpdateOrCreate(&obj)
-	if err != nil {
+	if _, err := h.Service.AccountStorage.UpdateOrCreate(&obj); err != nil {
 		return err
 	}
 
-	h.Client.Log.Trace().
-		Int("len", len(h.req.Data)).
-		Str("type", t.String()).
-		Bool("created", created).
+	h.Client.Log.Debug().
+		Any("storage", obj).
+		Str("account", h.Client.Account.String()).
 		Msg("updated account storage")
 
 	return nil
@@ -101,17 +98,13 @@ func (h *StoragePutHandler) putCharacterStorage(t model.CharacterStorageType) er
 		Data:             h.req.Data,
 		UncompressedSize: int(h.req.UncompressedSize),
 	}
-
-	created, err := h.Service.CharacterStorage.UpdateOrCreate(&obj)
-	if err != nil {
+	if _, err := h.Service.CharacterStorage.UpdateOrCreate(&obj); err != nil {
 		return err
 	}
 
 	h.Client.Log.Trace().
-		Int("len", len(h.req.Data)).
-		Str("type", t.String()).
+		Any("storage", obj).
 		Str("char", h.Client.Character.String()).
-		Bool("created", created).
 		Msg("updated character storage")
 
 	return nil
@@ -181,6 +174,11 @@ func (h *StorageGetHandler) getAccountStorage(t model.AccountStorageType) (int, 
 		return 0, nil, err
 	}
 
+	h.Client.Log.Trace().
+		Any("storage", storage).
+		Str("account", h.Client.Account.String()).
+		Msg("fetched account storage")
+
 	return storage.UncompressedSize, storage.Data, nil
 }
 func (h *StorageGetHandler) getCharacterStorage(t model.CharacterStorageType) (int, []byte, error) {
@@ -193,6 +191,11 @@ func (h *StorageGetHandler) getCharacterStorage(t model.CharacterStorageType) (i
 	if err != nil {
 		return 0, nil, err
 	}
+
+	h.Client.Log.Debug().
+		Any("storage", storage).
+		Str("char", h.Client.Character.String()).
+		Msg("fetched character storage")
 
 	return storage.UncompressedSize, storage.Data, nil
 }
