@@ -11,7 +11,7 @@ type AccountStorageService interface {
 	Get(uint32, AccountStorageType) (*AccountStorage, error)
 
 	// List returns all storage belonging to accountID whose type matches mask. List may return fewer
-	// results than specified in the mask. The results are not ordered.
+	// results than specified in the mask. The results are ordered by type (ascending).
 	List(uint32, uint8) ([]*AccountStorage, error)
 
 	// UpdateOrCreate tries to update the storage if it exists, otherwise it's created. UpdateOrCreate
@@ -60,7 +60,12 @@ func (s *DbAccountStorageService) List(accountID uint32, mask uint8) ([]*Account
 		return nil, nil
 	}
 
-	q, args, err := sqlx.In(`SELECT * FROM account_storage WHERE type IN (?) AND account_id = ?`, types, accountID)
+	q := `
+	SELECT * FROM account_storage
+	WHERE type IN (?) AND account_id = ?
+	ORDER BY type ASC`
+
+	q, args, err := sqlx.In(q, types, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +197,11 @@ func (s *DbCharacterStorageService) List(characterID uint32, mask uint8) ([]*Cha
 		return nil, nil
 	}
 
-	q, args, err := sqlx.In(`SELECT * FROM character_storage WHERE type IN (?) AND character_id = ?`, types, characterID)
+	q := `
+	SELECT * FROM character_storage
+	WHERE type IN (?) AND character_id = ?
+	ORDER BY type ASC`
+	q, args, err := sqlx.In(q, types, characterID)
 	if err != nil {
 		return nil, err
 	}

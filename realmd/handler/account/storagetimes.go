@@ -22,9 +22,8 @@ func StorageTimesHandler(svc *realmd.Service, client *realmd.Client) error {
 		return err
 	}
 
-	for _, s := range storages {
-		// s.Type maps nicely to the order the client is expecting.
-		times[s.Type] = uint32(s.UpdatedAt.Unix())
+	for i, s := range storages {
+		times[i] = uint32(s.UpdatedAt.Unix())
 	}
 
 	resp := storageTimesResponse{
