@@ -69,9 +69,10 @@ func (h *StoragePutHandler) putAccountStorage(t model.AccountStorageType) error 
 	}
 
 	obj := model.AccountStorage{
-		AccountId: h.Client.Account.Id,
-		Type:      t,
-		Data:      h.req.Data,
+		AccountId:        h.Client.Account.Id,
+		Type:             t,
+		Data:             h.req.Data,
+		UncompressedSize: int(h.req.UncompressedSize),
 	}
 
 	created, err := h.Service.AccountStorage.UpdateOrCreate(&obj)
@@ -95,9 +96,10 @@ func (h *StoragePutHandler) putCharacterStorage(t model.CharacterStorageType) er
 	}
 
 	obj := model.CharacterStorage{
-		CharacterId: h.Client.Character.Id,
-		Type:        t,
-		Data:        h.req.Data,
+		CharacterId:      h.Client.Character.Id,
+		Type:             t,
+		Data:             h.req.Data,
+		UncompressedSize: int(h.req.UncompressedSize),
 	}
 
 	created, err := h.Service.CharacterStorage.UpdateOrCreate(&obj)
