@@ -69,6 +69,9 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if err := sendInitialSpells(client); err != nil {
 		return err
 	}
+	if err := sendActionButtons(client); err != nil {
+		return err
+	}
 	if err := sendSpawnPlayer(client); err != nil {
 		return err
 	}
@@ -227,6 +230,43 @@ func sendInitialSpells(client *realmd.Client) error {
 	}
 
 	return client.SendPacket(realmd.OpServerInitialSpells, &resp)
+}
+
+type actionButtonSetType uint8
+
+const (
+	buttonsInitial actionButtonSetType = 0 // Unused
+	buttonsSet     actionButtonSetType = 1
+	buttonsClear   actionButtonSetType = 2
+)
+
+type actionButton struct {
+	// ActionPacked stores an action in the lower 24 bits and the action type in the upper 8 bits
+	ActionPacked uint32
+}
+
+const (
+	actionButtonCount = 144
+)
+
+// actionButtonSetResponse will overwrite all of the player's action bars
+type actionButtonSetResponse struct {
+	Type    actionButtonSetType
+	Buttons [actionButtonCount]actionButton
+}
+
+// actionButtonClearResponse will clear all of the player's action bars
+type actionButtonClearResponse struct {
+	Type actionButtonSetType
+}
+
+func sendActionButtons(client *realmd.Client) error {
+	resp := actionButtonSetResponse{
+		// Trinity says there were issues using Initial, so Set is used instead
+		Type: buttonsSet,
+		// TODO: send buttons
+	}
+	return client.SendPacket(realmd.OpServerActionButtons, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
