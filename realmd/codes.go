@@ -27,6 +27,7 @@ const (
 	OpServerStandState           ServerOpcode = 0x29D
 	OpServerInitialSpells        ServerOpcode = 0x12A
 	OpServerMOTD                 ServerOpcode = 0x33D
+	OpServerSetTimeSpeed         ServerOpcode = 0x42
 )
 
 type ClientOpcode uint32

@@ -54,6 +54,9 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if err := sendTutorialFlags(client); err != nil {
 		return err
 	}
+	if err := sendWorldTimeSpeed(client); err != nil {
+		return err
+	}
 	if err := sendSystemFeatures(client); err != nil {
 		return err
 	}
@@ -115,6 +118,26 @@ func sendTutorialFlags(client *realmd.Client) error {
 	// Enable all tutorial flags
 	resp := tutorialFlags{Flags: bytes.Repeat([]byte{0xFF}, 32)}
 	return client.SendPacket(realmd.OpServerTutorialFlags, &resp)
+}
+
+type worldTimeSpeed struct {
+	DateTime realmd.DateTime
+
+	// TimeScale is the rate the in-game realm time passes. It's represented as a ratio of minutes:seconds,
+	// where minutes is in-game minutes and seconds is real-world seconds. This affects how fast the
+	// in-game clock ticks as well as day/night cycles.
+	TimeScale float32
+	Unknown   uint32
+}
+
+// https://gtker.com/wow_messages/docs/smsg_login_settimespeed.html#client-version-312-client-version-32-client-version-33
+func sendWorldTimeSpeed(client *realmd.Client) error {
+	resp := worldTimeSpeed{
+		DateTime:  realmd.NewDateTime(time.Now()),
+		TimeScale: 1.0 / 60, // 1 realm minute = 60 real world seconds
+		Unknown:   0,
+	}
+	return client.SendPacket(realmd.OpServerSetTimeSpeed, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_feature_system_status.html#client-version-335
