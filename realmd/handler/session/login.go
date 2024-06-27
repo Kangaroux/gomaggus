@@ -72,6 +72,9 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if err := sendActionButtons(client); err != nil {
 		return err
 	}
+	if err := sendInitialWorldStates(client); err != nil {
+		return err
+	}
 	if err := sendSpawnPlayer(client); err != nil {
 		return err
 	}
@@ -260,6 +263,7 @@ type actionButtonClearResponse struct {
 	Type actionButtonSetType
 }
 
+// https://gtker.com/wow_messages/docs/smsg_action_buttons.html#client-version-335
 func sendActionButtons(client *realmd.Client) error {
 	resp := actionButtonSetResponse{
 		// Trinity says there were issues using Initial, so Set is used instead
@@ -267,6 +271,31 @@ func sendActionButtons(client *realmd.Client) error {
 		// TODO: send buttons
 	}
 	return client.SendPacket(realmd.OpServerActionButtons, &resp)
+}
+
+type worldState struct {
+	ID    uint32
+	Value uint32
+}
+
+type initialWorldStateResponse struct {
+	Map        uint32
+	Area       uint32
+	SubArea    uint32
+	StateCount uint16
+	States     []worldState `binary:"[StateCount]Any"`
+}
+
+// World states are used for telling the client about map or zone specific information.
+// A state is a key:value mapping between a 32 bit ID and a 32 bit value.
+// For example, PvP battlegrounds use world states for tracking captures.
+// https://gtker.com/wow_messages/docs/smsg_init_world_states.html#client-version-335
+func sendInitialWorldStates(client *realmd.Client) error {
+	resp := initialWorldStateResponse{
+		Map:  0,  // Eastern kingdoms
+		Area: 12, // Elwynn Forest
+	}
+	return client.SendPacket(realmd.OpServerInitialWorldStates, &resp)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_update_object.html#client-version-335
