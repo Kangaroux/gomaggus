@@ -15,25 +15,49 @@ type storageTimesResponse struct {
 	StorageTimes []uint32
 }
 
-func StorageTimesHandler(svc *realmd.Service, client *realmd.Client) error {
-	// The client seems to expect all 8 storage types to be included in the times, except that it
-	// only accesses the ones for the account (we can't know what char it is because they are still
-	// on the char select screen).
+type StorageTimesHandler struct {
+	Client  *realmd.Client
+	Service *realmd.Service
+}
+
+func (h *StorageTimesHandler) Handle() error {
+	return h.Send(model.AllAccountStorage)
+}
+
+func (h *StorageTimesHandler) Send(mask uint8) error {
+	// The client expects every storage time is sent, regardless of what the StorageMask is. When the
+	// client is on the character select screen, any character storage times will always be zero.
 	times := make([]uint32, model.AllStorageCount)
-	storages, err := svc.AccountStorage.List(client.Account.Id, model.AllAccountStorage)
-	if err != nil {
-		return err
+
+	// Load account storage times
+	if mask&model.AllAccountStorage > 0 {
+		storages, err := h.Service.AccountStorage.List(h.Client.Account.Id, mask)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range storages {
+			times[s.Type] = uint32(s.UpdatedAt.Unix())
+		}
 	}
 
-	for _, s := range storages {
-		times[s.Type] = uint32(s.UpdatedAt.Unix())
+	// Load character storage times (if they are logged in to the world)
+	if h.Client.Character != nil && mask&model.AllCharacterStorage > 0 {
+		storages, err := h.Service.CharacterStorage.List(h.Client.Character.Id, mask)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range storages {
+			times[s.Type] = uint32(s.UpdatedAt.Unix())
+		}
 	}
 
 	resp := storageTimesResponse{
 		Time:         uint32(time.Now().Unix()),
 		Activated:    true,
-		StorageMask:  model.AllAccountStorage,
+		StorageMask:  uint32(mask),
 		StorageTimes: times,
 	}
-	return client.SendPacket(realmd.OpServerAccountStorageTimes, &resp)
+	return h.Client.SendPacket(realmd.OpServerClientStorageTimes, &resp)
 }

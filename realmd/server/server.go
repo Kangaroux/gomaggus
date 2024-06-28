@@ -190,7 +190,11 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 		return char.DeleteHandler(s.services, c, data)
 
 	case realmd.OpClientReadyForAccountDataTimes:
-		return account.StorageTimesHandler(s.services, c)
+		h := &account.StorageTimesHandler{
+			Client:  c,
+			Service: s.services,
+		}
+		return h.Handle()
 
 	case realmd.OpClientPlayerLogin:
 		return session.LoginHandler(s.services, c, data)

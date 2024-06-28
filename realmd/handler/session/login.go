@@ -6,7 +6,9 @@ import (
 	"math"
 	"time"
 
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
+	"github.com/kangaroux/gomaggus/realmd/handler/account"
 	"github.com/kangaroux/gomaggus/realmd/objupdate"
 	"github.com/mixcode/binarystruct"
 )
@@ -49,6 +51,9 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	client.Character = char
 
 	if err := sendVerifyWorld(client); err != nil {
+		return err
+	}
+	if err := sendCharacterStorageTimes(svc, client); err != nil {
 		return err
 	}
 	if err := sendTutorialFlags(client); err != nil {
@@ -113,6 +118,14 @@ func sendVerifyWorld(client *realmd.Client) error {
 	}
 
 	return client.SendPacket(realmd.OpServerCharLoginVerifyWorld, &resp)
+}
+
+func sendCharacterStorageTimes(svc *realmd.Service, client *realmd.Client) error {
+	h := &account.StorageTimesHandler{
+		Client:  client,
+		Service: svc,
+	}
+	return h.Send(model.AllCharacterStorage)
 }
 
 // https://gtker.com/wow_messages/docs/smsg_tutorial_flags.html
