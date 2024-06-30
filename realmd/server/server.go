@@ -163,7 +163,11 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 	}
 
 	c.Log.Debug().Str("op", opName).Uint16("size", header.Size).Msg("packet recv")
-	c.Log.Trace().Str("data", hex.EncodeToString(data)).Msg("recv data")
+	c.Log.Trace().
+		Func(func(e *log.Entry) { // Skip encoding unless it's actually needed
+			e.Str("data", hex.EncodeToString(data))
+		}).
+		Msg("recv data")
 
 	switch header.Opcode {
 	// Ignored

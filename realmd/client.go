@@ -164,8 +164,16 @@ func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
 		return err
 	}
 
-	c.Log.Debug().Str("op", opcode.String()).Int("size", len(data)).Msg("packet send")
-	c.Log.Trace().Str("data", hex.EncodeToString(data)).Msg("send data")
+	c.Log.Debug().
+		Str("op", opcode.String()).
+		Int("size", len(data)).
+		Msg("packet send")
+
+	c.Log.Trace().
+		Func(func(e *log.Entry) { // Skip encoding unless it's actually needed
+			e.Str("data", hex.EncodeToString(data))
+		}).
+		Msg("send data")
 
 	_, err = c.Conn.Write(append(header, data...))
 	return err
