@@ -7,7 +7,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mixcode/binarystruct v0.0.11
-	github.com/phuslu/log v1.0.106
+	github.com/phuslu/log v1.0.107
 	github.com/stretchr/testify v1.9.0
 )
 
