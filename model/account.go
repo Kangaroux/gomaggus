@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kangaroux/gomaggus/srp"
+	srp "github.com/kangaroux/go-wow-srp6"
 )
 
 type Account struct {
@@ -36,7 +36,7 @@ func (acc *Account) SetUsernamePassword(username, password string) error {
 
 	acc.Username = username
 	acc.SrpSaltHex = hex.EncodeToString(salt)
-	acc.SrpVerifierHex = hex.EncodeToString(srp.CalculateVerifier(username, password, salt))
+	acc.SrpVerifierHex = hex.EncodeToString(srp.PasswordVerifier(username, password, salt))
 
 	return nil
 }

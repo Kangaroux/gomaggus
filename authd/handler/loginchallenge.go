@@ -9,10 +9,10 @@ import (
 	"log"
 	mrand "math/rand"
 
+	srp "github.com/kangaroux/go-wow-srp6"
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
-	"github.com/kangaroux/gomaggus/srp"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -99,7 +99,7 @@ func (h *LoginChallenge) Handle() error {
 			return err
 		}
 
-		publicKey = srp.CalculateServerPublicKey(acct.Verifier(), h.Client.PrivateKey)
+		publicKey = srp.ServerPublicKey(acct.Verifier(), h.Client.PrivateKey)
 		h.Client.ServerPublicKey = publicKey
 		salt = acct.Salt()
 	}

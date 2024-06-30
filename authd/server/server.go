@@ -11,10 +11,10 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	srp "github.com/kangaroux/go-wow-srp6"
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/authd/handler"
 	"github.com/kangaroux/gomaggus/model"
-	"github.com/kangaroux/gomaggus/srp"
 )
 
 const (

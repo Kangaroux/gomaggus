@@ -3,9 +3,9 @@ package auth
 import (
 	"bytes"
 
+	srp "github.com/kangaroux/go-wow-srp6"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
-	"github.com/kangaroux/gomaggus/srp"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -120,7 +120,7 @@ func authenticateClient(svc *realmd.Service, client *realmd.Client, p *proofRequ
 		return false, err
 	}
 
-	proof := srp.CalculateWorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, session.SessionKey())
+	proof := srp.WorldProof(p.Username, p.ClientSeed[:], client.ServerSeed, session.SessionKey())
 
 	// Did the client authenticate with authd first?
 	if !bytes.Equal(proof, p.ClientProof[:]) {

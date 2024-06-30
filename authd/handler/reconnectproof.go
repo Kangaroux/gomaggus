@@ -10,9 +10,9 @@ import (
 	"log"
 	"time"
 
+	srp "github.com/kangaroux/go-wow-srp6"
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
-	"github.com/kangaroux/gomaggus/srp"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -63,7 +63,7 @@ func (h *ReconnectProof) Handle() error {
 			}
 			h.Client.SessionKey = session.SessionKey()
 
-			serverProof := srp.CalculateReconnectProof(h.Client.Username, h.request.ProofData[:], h.Client.ReconnectData, h.Client.SessionKey)
+			serverProof := srp.ReconnectProof(h.Client.Username, h.request.ProofData[:], h.Client.ReconnectData, h.Client.SessionKey)
 			authenticated = bytes.Equal(serverProof, h.request.ClientProof[:])
 		}
 	}

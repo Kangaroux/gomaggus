@@ -10,9 +10,9 @@ import (
 	"log"
 	"time"
 
+	srp "github.com/kangaroux/go-wow-srp6"
 	"github.com/kangaroux/gomaggus/authd"
 	"github.com/kangaroux/gomaggus/model"
-	"github.com/kangaroux/gomaggus/srp"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -75,12 +75,12 @@ func (h *LoginProof) Handle() error {
 		acct := h.Client.Account
 
 		c.ClientPublicKey = h.request.ClientPublicKey[:]
-		c.SessionKey = srp.CalculateServerSessionKey(c.ClientPublicKey, c.ServerPublicKey, c.PrivateKey, acct.Verifier())
-		calculatedClientProof := srp.CalculateClientProof(acct.Username, acct.Salt(), c.ClientPublicKey, c.ServerPublicKey, c.SessionKey)
+		c.SessionKey = srp.SessionKey(c.ClientPublicKey, c.ServerPublicKey, c.PrivateKey, acct.Verifier())
+		calculatedClientProof := srp.ClientChallengeProof(acct.Username, acct.Salt(), c.ClientPublicKey, c.ServerPublicKey, c.SessionKey)
 		authenticated = bytes.Equal(calculatedClientProof, h.request.ClientProof[:])
 
 		if authenticated {
-			serverProof = srp.CalculateServerProof(c.ClientPublicKey, h.request.ClientProof[:], c.SessionKey)
+			serverProof = srp.ServerChallengeProof(c.ClientPublicKey, h.request.ClientProof[:], c.SessionKey)
 		}
 	}
 
