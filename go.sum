@@ -8,8 +8,8 @@ github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpv
 github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=
 github.com/jmoiron/sqlx v1.4.0 h1:1PLqN7S1UYp5t4SrVVnt4nUVNemrDAtxlulVe+Qgm3o=
 github.com/jmoiron/sqlx v1.4.0/go.mod h1:ZrZ7UsYB/weZdl2Bxg6jCRO9c3YHl8r3ahlKmRT4JLY=
-github.com/kangaroux/go-wow-srp6 v1.0.0 h1:uv5MW0DGtFpm8oFa7ZBJhsm10R66GsfKZm+ThSRt44Q=
-github.com/kangaroux/go-wow-srp6 v1.0.0/go.mod h1:L0+V8X4sXNf21LHNqCw6oZK/L6YWyOGk89tQb7wFp1s=
+github.com/kangaroux/go-wow-srp6 v1.1.0 h1:QvmYZ4MC8Oq+HpLwR0D1qK5rGptGQqZZ7VazQkCJhKA=
+github.com/kangaroux/go-wow-srp6 v1.1.0/go.mod h1:L0+V8X4sXNf21LHNqCw6oZK/L6YWyOGk89tQb7wFp1s=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=

@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/dmarkham/enumer v1.5.10
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/kangaroux/go-wow-srp6 v1.0.0
+	github.com/kangaroux/go-wow-srp6 v1.1.0
 	github.com/lib/pq v1.10.9
 	github.com/mixcode/binarystruct v0.0.11
 	github.com/phuslu/log v1.0.107
