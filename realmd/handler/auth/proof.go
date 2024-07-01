@@ -73,11 +73,9 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 
 	client.Authenticated = true
 
-	headerCrypto := realmd.NewHeaderCrypto(client.Session.SessionKey())
-	if err := headerCrypto.Init(); err != nil {
+	if err := client.HeaderCrypto.Init(client.Session.SessionKey()); err != nil {
 		return err
 	}
-	client.HeaderCrypto = headerCrypto
 
 	resp := proofSuccess{
 		ResponseCode:  realmd.RespCodeAuthOk,

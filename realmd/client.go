@@ -10,6 +10,7 @@ import (
 	"net"
 	"sync/atomic"
 
+	"github.com/kangaroux/go-wow-srp6/header"
 	"github.com/kangaroux/gomaggus/internal"
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/mixcode/binarystruct"
@@ -38,7 +39,7 @@ type Client struct {
 
 	// HeaderCrypto decrypts incoming packet headers and encrypts outgoing packet headers. HeaderCrypto
 	// is nil if the client has not yet authenticated.
-	HeaderCrypto *HeaderCrypto
+	HeaderCrypto *header.WrathHeader
 
 	// Cancels a pending logout, if there is one. This func is safe to call when there is no pending logout.
 	CancelPendingLogout context.CancelFunc
@@ -57,61 +58,17 @@ func NewClient(conn net.Conn) (*Client, error) {
 	}
 
 	c := &Client{
-		ID:         nextID.Add(1),
-		Conn:       conn,
-		ServerSeed: seed,
-		Log:        &log.Logger{},
+		ID:           nextID.Add(1),
+		Conn:         conn,
+		ServerSeed:   seed,
+		Log:          &log.Logger{},
+		HeaderCrypto: &header.WrathHeader{},
 
 		// Use a placeholder func so the caller doesn't have to check if it's nil
 		CancelPendingLogout: internal.DoNothing,
 	}
 
 	return c, nil
-}
-
-// BuildHeader returns the server header as a byte array. The returned array contains 4 or 5 bytes
-// depending on the size and is encrypted if the client is authenticated. If size is larger than
-// SizeFieldMaxValue, BuildHeader returns an error.
-func (c *Client) BuildHeader(opcode ServerOpcode, size uint32) ([]byte, error) {
-	// Include the opcode in the size
-	size += 2
-
-	if size > SizeFieldMaxValue {
-		return nil, fmt.Errorf("BuildHeader: size is too large (%d bytes)", size)
-	}
-
-	var header []byte
-
-	// The size field in the header can be 2 or 3 bytes. If the size field is 3 bytes, the MSB of the
-	// size will be set.
-	//
-	// The header format is: <size><opcode>
-	// <size> is 2-3 bytes big endian
-	// <opcode> is 2 bytes little endian
-	if size > LargeHeaderThreshold {
-		header = []byte{
-			byte(size>>16) | LargeHeaderFlag,
-			byte(size >> 8),
-			byte(size),
-			byte(opcode),
-			byte(opcode >> 8),
-		}
-	} else {
-		header = []byte{
-			byte(size >> 8),
-			byte(size),
-			byte(opcode),
-			byte(opcode >> 8),
-		}
-	}
-
-	if c.Authenticated {
-		if err := c.HeaderCrypto.Encrypt(header); err != nil {
-			return nil, err
-		}
-	}
-
-	return header, nil
 }
 
 // ParseHeader parses and returns the header from data. If data is smaller than 6 bytes, ParseHeader
@@ -159,7 +116,7 @@ func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
 // SendPacketBytes generates a header and sends a packet containing the header + data. In most cases,
 // SendPacket should be used instead.
 func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
-	header, err := c.BuildHeader(opcode, uint32(len(data)))
+	header, err := c.HeaderCrypto.Encode(uint16(opcode), uint32(len(data)))
 	if err != nil {
 		return err
 	}
