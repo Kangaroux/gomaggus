@@ -37,9 +37,8 @@ type Client struct {
 	Authenticated bool
 	Log           *log.Logger
 
-	// HeaderCrypto decrypts incoming packet headers and encrypts outgoing packet headers. HeaderCrypto
-	// is nil if the client has not yet authenticated.
-	HeaderCrypto *header.WrathHeader
+	// Header manages packet header encryption/decryption as well as encoding server headers.
+	Header *header.WrathHeader
 
 	// Cancels a pending logout, if there is one. This func is safe to call when there is no pending logout.
 	CancelPendingLogout context.CancelFunc
@@ -58,11 +57,11 @@ func NewClient(conn net.Conn) (*Client, error) {
 	}
 
 	c := &Client{
-		ID:           nextID.Add(1),
-		Conn:         conn,
-		ServerSeed:   seed,
-		Log:          &log.Logger{},
-		HeaderCrypto: &header.WrathHeader{},
+		ID:         nextID.Add(1),
+		Conn:       conn,
+		ServerSeed: seed,
+		Log:        &log.Logger{},
+		Header:     &header.WrathHeader{},
 
 		// Use a placeholder func so the caller doesn't have to check if it's nil
 		CancelPendingLogout: internal.DoNothing,
@@ -81,7 +80,7 @@ func (c *Client) ParseHeader(data []byte) (*ClientHeader, error) {
 	header := data[:ClientHeaderSize]
 
 	if c.Authenticated {
-		if err := c.HeaderCrypto.Decrypt(header); err != nil {
+		if err := c.Header.Decrypt(header); err != nil {
 			return nil, err
 		}
 	}
@@ -116,7 +115,7 @@ func (c *Client) SendPacket(opcode ServerOpcode, data interface{}) error {
 // SendPacketBytes generates a header and sends a packet containing the header + data. In most cases,
 // SendPacket should be used instead.
 func (c *Client) SendPacketBytes(opcode ServerOpcode, data []byte) error {
-	header, err := c.HeaderCrypto.Encode(uint16(opcode), uint32(len(data)))
+	header, err := c.Header.Encode(uint16(opcode), uint32(len(data)))
 	if err != nil {
 		return err
 	}

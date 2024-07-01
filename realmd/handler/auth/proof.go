@@ -73,7 +73,7 @@ func ProofHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 
 	client.Authenticated = true
 
-	if err := client.HeaderCrypto.Init(client.Session.SessionKey()); err != nil {
+	if err := client.Header.Init(client.Session.SessionKey()); err != nil {
 		return err
 	}
 
