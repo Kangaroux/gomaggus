@@ -53,6 +53,10 @@ func (v *Values) Bytes() []byte {
 
 	for _, field := range v.fields {
 		binary.Write(&buf, binary.LittleEndian, field.value)
+		log.Trace().
+			Str("field", field.mask.Name).
+			Uints32("value", field.value).
+			Msg("value field")
 	}
 
 	return buf.Bytes()
