@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-const _ClientOpcodeName = "ClientCharCreateClientCharListClientCharDeleteClientPlayerLoginClientLogoutForceClientLogoutRequestClientLogoutCancelClientStandStateChangeClientPingClientAuthSessionClientGetStorageClientPutStorageClientRealmSplitClientGetUnixTimeClientReadyForAccountDataTimes"
-const _ClientOpcodeLowerName = "clientcharcreateclientcharlistclientchardeleteclientplayerloginclientlogoutforceclientlogoutrequestclientlogoutcancelclientstandstatechangeclientpingclientauthsessionclientgetstorageclientputstorageclientrealmsplitclientgetunixtimeclientreadyforaccountdatatimes"
+const _ClientOpcodeName = "ClientCharCreateClientCharListClientCharDeleteClientPlayerLoginClientLogoutForceClientLogoutRequestClientLogoutCancelClientGetNameClientGetItemInfoClientStandStateChangeClientGetPlayedTimeClientGetTimeClientPingClientAuthSessionClientEnteredZoneClientGetStorageClientPutStorageClientGetTicketStatusClientSetActiveMoverClientGetNextMailArrivalClientGetLFGStatusClientSetActionBarTogglesClientGetRaidInfoClientGetBattlefieldStatusClientGetLFGDungeonListClientRealmSplitClientSetVoiceEnabledClientSetVoiceChannelClientGetGuildBankMoneyClientGetNumPendingEventsClientGetUnixTimeClientReadyForAccountDataTimes"
+const _ClientOpcodeLowerName = "clientcharcreateclientcharlistclientchardeleteclientplayerloginclientlogoutforceclientlogoutrequestclientlogoutcancelclientgetnameclientgetiteminfoclientstandstatechangeclientgetplayedtimeclientgettimeclientpingclientauthsessioncliententeredzoneclientgetstorageclientputstorageclientgetticketstatusclientsetactivemoverclientgetnextmailarrivalclientgetlfgstatusclientsetactionbartogglesclientgetraidinfoclientgetbattlefieldstatusclientgetlfgdungeonlistclientrealmsplitclientsetvoiceenabledclientsetvoicechannelclientgetguildbankmoneyclientgetnumpendingeventsclientgetunixtimeclientreadyforaccountdatatimes"
 
 var _ClientOpcodeMap = map[ClientOpcode]string{
 	54:   _ClientOpcodeName[0:16],
@@ -18,14 +18,31 @@ var _ClientOpcodeMap = map[ClientOpcode]string{
 	74:   _ClientOpcodeName[63:80],
 	75:   _ClientOpcodeName[80:99],
 	78:   _ClientOpcodeName[99:117],
-	257:  _ClientOpcodeName[117:139],
-	476:  _ClientOpcodeName[139:149],
-	493:  _ClientOpcodeName[149:166],
-	522:  _ClientOpcodeName[166:182],
-	523:  _ClientOpcodeName[182:198],
-	908:  _ClientOpcodeName[198:214],
-	1270: _ClientOpcodeName[214:231],
-	1279: _ClientOpcodeName[231:261],
+	80:   _ClientOpcodeName[117:130],
+	86:   _ClientOpcodeName[130:147],
+	257:  _ClientOpcodeName[147:169],
+	460:  _ClientOpcodeName[169:188],
+	462:  _ClientOpcodeName[188:201],
+	476:  _ClientOpcodeName[201:211],
+	493:  _ClientOpcodeName[211:228],
+	500:  _ClientOpcodeName[228:245],
+	522:  _ClientOpcodeName[245:261],
+	523:  _ClientOpcodeName[261:277],
+	529:  _ClientOpcodeName[277:298],
+	618:  _ClientOpcodeName[298:318],
+	644:  _ClientOpcodeName[318:342],
+	662:  _ClientOpcodeName[342:360],
+	703:  _ClientOpcodeName[360:385],
+	717:  _ClientOpcodeName[385:402],
+	723:  _ClientOpcodeName[402:428],
+	878:  _ClientOpcodeName[428:451],
+	908:  _ClientOpcodeName[451:467],
+	943:  _ClientOpcodeName[467:488],
+	979:  _ClientOpcodeName[488:509],
+	1022: _ClientOpcodeName[509:532],
+	1095: _ClientOpcodeName[532:557],
+	1270: _ClientOpcodeName[557:574],
+	1279: _ClientOpcodeName[574:604],
 }
 
 func (i ClientOpcode) String() string {
@@ -46,17 +63,34 @@ func _ClientOpcodeNoOp() {
 	_ = x[OpClientLogoutForce-(74)]
 	_ = x[OpClientLogoutRequest-(75)]
 	_ = x[OpClientLogoutCancel-(78)]
+	_ = x[OpClientGetName-(80)]
+	_ = x[OpClientGetItemInfo-(86)]
 	_ = x[OpClientStandStateChange-(257)]
+	_ = x[OpClientGetPlayedTime-(460)]
+	_ = x[OpClientGetTime-(462)]
 	_ = x[OpClientPing-(476)]
 	_ = x[OpClientAuthSession-(493)]
+	_ = x[OpClientEnteredZone-(500)]
 	_ = x[OpClientGetStorage-(522)]
 	_ = x[OpClientPutStorage-(523)]
+	_ = x[OpClientGetTicketStatus-(529)]
+	_ = x[OpClientSetActiveMover-(618)]
+	_ = x[OpClientGetNextMailArrival-(644)]
+	_ = x[OpClientGetLFGStatus-(662)]
+	_ = x[OpClientSetActionBarToggles-(703)]
+	_ = x[OpClientGetRaidInfo-(717)]
+	_ = x[OpClientGetBattlefieldStatus-(723)]
+	_ = x[OpClientGetLFGDungeonList-(878)]
 	_ = x[OpClientRealmSplit-(908)]
+	_ = x[OpClientSetVoiceEnabled-(943)]
+	_ = x[OpClientSetVoiceChannel-(979)]
+	_ = x[OpClientGetGuildBankMoney-(1022)]
+	_ = x[OpClientGetNumPendingEvents-(1095)]
 	_ = x[OpClientGetUnixTime-(1270)]
 	_ = x[OpClientReadyForAccountDataTimes-(1279)]
 }
 
-var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogoutForce, OpClientLogoutRequest, OpClientLogoutCancel, OpClientStandStateChange, OpClientPing, OpClientAuthSession, OpClientGetStorage, OpClientPutStorage, OpClientRealmSplit, OpClientGetUnixTime, OpClientReadyForAccountDataTimes}
+var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogoutForce, OpClientLogoutRequest, OpClientLogoutCancel, OpClientGetName, OpClientGetItemInfo, OpClientStandStateChange, OpClientGetPlayedTime, OpClientGetTime, OpClientPing, OpClientAuthSession, OpClientEnteredZone, OpClientGetStorage, OpClientPutStorage, OpClientGetTicketStatus, OpClientSetActiveMover, OpClientGetNextMailArrival, OpClientGetLFGStatus, OpClientSetActionBarToggles, OpClientGetRaidInfo, OpClientGetBattlefieldStatus, OpClientGetLFGDungeonList, OpClientRealmSplit, OpClientSetVoiceEnabled, OpClientSetVoiceChannel, OpClientGetGuildBankMoney, OpClientGetNumPendingEvents, OpClientGetUnixTime, OpClientReadyForAccountDataTimes}
 
 var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeName[0:16]:         OpClientCharCreate,
@@ -73,22 +107,56 @@ var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeLowerName[80:99]:   OpClientLogoutRequest,
 	_ClientOpcodeName[99:117]:       OpClientLogoutCancel,
 	_ClientOpcodeLowerName[99:117]:  OpClientLogoutCancel,
-	_ClientOpcodeName[117:139]:      OpClientStandStateChange,
-	_ClientOpcodeLowerName[117:139]: OpClientStandStateChange,
-	_ClientOpcodeName[139:149]:      OpClientPing,
-	_ClientOpcodeLowerName[139:149]: OpClientPing,
-	_ClientOpcodeName[149:166]:      OpClientAuthSession,
-	_ClientOpcodeLowerName[149:166]: OpClientAuthSession,
-	_ClientOpcodeName[166:182]:      OpClientGetStorage,
-	_ClientOpcodeLowerName[166:182]: OpClientGetStorage,
-	_ClientOpcodeName[182:198]:      OpClientPutStorage,
-	_ClientOpcodeLowerName[182:198]: OpClientPutStorage,
-	_ClientOpcodeName[198:214]:      OpClientRealmSplit,
-	_ClientOpcodeLowerName[198:214]: OpClientRealmSplit,
-	_ClientOpcodeName[214:231]:      OpClientGetUnixTime,
-	_ClientOpcodeLowerName[214:231]: OpClientGetUnixTime,
-	_ClientOpcodeName[231:261]:      OpClientReadyForAccountDataTimes,
-	_ClientOpcodeLowerName[231:261]: OpClientReadyForAccountDataTimes,
+	_ClientOpcodeName[117:130]:      OpClientGetName,
+	_ClientOpcodeLowerName[117:130]: OpClientGetName,
+	_ClientOpcodeName[130:147]:      OpClientGetItemInfo,
+	_ClientOpcodeLowerName[130:147]: OpClientGetItemInfo,
+	_ClientOpcodeName[147:169]:      OpClientStandStateChange,
+	_ClientOpcodeLowerName[147:169]: OpClientStandStateChange,
+	_ClientOpcodeName[169:188]:      OpClientGetPlayedTime,
+	_ClientOpcodeLowerName[169:188]: OpClientGetPlayedTime,
+	_ClientOpcodeName[188:201]:      OpClientGetTime,
+	_ClientOpcodeLowerName[188:201]: OpClientGetTime,
+	_ClientOpcodeName[201:211]:      OpClientPing,
+	_ClientOpcodeLowerName[201:211]: OpClientPing,
+	_ClientOpcodeName[211:228]:      OpClientAuthSession,
+	_ClientOpcodeLowerName[211:228]: OpClientAuthSession,
+	_ClientOpcodeName[228:245]:      OpClientEnteredZone,
+	_ClientOpcodeLowerName[228:245]: OpClientEnteredZone,
+	_ClientOpcodeName[245:261]:      OpClientGetStorage,
+	_ClientOpcodeLowerName[245:261]: OpClientGetStorage,
+	_ClientOpcodeName[261:277]:      OpClientPutStorage,
+	_ClientOpcodeLowerName[261:277]: OpClientPutStorage,
+	_ClientOpcodeName[277:298]:      OpClientGetTicketStatus,
+	_ClientOpcodeLowerName[277:298]: OpClientGetTicketStatus,
+	_ClientOpcodeName[298:318]:      OpClientSetActiveMover,
+	_ClientOpcodeLowerName[298:318]: OpClientSetActiveMover,
+	_ClientOpcodeName[318:342]:      OpClientGetNextMailArrival,
+	_ClientOpcodeLowerName[318:342]: OpClientGetNextMailArrival,
+	_ClientOpcodeName[342:360]:      OpClientGetLFGStatus,
+	_ClientOpcodeLowerName[342:360]: OpClientGetLFGStatus,
+	_ClientOpcodeName[360:385]:      OpClientSetActionBarToggles,
+	_ClientOpcodeLowerName[360:385]: OpClientSetActionBarToggles,
+	_ClientOpcodeName[385:402]:      OpClientGetRaidInfo,
+	_ClientOpcodeLowerName[385:402]: OpClientGetRaidInfo,
+	_ClientOpcodeName[402:428]:      OpClientGetBattlefieldStatus,
+	_ClientOpcodeLowerName[402:428]: OpClientGetBattlefieldStatus,
+	_ClientOpcodeName[428:451]:      OpClientGetLFGDungeonList,
+	_ClientOpcodeLowerName[428:451]: OpClientGetLFGDungeonList,
+	_ClientOpcodeName[451:467]:      OpClientRealmSplit,
+	_ClientOpcodeLowerName[451:467]: OpClientRealmSplit,
+	_ClientOpcodeName[467:488]:      OpClientSetVoiceEnabled,
+	_ClientOpcodeLowerName[467:488]: OpClientSetVoiceEnabled,
+	_ClientOpcodeName[488:509]:      OpClientSetVoiceChannel,
+	_ClientOpcodeLowerName[488:509]: OpClientSetVoiceChannel,
+	_ClientOpcodeName[509:532]:      OpClientGetGuildBankMoney,
+	_ClientOpcodeLowerName[509:532]: OpClientGetGuildBankMoney,
+	_ClientOpcodeName[532:557]:      OpClientGetNumPendingEvents,
+	_ClientOpcodeLowerName[532:557]: OpClientGetNumPendingEvents,
+	_ClientOpcodeName[557:574]:      OpClientGetUnixTime,
+	_ClientOpcodeLowerName[557:574]: OpClientGetUnixTime,
+	_ClientOpcodeName[574:604]:      OpClientReadyForAccountDataTimes,
+	_ClientOpcodeLowerName[574:604]: OpClientReadyForAccountDataTimes,
 }
 
 var _ClientOpcodeNames = []string{
@@ -99,14 +167,31 @@ var _ClientOpcodeNames = []string{
 	_ClientOpcodeName[63:80],
 	_ClientOpcodeName[80:99],
 	_ClientOpcodeName[99:117],
-	_ClientOpcodeName[117:139],
-	_ClientOpcodeName[139:149],
-	_ClientOpcodeName[149:166],
-	_ClientOpcodeName[166:182],
-	_ClientOpcodeName[182:198],
-	_ClientOpcodeName[198:214],
-	_ClientOpcodeName[214:231],
-	_ClientOpcodeName[231:261],
+	_ClientOpcodeName[117:130],
+	_ClientOpcodeName[130:147],
+	_ClientOpcodeName[147:169],
+	_ClientOpcodeName[169:188],
+	_ClientOpcodeName[188:201],
+	_ClientOpcodeName[201:211],
+	_ClientOpcodeName[211:228],
+	_ClientOpcodeName[228:245],
+	_ClientOpcodeName[245:261],
+	_ClientOpcodeName[261:277],
+	_ClientOpcodeName[277:298],
+	_ClientOpcodeName[298:318],
+	_ClientOpcodeName[318:342],
+	_ClientOpcodeName[342:360],
+	_ClientOpcodeName[360:385],
+	_ClientOpcodeName[385:402],
+	_ClientOpcodeName[402:428],
+	_ClientOpcodeName[428:451],
+	_ClientOpcodeName[451:467],
+	_ClientOpcodeName[467:488],
+	_ClientOpcodeName[488:509],
+	_ClientOpcodeName[509:532],
+	_ClientOpcodeName[532:557],
+	_ClientOpcodeName[557:574],
+	_ClientOpcodeName[574:604],
 }
 
 // ClientOpcodeString retrieves an enum value from the enum constants string name.

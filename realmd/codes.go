@@ -51,6 +51,23 @@ const (
 	OpClientGetStorage               ClientOpcode = 0x20A // CMSG_REQUEST_ACCOUNT_DATA
 	OpClientGetUnixTime              ClientOpcode = 0x4F6 // CMSG_WORLD_STATE_UI_TIMER_UPDATE
 	OpClientStandStateChange         ClientOpcode = 0x101
+	OpClientGetPlayedTime            ClientOpcode = 0x1CC // TODO CMSG_PLAYED_TIME
+	OpClientGetName                  ClientOpcode = 0x50  // TODO CMSG_NAME_QUERY
+	OpClientSetActiveMover           ClientOpcode = 0x26A // TODO
+	OpClientSetActionBarToggles      ClientOpcode = 0x2BF // TODO
+	OpClientGetRaidInfo              ClientOpcode = 0x2CD // TODO
+	OpClientGetTicketStatus          ClientOpcode = 0x211 // TODO CMSG_GMTICKET_GETTICKET
+	OpClientGetTime                  ClientOpcode = 0x1CE // TODO
+	OpClientGetItemInfo              ClientOpcode = 0x56  // TODO
+	OpClientGetNextMailArrival       ClientOpcode = 0x284 // TODO
+	OpClientGetBattlefieldStatus     ClientOpcode = 0x2D3 // TODO
+	OpClientGetLFGStatus             ClientOpcode = 0x296 // TODO
+	OpClientGetLFGDungeonList        ClientOpcode = 0x36E // TODO CMSG_LFD_PLAYER_LOCK_INFO_REQUEST
+	OpClientGetGuildBankMoney        ClientOpcode = 0x3FE // TODO MSG_GUILD_BANK_MONEY_WITHDRAWN_Client
+	OpClientGetNumPendingEvents      ClientOpcode = 0x447 // TODO CMSG_CALENDAR_GET_NUM_PENDING
+	OpClientSetVoiceEnabled          ClientOpcode = 0x3AF // TODO CMSG_VOICE_SESSION_ENABLE
+	OpClientEnteredZone              ClientOpcode = 0x1F4 // TODO CMSG_ZONEUPDATE
+	OpClientSetVoiceChannel          ClientOpcode = 0x3D3 // TODO CMSG_SET_ACTIVE_VOICE_CHANNEL
 )
 
 type ResponseCode byte
