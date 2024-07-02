@@ -65,3 +65,82 @@ func (v *UnitValues) NativeDisplayModel(modelId uint32) {
 		value: []uint32{uint32(modelId)},
 	})
 }
+
+type UnitFlag uint32
+
+const (
+	ServerControlled    UnitFlag = 0x1
+	NonAttackable       UnitFlag = 0x2
+	RemoveClientControl UnitFlag = 0x4
+	PlayerControlled    UnitFlag = 0x8
+	Rename              UnitFlag = 0x10
+	PetAbandon          UnitFlag = 0x20
+	_                   UnitFlag = 0x40 // Unknown
+	_                   UnitFlag = 0x80 // Unknown
+	OOCNotAttackable    UnitFlag = 0x100
+	Passive             UnitFlag = 0x200
+	_                   UnitFlag = 0x400 // Unknown
+	_                   UnitFlag = 0x800 // Unknown
+	PVP                 UnitFlag = 0x1000
+	IsSilenced          UnitFlag = 0x2000
+	IsPersuaded         UnitFlag = 0x4000
+	Swimming            UnitFlag = 0x8000
+	RemoveAttackIcon    UnitFlag = 0x10000
+	IsPacified          UnitFlag = 0x20000
+	IsStunned           UnitFlag = 0x40000
+	InCombat            UnitFlag = 0x80000
+	InTaxiFlight        UnitFlag = 0x100000
+	Disarmed            UnitFlag = 0x200000
+	Confused            UnitFlag = 0x400000
+	Fleeing             UnitFlag = 0x800000
+	Possessed           UnitFlag = 0x1000000
+	NotSelectable       UnitFlag = 0x2000000
+	Skinnable           UnitFlag = 0x4000000
+	AurasVisible        UnitFlag = 0x8000000
+	_                   UnitFlag = 0x10000000 // Unknown
+	_                   UnitFlag = 0x20000000 // Unknown
+	Sheathe             UnitFlag = 0x40000000
+	NoKillReward        UnitFlag = 0x80000000
+)
+
+func (v *UnitValues) Flags(flags UnitFlag) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskUnitFlags,
+		value: []uint32{uint32(flags)},
+	})
+}
+
+func (v *UnitValues) Strength(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskUnitStrength,
+		value: []uint32{val},
+	})
+}
+
+func (v *UnitValues) Agility(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskUnitAgility,
+		value: []uint32{val},
+	})
+}
+
+func (v *UnitValues) Stamina(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskUnitStamina,
+		value: []uint32{val},
+	})
+}
+
+func (v *UnitValues) Intellect(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskUnitIntellect,
+		value: []uint32{val},
+	})
+}
+
+func (v *UnitValues) Spirit(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskUnitSpirit,
+		value: []uint32{val},
+	})
+}
