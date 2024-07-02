@@ -229,6 +229,9 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 	case realmd.OpClientStandStateChange:
 		return player.StandStateHandler(c, data)
 
+	case realmd.OpClientGetPlayerName:
+		return player.NameHandler(*s.services, c, data)
+
 	default:
 		return nil
 	}

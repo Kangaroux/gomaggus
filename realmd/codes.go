@@ -3,34 +3,35 @@ package realmd
 type ServerOpcode uint16
 
 const (
-	OpServerAuthChallenge        ServerOpcode = 0x1EC
-	OpServerAuthResponse         ServerOpcode = 0x1EE
-	OpServerPong                 ServerOpcode = 0x1DD
-	OpServerClientStorageTimes   ServerOpcode = 0x209
-	OpServerCharList             ServerOpcode = 0x3B
-	OpServerRealmSplit           ServerOpcode = 0x38B
-	OpServerCharCreate           ServerOpcode = 0x3A
-	OpServerCharDelete           ServerOpcode = 0x3C
-	OpServerCharLoginFailed      ServerOpcode = 0x41
-	OpServerCharLoginVerifyWorld ServerOpcode = 0x236
-	OpServerUpdateObject         ServerOpcode = 0xA9
-	OpServerTutorialFlags        ServerOpcode = 0xFD
-	OpServerSystemFeatures       ServerOpcode = 0x3C9
-	OpServerHearthLocation       ServerOpcode = 0x155 // SMSG_BINDPOINTUPDATE
-	OpServerPlayCinematic        ServerOpcode = 0xFA  // SMSG_TRIGGER_CINEMATIC
-	OpServerLogout               ServerOpcode = 0x4C
-	OpServerLogoutComplete       ServerOpcode = 0x4D
-	OpServerLogoutCancelACK      ServerOpcode = 0x4F
-	OpServerPutStorageOK         ServerOpcode = 0x463 // SMSG_UPDATE_ACCOUNT_DATA_COMPLETE
-	OpServerGetStorage           ServerOpcode = 0x20C // SMSG_UPDATE_ACCOUNT_DATA
-	OpServerUnixTime             ServerOpcode = 0x4F7 // SMSG_WORLD_STATE_UI_TIMER_UPDATE
-	OpServerStandState           ServerOpcode = 0x29D
-	OpServerInitialSpells        ServerOpcode = 0x12A
-	OpServerMOTD                 ServerOpcode = 0x33D
-	OpServerSetTimeSpeed         ServerOpcode = 0x42
-	OpServerActionButtons        ServerOpcode = 0x129
-	OpServerInitialWorldStates   ServerOpcode = 0x2C2
-	OpServerFactionReputation    ServerOpcode = 0x122 // SMSG_INITIALIZE_FACTIONS
+	OpServerAuthChallenge         ServerOpcode = 0x1EC
+	OpServerAuthResponse          ServerOpcode = 0x1EE
+	OpServerPong                  ServerOpcode = 0x1DD
+	OpServerClientStorageTimes    ServerOpcode = 0x209
+	OpServerCharList              ServerOpcode = 0x3B
+	OpServerRealmSplit            ServerOpcode = 0x38B
+	OpServerCharCreate            ServerOpcode = 0x3A
+	OpServerCharDelete            ServerOpcode = 0x3C
+	OpServerCharLoginFailed       ServerOpcode = 0x41
+	OpServerCharLoginVerifyWorld  ServerOpcode = 0x236
+	OpServerUpdateObject          ServerOpcode = 0xA9
+	OpServerTutorialFlags         ServerOpcode = 0xFD
+	OpServerSystemFeatures        ServerOpcode = 0x3C9
+	OpServerHearthLocation        ServerOpcode = 0x155 // SMSG_BINDPOINTUPDATE
+	OpServerPlayCinematic         ServerOpcode = 0xFA  // SMSG_TRIGGER_CINEMATIC
+	OpServerLogout                ServerOpcode = 0x4C
+	OpServerLogoutComplete        ServerOpcode = 0x4D
+	OpServerLogoutCancelACK       ServerOpcode = 0x4F
+	OpServerPutStorageOK          ServerOpcode = 0x463 // SMSG_UPDATE_ACCOUNT_DATA_COMPLETE
+	OpServerGetStorage            ServerOpcode = 0x20C // SMSG_UPDATE_ACCOUNT_DATA
+	OpServerUnixTime              ServerOpcode = 0x4F7 // SMSG_WORLD_STATE_UI_TIMER_UPDATE
+	OpServerStandState            ServerOpcode = 0x29D
+	OpServerInitialSpells         ServerOpcode = 0x12A
+	OpServerMOTD                  ServerOpcode = 0x33D
+	OpServerSetTimeSpeed          ServerOpcode = 0x42
+	OpServerActionButtons         ServerOpcode = 0x129
+	OpServerInitialWorldStates    ServerOpcode = 0x2C2
+	OpServerFactionReputation     ServerOpcode = 0x122 // SMSG_INITIALIZE_FACTIONS
+	OpServerGetPlayerNameResponse ServerOpcode = 0x51
 )
 
 type ClientOpcode uint32
@@ -52,7 +53,7 @@ const (
 	OpClientGetUnixTime              ClientOpcode = 0x4F6 // CMSG_WORLD_STATE_UI_TIMER_UPDATE
 	OpClientStandStateChange         ClientOpcode = 0x101
 	OpClientGetPlayedTime            ClientOpcode = 0x1CC // TODO CMSG_PLAYED_TIME
-	OpClientGetName                  ClientOpcode = 0x50  // TODO CMSG_NAME_QUERY
+	OpClientGetPlayerName            ClientOpcode = 0x50  // TODO CMSG_NAME_QUERY
 	OpClientSetActiveMover           ClientOpcode = 0x26A // TODO
 	OpClientSetActionBarToggles      ClientOpcode = 0x2BF // TODO
 	OpClientGetRaidInfo              ClientOpcode = 0x2CD // TODO
