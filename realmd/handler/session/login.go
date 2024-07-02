@@ -77,6 +77,9 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 	if err := sendActionButtons(client); err != nil {
 		return err
 	}
+	if err := sendFactionReputation(client); err != nil {
+		return err
+	}
 	if err := sendInitialWorldStates(client); err != nil {
 		return err
 	}
@@ -284,6 +287,33 @@ func sendActionButtons(client *realmd.Client) error {
 		// TODO: send buttons
 	}
 	return client.SendPacket(realmd.OpServerActionButtons, &resp)
+}
+
+const (
+	FactionCount = 128
+)
+
+type faction struct {
+	Flags    uint8
+	Standing uint32
+}
+
+type factionReputationResponse struct {
+	Count   uint32
+	Faction [FactionCount]faction
+}
+
+// https://gtker.com/wow_messages/docs/smsg_initialize_factions.html#client-version-3
+func sendFactionReputation(client *realmd.Client) error {
+	resp := factionReputationResponse{
+		Count: FactionCount,
+	}
+
+	for _, f := range resp.Faction {
+		f.Flags = 0x1 // visible
+	}
+
+	return client.SendPacket(realmd.OpServerFactionReputation, &resp)
 }
 
 type worldState struct {

@@ -30,6 +30,7 @@ const (
 	OpServerSetTimeSpeed         ServerOpcode = 0x42
 	OpServerActionButtons        ServerOpcode = 0x129
 	OpServerInitialWorldStates   ServerOpcode = 0x2C2
+	OpServerFactionReputation    ServerOpcode = 0x122 // SMSG_INITIALIZE_FACTIONS
 )
 
 type ClientOpcode uint32
