@@ -159,7 +159,7 @@ var (
 	FieldMaskPlayerFlags                       = FieldMask{Size: 1, Offset: 0x96, Name: "FieldMaskPlayerFlags"}
 	FieldMaskPlayerGuildid                     = FieldMask{Size: 1, Offset: 0x97, Name: "FieldMaskPlayerGuildid"}
 	FieldMaskPlayerGuildrank                   = FieldMask{Size: 1, Offset: 0x98, Name: "FieldMaskPlayerGuildrank"}
-	FieldMaskPlayerFieldBytes                  = FieldMask{Size: 1, Offset: 0x99, Name: "FieldMaskPlayerFieldBytes"}
+	FieldMaskPlayerBytes1                      = FieldMask{Size: 1, Offset: 0x99, Name: "FieldMaskPlayerFieldBytes"}
 	FieldMaskPlayerBytes2                      = FieldMask{Size: 1, Offset: 0x9A, Name: "FieldMaskPlayerBytes2"}
 	FieldMaskPlayerBytes3                      = FieldMask{Size: 1, Offset: 0x9B, Name: "FieldMaskPlayerBytes3"}
 	FieldMaskPlayerDuelTeam                    = FieldMask{Size: 1, Offset: 0x9C, Name: "FieldMaskPlayerDuelTeam"}

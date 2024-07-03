@@ -385,6 +385,13 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	obj.Type(objupdate.ObjectTypeObject, objupdate.ObjectTypeUnit, objupdate.ObjectTypePlayer)
 	obj.ScaleX(1)
 
+	player := values.Player()
+	player.Face(char.Face)
+	player.SkinColor(char.SkinColor)
+	player.HairStyle(char.HairStyle)
+	player.HairColor(char.HairColor)
+	player.ExtraCosmetic(char.ExtraCosmetic)
+
 	unit := values.Unit()
 	unit.Race(char.Race)
 	unit.Class(char.Class)
