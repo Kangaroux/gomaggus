@@ -393,7 +393,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	unit.Faction(char.Race)
 	unit.DisplayModel(0x4D0C)       // human female
 	unit.NativeDisplayModel(0x4D0C) // human female
-	unit.Flags(objupdate.PlayerControlled)
+	unit.Flags(objupdate.PlayerControlled | objupdate.AurasVisible)
 	unit.Agility(10)
 	unit.Intellect(10)
 	unit.Stamina(10)

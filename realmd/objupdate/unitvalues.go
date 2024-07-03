@@ -79,9 +79,9 @@ const (
 	_                   UnitFlag = 0x80 // Unknown
 	OOCNotAttackable    UnitFlag = 0x100
 	Passive             UnitFlag = 0x200
-	_                   UnitFlag = 0x400 // Unknown
-	_                   UnitFlag = 0x800 // Unknown
-	PVP                 UnitFlag = 0x1000
+	IsLooting           UnitFlag = 0x400  // Unknown
+	IsPetInCombat       UnitFlag = 0x800  // Unknown
+	PVP                 UnitFlag = 0x1000 // Moved to FieldMaskUnitBytes2
 	IsSilenced          UnitFlag = 0x2000
 	IsPersuaded         UnitFlag = 0x4000
 	Swimming            UnitFlag = 0x8000
@@ -98,7 +98,7 @@ const (
 	Skinnable           UnitFlag = 0x4000000
 	AurasVisible        UnitFlag = 0x8000000
 	_                   UnitFlag = 0x10000000 // Unknown
-	_                   UnitFlag = 0x20000000 // Unknown
+	NoImplicitEmotes    UnitFlag = 0x20000000
 	Sheathe             UnitFlag = 0x40000000
 	NoKillReward        UnitFlag = 0x80000000
 )
