@@ -36,10 +36,11 @@ type valueField struct {
 // field values in a specific order. Field ordering is managed by Values, the caller can set
 // field values in whatever order they like.
 type Values struct {
-	mask        ValuesMask
-	fields      []*valueField
-	objBuilder  *ObjectValues
-	unitBuilder *UnitValues
+	mask   ValuesMask
+	fields []*valueField
+	object *ObjectValues
+	player *PlayerValues
+	unit   *UnitValues
 }
 
 // Bytes returns the complete little-endian byte array of the field mask and values.
@@ -64,17 +65,24 @@ func (v *Values) Bytes() []byte {
 }
 
 func (v *Values) Object() *ObjectValues {
-	if v.objBuilder == nil {
-		v.objBuilder = &ObjectValues{buf: v}
+	if v.object == nil {
+		v.object = &ObjectValues{buf: v}
 	}
-	return v.objBuilder
+	return v.object
+}
+
+func (v *Values) Player() *PlayerValues {
+	if v.player == nil {
+		v.player = &PlayerValues{buf: v}
+	}
+	return v.player
 }
 
 func (v *Values) Unit() *UnitValues {
-	if v.unitBuilder == nil {
-		v.unitBuilder = &UnitValues{buf: v}
+	if v.unit == nil {
+		v.unit = &UnitValues{buf: v}
 	}
-	return v.unitBuilder
+	return v.unit
 }
 
 func (v *Values) addField(field *valueField) {
