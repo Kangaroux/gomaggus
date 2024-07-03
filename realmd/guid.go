@@ -1,5 +1,7 @@
 package realmd
 
+// TODO: guids should be stored as (2) uint32 values, OR add an explicit Marshal method that encodes
+// them as (2) values. A little-endian uint64 is different from (2) little-endian uint32s.
 type Guid uint64
 type PackedGuid []byte
 
