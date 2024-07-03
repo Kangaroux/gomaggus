@@ -26,8 +26,9 @@ const (
 )
 
 type valueField struct {
-	mask  FieldMask
-	value []uint32
+	mask    FieldMask
+	value   []uint32
+	bitmask []uint32
 }
 
 // Values stores the data necessary for building the values block for the object update packet.
@@ -77,25 +78,40 @@ func (v *Values) Unit() *UnitValues {
 }
 
 func (v *Values) addField(field *valueField) {
-	// Has this field already been added?
-	if v.mask.FieldMask(field.mask) {
-
-		// Find and replace the field
-		for i := range v.fields {
-			if v.fields[i].mask == field.mask {
-				// Setting the same field twice smells like a logic error
-				log.Warn().
-					Str("mask", field.mask.String()).
-					Any("oldval", v.fields[i].value).
-					Any("newval", v.fields[i].value).
-					Msg("overwrote existing field")
-
-				v.fields[i] = field
-				return
-			}
-		}
+	// Field has not been added yet
+	if !v.mask.FieldMask(field.mask) {
+		v.fields = append(v.fields, field)
+		v.mask.SetFieldMask(field.mask)
+		return
 	}
 
-	v.fields = append(v.fields, field)
-	v.mask.SetFieldMask(field.mask)
+	// Find existing field and update it
+	for i := range v.fields {
+		existing := v.fields[i]
+		if existing.mask != field.mask {
+			continue
+		}
+
+		// If a bitmask was provided, overwrite only the masked bits
+		if len(field.bitmask) > 0 {
+
+			// Expand the existing value to fit the provided bitmask
+			if len(field.bitmask) > len(existing.value) {
+				for j := len(existing.value); j < len(field.bitmask); j++ {
+					existing.value = append(existing.value, 0)
+				}
+			}
+
+			for j := range existing.bitmask {
+				// Zero the masked bits first in case there was a value there previously
+				existing.value[j] &= ^field.bitmask[j]
+				existing.value[j] |= field.value[j] & field.bitmask[j]
+			}
+		} else {
+			// If no bitmask was provided, overwrite the whole field
+			v.fields[i].value = field.value
+		}
+
+		break
+	}
 }
