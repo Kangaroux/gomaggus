@@ -83,3 +83,24 @@ func (v *PlayerValues) PlayerGender(val uint8) {
 		bitmask: []uint32{playerGenderMask},
 	})
 }
+
+func (v *PlayerValues) Experience(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskPlayerExperience,
+		value: []uint32{val},
+	})
+}
+
+func (v *PlayerValues) ExperienceToNextLevel(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskPlayerExperienceToNextLevel,
+		value: []uint32{val},
+	})
+}
+
+func (v *PlayerValues) Wealth(val uint32) {
+	v.buf.addField(&valueField{
+		mask:  FieldMaskPlayerWealth,
+		value: []uint32{val},
+	})
+}

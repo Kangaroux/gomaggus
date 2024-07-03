@@ -26,8 +26,13 @@ const (
 )
 
 type valueField struct {
-	mask    FieldMask
-	value   []uint32
+	// The field mask that describes the position and size of the field
+	mask FieldMask
+
+	// The actual field value. The length of value should equal mask.Size
+	value []uint32
+
+	// An optional bitmask for applying the value. If nil or empty, no bitmask is used
 	bitmask []uint32
 }
 

@@ -391,6 +391,10 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	player.HairStyle(char.HairStyle)
 	player.HairColor(char.HairColor)
 	player.ExtraCosmetic(char.ExtraCosmetic)
+	player.BankBagSlotCount(8)
+	player.Experience(0)
+	player.ExperienceToNextLevel(100)
+	player.Wealth(0)
 
 	unit := values.Unit()
 	unit.Race(char.Race)
