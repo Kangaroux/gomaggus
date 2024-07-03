@@ -11,15 +11,42 @@ type UnitValues struct {
 	buf *Values
 }
 
-func (v *UnitValues) RaceClassGenderPower(race model.Race, class model.Class, gender model.Gender, powerType realmd.PowerType) {
-	val := uint32(race) |
-		uint32(class)<<8 |
-		uint32(gender)<<16 |
-		uint32(powerType)<<24
+const (
+	raceMask      = 0xFF
+	classMask     = 0xFF00
+	genderMask    = 0xFF0000
+	powerTypeMask = 0xFF000000
+)
 
+func (v *UnitValues) Race(val model.Race) {
 	v.buf.addField(&valueField{
-		mask:  FieldMaskUnitRaceClassGenderPower,
-		value: []uint32{val},
+		mask:    FieldMaskUnitRaceClassGenderPower,
+		value:   []uint32{uint32(val)},
+		bitmask: []uint32{raceMask},
+	})
+}
+
+func (v *UnitValues) Class(val model.Class) {
+	v.buf.addField(&valueField{
+		mask:    FieldMaskUnitRaceClassGenderPower,
+		value:   []uint32{uint32(val) << 8},
+		bitmask: []uint32{classMask},
+	})
+}
+
+func (v *UnitValues) Gender(val model.Gender) {
+	v.buf.addField(&valueField{
+		mask:    FieldMaskUnitRaceClassGenderPower,
+		value:   []uint32{uint32(val) << 16},
+		bitmask: []uint32{genderMask},
+	})
+}
+
+func (v *UnitValues) PowerType(val realmd.PowerType) {
+	v.buf.addField(&valueField{
+		mask:    FieldMaskUnitRaceClassGenderPower,
+		value:   []uint32{uint32(val) << 24},
+		bitmask: []uint32{powerTypeMask},
 	})
 }
 

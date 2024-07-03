@@ -10,7 +10,10 @@ import (
 
 func TestRaceClassGenderPower(t *testing.T) {
 	v := UnitValues{buf: &Values{}}
-	v.RaceClassGenderPower(4, 3, 2, 1)
+	v.Race(4)
+	v.Class(3)
+	v.Gender(2)
+	v.PowerType(1)
 	expected := internal.MustMarshal(
 		&valueBlock{
 			Mask:   makeMask(FieldMaskUnitRaceClassGenderPower),
