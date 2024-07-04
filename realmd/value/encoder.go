@@ -150,71 +150,17 @@ func sizeof(t reflect.Type) int {
 	return -1
 }
 
-func encodev2(v any) []byte {
-	var buf bytes.Buffer
-	var block uint32
+type encoder struct {
+	buf   bytes.Buffer
+	block uint32
 
-	nBit := 0
+	// cursor keeps track of how many bits have been written into the block.
+	// Its value ranges between [0, 32]. A cursor value of 32 means the block is full.
+	cursor int
+}
 
-	flush := func() {
-		if nBit > 0 {
-			binary.Write(&buf, binary.LittleEndian, block)
-			nBit = 0
-			block = 0
-		}
-	}
-
-	flushIfFull := func() {
-		if nBit == 32 {
-			flush()
-		}
-	}
-
-	align := func(n int) {
-		switch n {
-		case 1, 2, 4:
-			// Convert bytes to bits
-			n *= 8
-		default:
-			panic("n must be 1, 2, or 4")
-		}
-
-		// Start a new byte
-		if byteBits := nBit % 8; byteBits != 0 {
-			nBit += 8 - byteBits
-		}
-
-		// Align to n bits
-		if blockBits := nBit % n; blockBits != 0 {
-			nBit += n - blockBits
-		}
-
-		// Block can't fit n bits
-		if nBit+n > 32 {
-			flush()
-		}
-	}
-
-	writeN := func(v uint32, n int) {
-		align(n)
-		block |= v << nBit
-		nBit += n * 8
-	}
-
-	writeBit := func(b bool) {
-		var v uint32
-
-		flushIfFull()
-
-		if b {
-			v = 1
-		} else {
-			v = 0
-		}
-
-		block |= v << nBit
-		nBit++
-	}
+func (e *encoder) Encode(v any) []byte {
+	e.buf.Reset()
 
 	rv := reflect.ValueOf(v)
 	t := rv.Type()
@@ -225,23 +171,85 @@ func encodev2(v any) []byte {
 
 		switch fv.Kind() {
 		case reflect.Bool:
-			writeBit(fv.Bool())
+			e.writeBit(fv.Bool())
 
 		case reflect.Uint8, reflect.Int8:
-			writeN(uint32(fv.Uint()), 1)
+			e.writeN(uint32(fv.Uint()), 1)
 
 		case reflect.Uint16, reflect.Int16:
-			writeN(uint32(fv.Uint()), 2)
+			e.writeN(uint32(fv.Uint()), 2)
 
 		case reflect.Uint32, reflect.Int32:
-			writeN(uint32(fv.Uint()), 4)
+			e.writeN(uint32(fv.Uint()), 4)
 
 		case reflect.Float32:
-			writeN(math.Float32bits(float32(fv.Float())), 4)
+			e.writeN(math.Float32bits(float32(fv.Float())), 4)
 		}
 	}
 
-	flush()
+	e.flush()
 
-	return buf.Bytes()
+	return bytes.Clone(e.buf.Bytes())
+}
+
+// flush writes the block to the buffer if it's non-empty.
+func (e *encoder) flush() {
+	if e.cursor > 0 {
+		binary.Write(&e.buf, binary.LittleEndian, e.block)
+		e.cursor = 0
+		e.block = 0
+	}
+}
+
+// align makes room for n bytes inside the block and aligns the cursor to be a multiple of n.
+// The block is automatically flushed if it can't fit n bytes.
+// align panics if n is not 1, 2, or 4.
+func (e *encoder) align(n int) {
+	switch n {
+	case 1, 2, 4:
+		// Convert bytes to bits
+		n *= 8
+	default:
+		panic("n must be 1, 2, or 4")
+	}
+
+	// Start a new byte
+	if byteBits := e.cursor % 8; byteBits != 0 {
+		e.cursor += 8 - byteBits
+	}
+
+	// Align to n bits
+	if blockBits := e.cursor % n; blockBits != 0 {
+		e.cursor += n - blockBits
+	}
+
+	// Block can't fit n bits
+	if e.cursor+n > 32 {
+		e.flush()
+	}
+}
+
+// writeN interprets val as an n-byte value and writes it to the block.
+// writeN panics if n is not 1, 2, or 4.
+func (e *encoder) writeN(val uint32, n int) {
+	e.align(n)
+	e.block |= val << uint32(e.cursor)
+	e.cursor += n * 8
+}
+
+func (e *encoder) writeBit(b bool) {
+	var v uint32
+
+	if e.cursor == 32 {
+		e.flush()
+	}
+
+	if b {
+		v = 1
+	} else {
+		v = 0
+	}
+
+	e.block |= v << uint32(e.cursor)
+	e.cursor++
 }

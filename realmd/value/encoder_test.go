@@ -27,6 +27,8 @@ import (
 // }
 
 func TestV2(t *testing.T) {
+	e := &encoder{}
+
 	type Foo struct {
 		A uint16
 		B uint8
@@ -35,9 +37,9 @@ func TestV2(t *testing.T) {
 		E uint8
 	}
 
-	fmt.Println("first", encodev2(Foo{1, 2, 3, 4, 5}))
+	fmt.Println("first", e.Encode(Foo{1, 2, 3, 4, 5}))
 
-	fmt.Printf("second %08b\n", encodev2(struct {
+	fmt.Printf("second %08b\n", e.Encode(struct {
 		A bool
 		W uint32
 		B bool
