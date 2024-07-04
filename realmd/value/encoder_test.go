@@ -158,7 +158,6 @@ func TestV2(t *testing.T) {
 
 func BenchmarkDeez(b *testing.B) {
 	e := encoder{}
-
 	for i := 0; i < b.N; i++ {
 		e.Encode(&PlayerData{})
 	}

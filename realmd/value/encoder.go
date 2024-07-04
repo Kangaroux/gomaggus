@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"math"
 	"reflect"
+	"sync"
 
 	"github.com/phuslu/log"
 )
@@ -34,16 +35,13 @@ func (e *encoder) Encode(v any) []byte {
 func (e *encoder) encode(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Struct:
+		info := getStructInfo(v)
 		numField := v.NumField()
 		for i := 0; i < numField; i++ {
-			// f := t.Field(i)
-			// if f.Tag.Get(tagName) == endMarker {
-			// 	return // stop
-			// } else if f.Name == "_" {
-			// 	// TODO skip
-			// } else {
-			// 	e.encode(v.Field(i))
-			// }
+			if info.endIndex == i {
+				return
+			}
+
 			e.encode(v.Field(i))
 		}
 
@@ -167,4 +165,37 @@ func (e *encoder) writeBit(b bool) {
 
 	e.block |= v << uint32(e.cursor)
 	e.cursor++
+}
+
+type structInfo struct {
+	typ reflect.Type
+
+	// endIndex is the index of the field which is the end of the struct. The end field
+	// should not be encoded. If the struct has no end field, endIndex is -1.
+	endIndex int
+}
+
+var structInfoMap sync.Map // map[reflect.Type]structInfo
+
+func getStructInfo(v reflect.Value) structInfo {
+	if info, ok := structInfoMap.Load(v.Type()); ok {
+		return info.(structInfo)
+	}
+
+	t := v.Type()
+	numField := t.NumField()
+	info := structInfo{typ: t, endIndex: -1}
+
+	for i := 0; i < numField; i++ {
+		f := t.Field(i)
+
+		if f.Tag.Get(tagName) == endMarker {
+			info.endIndex = i
+			break
+		}
+	}
+
+	structInfoMap.Store(t, info)
+
+	return info
 }
