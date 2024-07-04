@@ -60,7 +60,6 @@ type PlayerData struct {
 	ChosenTitle     uint32
 	FakeInebriation uint32
 
-	// StartSlotPad       update.ChunkPad
 	StartSlotPad       uint32
 	InventorySlots     [39]int64 `update:"private"`
 	BankSlots          [28]int64 `update:"private"`
@@ -153,12 +152,12 @@ type PlayerData struct {
 
 func TestV2(t *testing.T) {
 	e := &encoder{}
-	e.Encode(&PlayerData{})
+	e.Encode(&PlayerData{}, nil)
 }
 
 func BenchmarkDeez(b *testing.B) {
 	e := encoder{}
 	for i := 0; i < b.N; i++ {
-		e.Encode(&PlayerData{})
+		e.Encode(&PlayerData{}, nil)
 	}
 }

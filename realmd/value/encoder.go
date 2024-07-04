@@ -18,30 +18,44 @@ type encoder struct {
 	// Its value ranges between [0, 32]. A cursor value of 32 means the block is full.
 	cursor int
 
-	// root is the top level value that was passed to Encode
+	// root is the top level struct value that was passed to Encode.
 	root reflect.Value
 }
 
-func (e *encoder) Encode(v any) []byte {
+func (e *encoder) Encode(v any, sections []int) []byte {
 	e.buf.Reset()
 
-	e.root = reflect.Indirect(reflect.ValueOf(v))
-	e.encode(e.root)
+	e.encodeRoot(reflect.Indirect(reflect.ValueOf(v)), sections)
 	e.flush()
 
 	return bytes.Clone(e.buf.Bytes())
 }
 
+// encodeRoot encodes the struct v with some additional logic to handle v as the root struct.
+func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
+	if v.Kind() != reflect.Struct {
+		panic("encode non-struct type " + v.Kind().String())
+	}
+
+	e.root = v
+	info := getStructInfo(e.root)
+	numField := v.NumField()
+
+	for i := 0; i < numField; i++ {
+		if i == info.endIndex {
+			return
+		}
+
+		e.encode(v.Field(i))
+	}
+}
+
+// encode writes v to the buffer as uint32 blocks.
 func (e *encoder) encode(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Struct:
-		info := getStructInfo(v)
 		numField := v.NumField()
 		for i := 0; i < numField; i++ {
-			if info.endIndex == i {
-				return
-			}
-
 			e.encode(v.Field(i))
 		}
 
@@ -167,22 +181,41 @@ func (e *encoder) writeBit(b bool) {
 	e.cursor++
 }
 
-type structInfo struct {
-	// endIndex is the index of the field which is the end of the struct. The end field
-	// should not be encoded. If the struct has no end field, endIndex is -1.
-	endIndex int
+// structSession represents a section or collection or fields in a values struct.
+// Fields are added to sections until the section size is at least 4 bytes.
+// Slices or structs cannot be split up, so it's possible for a section to only
+// contain one field but be hundreds of bytes long.
+type structSection struct {
+	// fields is a list of field indexes in this section.
+	fields []int
+
+	// size is the number of 4 byte blocks in this section.
+	size int
 }
 
-var structInfoMap sync.Map // map[reflect.Type]structInfo
+type structInfo struct {
+	// endIndex is the index of the field that marks where encoding should stop.
+	// This enables storing additional metadata inside the struct without it being encoded.
+	// If the struct has no end field, endIndex is -1.
+	endIndex int
 
-func getStructInfo(v reflect.Value) structInfo {
+	// TODO
+	sections []structSection
+}
+
+var structInfoMap sync.Map // map[reflect.Type]*structInfo
+
+func getStructInfo(v reflect.Value) *structInfo {
 	if info, ok := structInfoMap.Load(v.Type()); ok {
-		return info.(structInfo)
+		return info.(*structInfo)
 	}
+
+	var currentSection structSection
 
 	t := v.Type()
 	numField := t.NumField()
-	info := structInfo{endIndex: -1}
+	info := &structInfo{endIndex: -1}
+	bitSize := 0
 
 	for i := 0; i < numField; i++ {
 		f := t.Field(i)
@@ -191,9 +224,65 @@ func getStructInfo(v reflect.Value) structInfo {
 			info.endIndex = i
 			break
 		}
+
+		bitSize += dataSizeBits(f.Type)
+
+		// Padding fields are not included in the section field list because they are never encoded.
+		// However, their size should be taken into consideration.
+		if f.Name == "_" {
+			continue
+		}
+
+		currentSection.fields = append(currentSection.fields, i)
+
+		if bitSize >= 32 {
+			currentSection.size = bitSize / 8
+			bitSize = 0
+			info.sections = append(info.sections, currentSection)
+			currentSection.fields = currentSection.fields[:0]
+		}
+	}
+
+	if bitSize > 0 {
+		currentSection.size = bitSize / 8
+		info.sections = append(info.sections, currentSection)
 	}
 
 	structInfoMap.Store(t, info)
 
 	return info
+}
+
+// dataSizeBits returns the number of bits needed to store t.
+func dataSizeBits(t reflect.Type) int {
+	switch t.Kind() {
+	case reflect.Array:
+		return t.Len() * dataSizeBits(t.Elem())
+
+	case reflect.Struct:
+		size := 0
+		numField := t.NumField()
+		for i := 0; i < numField; i++ {
+			size += dataSizeBits(t.Field(i).Type)
+		}
+		return size
+
+	case reflect.Bool:
+		return 1
+
+	case reflect.Int8, reflect.Uint8:
+		return 8
+
+	case reflect.Int16, reflect.Uint16:
+		return 16
+
+	case reflect.Int32, reflect.Uint32:
+		return 32
+
+	case reflect.Int64, reflect.Uint64:
+		return 64
+
+	default:
+		return -1
+	}
 }
