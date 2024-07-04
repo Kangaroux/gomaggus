@@ -40,20 +40,14 @@ func TestV2(t *testing.T) {
 	fmt.Println("first", e.Encode(Foo{1, 2, 3, 4, 5}))
 
 	fmt.Printf("second %08b\n", e.Encode(struct {
-		A bool
-		W uint32
-		B bool
-		C bool
-		D bool
-		E bool
-		F bool
-		G bool
-		H bool
-		L uint16
-		I uint8
-		X uint8
-		Y uint16
-	}{true, ^uint32(0), false, true, false, true, false, true, false, 3, 5, 6, 7}))
+		A     bool
+		W     uint32
+		flags [7]bool
+		L     uint16
+		I     uint8
+		X     uint8
+		Y     uint16
+	}{true, ^uint32(0), [7]bool{false, true, false, true, false, true, false}, 3, 5, 6, 7}))
 }
 
 func BenchmarkDeez(b *testing.B) {

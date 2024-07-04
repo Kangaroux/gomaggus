@@ -162,34 +162,44 @@ type encoder struct {
 func (e *encoder) Encode(v any) []byte {
 	e.buf.Reset()
 
-	rv := reflect.ValueOf(v)
-	t := rv.Type()
-	nf := t.NumField()
-
-	for i := 0; i < nf; i++ {
-		fv := rv.Field(i)
-
-		switch fv.Kind() {
-		case reflect.Bool:
-			e.writeBit(fv.Bool())
-
-		case reflect.Uint8, reflect.Int8:
-			e.writeN(uint32(fv.Uint()), 1)
-
-		case reflect.Uint16, reflect.Int16:
-			e.writeN(uint32(fv.Uint()), 2)
-
-		case reflect.Uint32, reflect.Int32:
-			e.writeN(uint32(fv.Uint()), 4)
-
-		case reflect.Float32:
-			e.writeN(math.Float32bits(float32(fv.Float())), 4)
-		}
-	}
-
+	e.encode(reflect.Indirect(reflect.ValueOf(v)))
 	e.flush()
 
 	return bytes.Clone(e.buf.Bytes())
+}
+
+func (e *encoder) encode(v reflect.Value) {
+	switch v.Kind() {
+	case reflect.Struct:
+		numField := v.NumField()
+		for i := 0; i < numField; i++ {
+			e.encode(v.Field(i))
+		}
+
+	case reflect.Array:
+		length := v.Len()
+		for i := 0; i < length; i++ {
+			e.encode(v.Index(i))
+		}
+
+	case reflect.Bool:
+		e.writeBit(v.Bool())
+
+	case reflect.Uint8, reflect.Int8:
+		e.writeN(uint32(v.Uint()), 1)
+
+	case reflect.Uint16, reflect.Int16:
+		e.writeN(uint32(v.Uint()), 2)
+
+	case reflect.Uint32, reflect.Int32:
+		e.writeN(uint32(v.Uint()), 4)
+
+	case reflect.Float32:
+		e.writeN(math.Float32bits(float32(v.Float())), 4)
+
+	default:
+		panic("unknown field")
+	}
 }
 
 // flush writes the block to the buffer if it's non-empty.
