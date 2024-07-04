@@ -168,8 +168,6 @@ func (e *encoder) writeBit(b bool) {
 }
 
 type structInfo struct {
-	typ reflect.Type
-
 	// endIndex is the index of the field which is the end of the struct. The end field
 	// should not be encoded. If the struct has no end field, endIndex is -1.
 	endIndex int
@@ -184,7 +182,7 @@ func getStructInfo(v reflect.Value) structInfo {
 
 	t := v.Type()
 	numField := t.NumField()
-	info := structInfo{typ: t, endIndex: -1}
+	info := structInfo{endIndex: -1}
 
 	for i := 0; i < numField; i++ {
 		f := t.Field(i)
