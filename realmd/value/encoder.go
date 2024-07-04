@@ -3,6 +3,7 @@ package value
 import (
 	"bytes"
 	"encoding/binary"
+	"math"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -147,4 +148,100 @@ func sizeof(t reflect.Type) int {
 	}
 
 	return -1
+}
+
+func encodev2(v any) []byte {
+	var buf bytes.Buffer
+	var block uint32
+
+	nBit := 0
+
+	flush := func() {
+		if nBit > 0 {
+			binary.Write(&buf, binary.LittleEndian, block)
+			nBit = 0
+			block = 0
+		}
+	}
+
+	flushIfFull := func() {
+		if nBit == 32 {
+			flush()
+		}
+	}
+
+	align := func(n int) {
+		switch n {
+		case 1, 2, 4:
+			// Convert bytes to bits
+			n *= 8
+		default:
+			panic("n must be 1, 2, or 4")
+		}
+
+		// Start a new byte
+		if byteBits := nBit % 8; byteBits != 0 {
+			nBit += 8 - byteBits
+		}
+
+		// Align to n bits
+		if blockBits := nBit % n; blockBits != 0 {
+			nBit += n - blockBits
+		}
+
+		// Block can't fit n bits
+		if nBit+n > 32 {
+			flush()
+		}
+	}
+
+	writeN := func(v uint32, n int) {
+		align(n)
+		block |= v << nBit
+		nBit += n * 8
+	}
+
+	writeBit := func(b bool) {
+		var v uint32
+
+		flushIfFull()
+
+		if b {
+			v = 1
+		} else {
+			v = 0
+		}
+
+		block |= v << nBit
+		nBit++
+	}
+
+	rv := reflect.ValueOf(v)
+	t := rv.Type()
+	nf := t.NumField()
+
+	for i := 0; i < nf; i++ {
+		fv := rv.Field(i)
+
+		switch fv.Kind() {
+		case reflect.Bool:
+			writeBit(fv.Bool())
+
+		case reflect.Uint8, reflect.Int8:
+			writeN(uint32(fv.Uint()), 1)
+
+		case reflect.Uint16, reflect.Int16:
+			writeN(uint32(fv.Uint()), 2)
+
+		case reflect.Uint32, reflect.Int32:
+			writeN(uint32(fv.Uint()), 4)
+
+		case reflect.Float32:
+			writeN(math.Float32bits(float32(fv.Float())), 4)
+		}
+	}
+
+	flush()
+
+	return buf.Bytes()
 }

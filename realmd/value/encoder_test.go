@@ -5,25 +5,53 @@ import (
 	"testing"
 )
 
-func TestDeez(t *testing.T) {
+// func TestDeez(t *testing.T) {
+// 	type Foo struct {
+// 		A int32
+// 		B float32
+// 		C int16
+// 		D int16
+// 		E [32]bool
+// 	}
+
+// 	blocks := StructFieldBlocks(Foo{})
+// 	fmt.Println(blocks)
+
+// 	foo := Foo{
+// 		A: 128,
+// 		B: 3.14,
+// 		C: ^0,
+// 	}
+// 	data := Encode(foo, blocks, []int{0, 1, 2})
+// 	fmt.Println(data)
+// }
+
+func TestV2(t *testing.T) {
 	type Foo struct {
-		A int32
-		B float32
-		C int16
-		D int16
-		E [32]bool
+		A uint16
+		B uint8
+		C uint16
+		D uint8
+		E uint8
 	}
 
-	blocks := StructFieldBlocks(Foo{})
-	fmt.Println(blocks)
+	fmt.Println("first", encodev2(Foo{1, 2, 3, 4, 5}))
 
-	foo := Foo{
-		A: 128,
-		B: 3.14,
-		C: ^0,
-	}
-	data := Encode(foo, blocks, []int{0, 1, 2})
-	fmt.Println(data)
+	fmt.Printf("second %08b\n", encodev2(struct {
+		A bool
+		W uint32
+		B bool
+		C bool
+		D bool
+		E bool
+		F bool
+		G bool
+		H bool
+		L uint16
+		I uint8
+		X uint8
+		Y uint16
+	}{true, ^uint32(0), false, true, false, true, false, true, false, 3, 5, 6, 7}))
 }
 
 func BenchmarkDeez(b *testing.B) {
