@@ -180,22 +180,15 @@ func (e *encoder) encode(v reflect.Value) {
 		t := v.Type()
 		numField := t.NumField()
 		for i := 0; i < numField; i++ {
-			f := t.Field(i)
-
-			// Stop encoding once end marker is found. It's assumed the end marker is on
-			// the root struct
-			if f.Tag.Get(tagName) == endMarker {
-				if t != e.root.Type() {
-					panic("end marker tag in embedded struct (must be in root)")
-				}
-				return
-			}
-
-			if f.Name == "_" {
-				e.skip(v.Field(i))
-			} else {
-				e.encode(v.Field(i))
-			}
+			// f := t.Field(i)
+			// if f.Tag.Get(tagName) == endMarker {
+			// 	return // stop
+			// } else if f.Name == "_" {
+			// 	// TODO skip
+			// } else {
+			// 	e.encode(v.Field(i))
+			// }
+			e.encode(v.Field(i))
 		}
 
 	case reflect.Array:
@@ -237,45 +230,10 @@ func (e *encoder) encode(v reflect.Value) {
 	}
 }
 
-func (e *encoder) skip(v reflect.Value) {
-	switch v.Kind() {
-	case reflect.Struct:
-		t := v.Type()
-		numField := t.NumField()
-		for i := 0; i < numField; i++ {
-			e.skip(v.Field(i))
-		}
-
-	case reflect.Array:
-		length := v.Len()
-		for i := 0; i < length; i++ {
-			e.skip(v.Index(i))
-		}
-
-	case reflect.Bool:
-		e.cursor++
-
-	case reflect.Uint8, reflect.Int8:
-		e.cursor += 8
-
-	case reflect.Uint16, reflect.Int16:
-		e.cursor += 16
-
-	case reflect.Float32, reflect.Uint32, reflect.Int32, reflect.Uint64, reflect.Int64:
-		// do nothing
-
-	default:
-		panic("unknown field " + v.Kind().String())
-	}
-}
-
 // flush writes the block to the buffer if it's non-empty.
 func (e *encoder) flush() {
-	var data [4]byte
-
 	if e.cursor > 0 {
-		binary.LittleEndian.PutUint32(data[:], e.block)
-		e.buf.Write(data[:])
+		binary.Write(&e.buf, binary.LittleEndian, e.block)
 		e.cursor = 0
 		e.block = 0
 	}
