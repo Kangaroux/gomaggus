@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"sync"
 	"unsafe"
+
+	"github.com/phuslu/log"
 )
 
 type blockField struct {
@@ -157,12 +159,16 @@ type encoder struct {
 	// cursor keeps track of how many bits have been written into the block.
 	// Its value ranges between [0, 32]. A cursor value of 32 means the block is full.
 	cursor int
+
+	// root is the top level value that was passed to Encode
+	root reflect.Value
 }
 
 func (e *encoder) Encode(v any) []byte {
 	e.buf.Reset()
 
-	e.encode(reflect.Indirect(reflect.ValueOf(v)))
+	e.root = reflect.Indirect(reflect.ValueOf(v))
+	e.encode(e.root)
 	e.flush()
 
 	return bytes.Clone(e.buf.Bytes())
@@ -226,11 +232,29 @@ func (e *encoder) align(n int) {
 	// Start a new byte
 	if byteBits := e.cursor % 8; byteBits != 0 {
 		e.cursor += 8 - byteBits
+
+		log.Warn().Func(
+			func(entry *log.Entry) {
+				entry.
+					Int("count", 8-byteBits).
+					Int("near", e.buf.Len()).
+					Str("type", e.root.Type().Name()).
+					Msg("missing bit padding")
+			})
 	}
 
 	// Align to n bits
 	if blockBits := e.cursor % n; blockBits != 0 {
 		e.cursor += n - blockBits
+
+		log.Warn().Func(
+			func(entry *log.Entry) {
+				entry.
+					Int("count", n-blockBits).
+					Int("near", e.buf.Len()).
+					Str("type", e.root.Type().Name()).
+					Msg("missing byte padding")
+			})
 	}
 
 	// Block can't fit n bits
