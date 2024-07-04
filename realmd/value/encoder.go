@@ -232,8 +232,11 @@ func (e *encoder) encode(v reflect.Value) {
 
 // flush writes the block to the buffer if it's non-empty.
 func (e *encoder) flush() {
+	var data [4]byte
+
 	if e.cursor > 0 {
-		binary.Write(&e.buf, binary.LittleEndian, e.block)
+		binary.LittleEndian.PutUint32(data[:], e.block)
+		e.buf.Write(data[:])
 		e.cursor = 0
 		e.block = 0
 	}
