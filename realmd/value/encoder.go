@@ -191,20 +191,26 @@ func (e *encoder) encode(v reflect.Value) {
 	case reflect.Bool:
 		e.writeBit(v.Bool())
 
-	case reflect.Uint8, reflect.Int8:
+	case reflect.Uint8:
 		e.writeN(uint32(v.Uint()), 1)
+	case reflect.Int8:
+		e.writeN(uint32(v.Int()), 1)
 
-	case reflect.Uint16, reflect.Int16:
+	case reflect.Uint16:
 		e.writeN(uint32(v.Uint()), 2)
+	case reflect.Int16:
+		e.writeN(uint32(v.Int()), 2)
 
-	case reflect.Uint32, reflect.Int32:
+	case reflect.Uint32:
 		e.writeN(uint32(v.Uint()), 4)
+	case reflect.Int32:
+		e.writeN(uint32(v.Int()), 4)
 
 	case reflect.Float32:
 		e.writeN(math.Float32bits(float32(v.Float())), 4)
 
 	default:
-		panic("unknown field")
+		panic("unknown field " + v.Kind().String())
 	}
 }
 
