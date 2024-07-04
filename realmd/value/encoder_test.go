@@ -5,10 +5,7 @@ import (
 )
 
 type PlayerData struct {
-	DuelArbiter struct {
-		High uint32
-		Low  uint32
-	}
+	DuelArbiter    int64
 	GroupLeader    bool
 	AFK            bool
 	DND            bool
@@ -65,13 +62,13 @@ type PlayerData struct {
 
 	// StartSlotPad       update.ChunkPad
 	StartSlotPad       uint32
-	InventorySlots     [39]int32 `update:"private"`
-	BankSlots          [28]int32 `update:"private"`
-	BankBagSlots       [7]int32  `update:"private"`
-	VendorBuybackSlots [12]int32 `update:"private"`
-	KeyringSlots       [32]int32 `update:"private"`
-	CurrencyTokenSlots [32]int32 `update:"private"`
-	FarSight           int32
+	InventorySlots     [39]int64 `update:"private"`
+	BankSlots          [28]int64 `update:"private"`
+	BankBagSlots       [7]int64  `update:"private"`
+	VendorBuybackSlots [12]int64 `update:"private"`
+	KeyringSlots       [32]int64 `update:"private"`
+	CurrencyTokenSlots [32]int64 `update:"private"`
+	FarSight           int64
 	KnownTitles        [6]uint32
 	KnownCurrencies    [2]uint32
 	XP                 uint32
@@ -114,7 +111,7 @@ type PlayerData struct {
 	DisplaySpiritAutoReleaseTimer bool
 	HideSpiritReleaseWindow       bool
 	_                             [4]bool
-	RAFGrantableLevel             uint8 // parser should automatically frame this to next byte.
+	RAFGrantableLevel             uint8
 	ActionBarToggles              uint8
 	LifetimeMaxPVPRank            uint8
 

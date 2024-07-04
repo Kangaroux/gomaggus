@@ -177,8 +177,17 @@ func (e *encoder) Encode(v any) []byte {
 func (e *encoder) encode(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Struct:
-		numField := v.NumField()
+		t := v.Type()
+		numField := t.NumField()
 		for i := 0; i < numField; i++ {
+			// f := t.Field(i)
+			// if f.Tag.Get(tagName) == endMarker {
+			// 	return // stop
+			// } else if f.Name == "_" {
+			// 	// TODO skip
+			// } else {
+			// 	e.encode(v.Field(i))
+			// }
 			e.encode(v.Field(i))
 		}
 
@@ -208,6 +217,13 @@ func (e *encoder) encode(v reflect.Value) {
 
 	case reflect.Float32:
 		e.writeN(math.Float32bits(float32(v.Float())), 4)
+
+	case reflect.Uint64:
+		e.writeN(uint32(v.Uint()), 4)
+		e.writeN(uint32(v.Uint()>>32), 4)
+	case reflect.Int64:
+		e.writeN(uint32(v.Int()), 4)
+		e.writeN(uint32(v.Int()>>32), 4)
 
 	default:
 		panic("unknown field " + v.Kind().String())
