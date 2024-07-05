@@ -2,6 +2,7 @@ package value
 
 import (
 	"reflect"
+	"sync"
 
 	"github.com/kangaroux/gomaggus/realmd"
 )
@@ -14,12 +15,25 @@ type Object struct {
 	_       [4]byte // padding
 
 	dirty *dirtyValues `value:"END"`
+	sync.RWMutex
 }
 
 func NewObject() *Object {
 	return &Object{
 		dirty: newDirtyValues(getStructLayout(reflect.ValueOf(Object{}))),
 	}
+}
+
+func (o *Object) Marshal(onlyDirty bool) []byte {
+	enc := &encoder{}
+
+	if !onlyDirty {
+		return enc.Encode(o, nil)
+	}
+
+	ret := enc.Encode(o, o.dirty.Sections())
+	o.dirty.Clear()
+	return ret
 }
 
 func (o *Object) GUID() realmd.Guid {
