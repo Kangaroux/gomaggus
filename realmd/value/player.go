@@ -124,12 +124,12 @@ type Player struct {
 	ModTargetPhysicalResistance uint32
 
 	// Field bytes
-	_                             bool // 0x1
-	TrackStealthed                bool // 0x2
-	_                             bool // 0x4
-	DisplaySpiritAutoReleaseTimer bool // 0x8
-	HideSpiritReleaseWindow       bool // 0x10
-	_                             [4]bool
+	_                             bool    // 0x1
+	TrackStealthed                bool    // 0x2
+	_                             bool    // 0x4
+	DisplaySpiritAutoReleaseTimer bool    // 0x8
+	HideSpiritReleaseWindow       bool    // 0x10
+	_                             [3]bool // 0x20 ... 0x80
 	ReferAFriendGrantableLevel    uint8
 	ActionBarToggles              uint8
 	LifetimeMaxPVPRank            uint8
