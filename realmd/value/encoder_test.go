@@ -3,86 +3,87 @@ package value
 import (
 	"fmt"
 	"testing"
+
+	"github.com/kangaroux/gomaggus/realmd"
 )
 
 type PlayerData struct {
-	DuelArbiter    int64
-	GroupLeader    bool
-	AFK            bool
-	DND            bool
-	GM             bool
-	Ghost          bool
-	Resting        bool
-	VoiceChat      bool
-	FFAPVP         bool
-	ContestedPVP   bool
-	PVPDesired     bool
-	HideHelm       bool
-	HideCloak      bool
-	PlayedLongTime bool
-	PlayedTooLong  bool
-	OutOfBounds    bool
-	GhostEffect    bool
-	Sanctuary      bool
-	TaxiBenchmark  bool
-	PVPTimer       bool
-	_              [13]bool
-	_              uint32
+	DuelArbiter realmd.Guid
 
-	GuildID          uint32
-	GuildRank        uint32
-	Skin             uint8
-	Face             uint8
-	HairStyle        uint8
-	HairColor        uint8
+	// flags
+	GroupLeader bool // 0x1
+	AFK         bool // 0x2
+	DND         bool // 0x4
+	GM          bool // 0x8
+	Ghost       bool // 0x10
+	Resting     bool // 0x20
+	VoiceChat   bool // 0x40
+	FFAPVP      bool // 0x80
+
+	GuildID   uint32
+	GuildRank uint32
+
+	// bytes1
+	Skin      uint8
+	Face      uint8
+	HairStyle uint8
+	HairColor uint8
+
+	// bytes2
 	FacialHair       uint8
 	RestBits         uint8
 	BankBagSlotCount uint8
 	RestState        uint8
-	PlayerGender     uint8
-	GenderUnk        uint8
-	Drunkness        uint8
-	PVPRank          uint8
-	DuelTeam         uint32
-	GuildTimestamp   uint32
-	QuestLog         [25]struct {
-		QuestID    uint32
-		CountState uint32
-		QuestUnk   uint32
-		QuestUnk2  uint32
-		Time       uint32
+
+	// bytes3
+	PlayerGender uint8
+	GenderUnk    uint8
+	Drunkness    uint8
+	PVPRank      uint8
+
+	DuelTeam       uint32
+	GuildTimestamp uint32
+
+	QuestLog [25]struct {
+		ID    uint32
+		State uint32
+		Count uint64
+		Time  uint32
 	}
 
 	VisibleItems [19]struct {
-		Entry       uint32
+		ID          uint32
 		Enchantment uint32
 	}
 
 	ChosenTitle     uint32
 	FakeInebriation uint32
 
-	StartSlotPad       uint32
-	InventorySlots     [39]int64 `update:"private"`
-	BankSlots          [28]int64 `update:"private"`
-	BankBagSlots       [7]int64  `update:"private"`
-	VendorBuybackSlots [12]int64 `update:"private"`
-	KeyringSlots       [32]int64 `update:"private"`
-	CurrencyTokenSlots [32]int64 `update:"private"`
-	FarSight           int64
+	_ uint32
+
+	InventorySlots     [23]uint64
+	PackSlots          [16]uint64 // ??
+	BankSlots          [28]uint64
+	BankBagSlots       [7]uint64
+	VendorBuybackSlots [12]uint64
+	KeyringSlots       [32]uint64
+	CurrencyTokenSlots [32]uint64
+	FarSight           uint64
 	KnownTitles        [6]uint32
 	KnownCurrencies    [2]uint32
 	XP                 uint32
 	NextLevelXP        uint32
-	SkillInfos         [128]struct {
-		ID         uint16
-		Step       uint16
-		SkillLevel uint16
-		SkillCap   uint16
-		Bonus      uint32
-	} `update:"private"`
-	CharacterPoints             [2]uint32 `update:"private"`
-	TrackCreatures              uint32    `update:"private"`
-	TrackResources              uint32    `update:"private"`
+	Skills             [128]struct {
+		ID             uint16
+		Step           uint16
+		SkillLevel     uint16
+		SkillCap       uint16
+		TempBonus      uint16
+		PermanentBonus uint16
+	}
+	CharacterPoints             [2]uint32
+	TrackCreatures              uint32
+	TrackResources              uint32
 	BlockPercentage             float32
 	DodgePercentage             float32
 	ParryPercentage             float32
@@ -94,9 +95,9 @@ type PlayerData struct {
 	SpellCritPercentage         [7]float32
 	ShieldBlock                 uint32
 	ShieldBlockCritPercentage   float32
-	ExploredZones               [128]uint32 // TODO: use Bitmask type with length tag to refer to this field.
+	ExploredZones               [128]uint32
 	RestStateExperience         uint32
-	Coinage                     int32 `update:"private"`
+	Wealth                      int32
 	ModDamageDonePositive       [7]uint32
 	ModDamageDoneNegative       [7]uint32
 	ModDamageDonePercentage     [7]float32
@@ -105,35 +106,32 @@ type PlayerData struct {
 	ModHealingDonePercentage    float32
 	ModTargetResistance         uint32
 	ModTargetPhysicalResistance uint32
-	// Flags
-	PlayerFieldBytes0UnkBit0      bool
-	TrackStealthed                bool
-	DisplaySpiritAutoReleaseTimer bool
-	HideSpiritReleaseWindow       bool
+
+	// Field bytes
+	_                             bool // 0x1
+	TrackStealthed                bool // 0x2
+	_                             bool // 0x4
+	DisplaySpiritAutoReleaseTimer bool // 0x8
+	HideSpiritReleaseWindow       bool // 0x10
 	_                             [4]bool
-	RAFGrantableLevel             uint8
+	ReferAFriendGrantableLevel    uint8
 	ActionBarToggles              uint8
 	LifetimeMaxPVPRank            uint8
 
 	AmmoID                 uint32
 	SelfResSpell           uint32
 	PVPMedals              uint32
-	BuybackPrices          [12]uint32 `update:"private"`
-	BuybackTimestamps      [12]uint32 `update:"private"`
+	BuybackPrices          [12]uint32
+	BuybackTimestamps      [12]uint32
 	Kills                  uint32
 	TodayKills             uint32
 	YesterdayKills         uint32
 	LifetimeHonorableKills uint32
-	HonorRankPoints        uint8
-	DetectionFlagUnk       bool
-	DetectAmore0           bool
-	DetectAmore1           bool
-	DetectAmore2           bool
-	DetectAmore3           bool
-	DetectStealth          bool
-	DetectInvisibilityGlow bool
-	_                      bool
-	_                      uint16
+
+	// Field bytes 2
+	_                              uint8 // TODO: flags
+	IgnorePowerRegenPredictionMask uint8
+	OverrideSpellsID               uint16
 
 	WatchedFactionIndex int32
 	CombatRatings       [25]uint32
@@ -153,9 +151,7 @@ type PlayerData struct {
 
 func TestV2(t *testing.T) {
 	e := &encoder{}
-	data := &PlayerData{
-		DuelArbiter: ^0,
-	}
+	data := &PlayerData{}
 	fmt.Println(e.Encode(data, []int{0}))
 }
 
