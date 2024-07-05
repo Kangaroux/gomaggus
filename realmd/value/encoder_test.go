@@ -7,6 +7,8 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+// Adapted from Gophercraft with some modifications
+// https://github.com/Gophercraft/core/blob/master/packet/update/d12340/descriptor.go
 type PlayerData struct {
 	DuelArbiter realmd.Guid
 
