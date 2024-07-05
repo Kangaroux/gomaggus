@@ -290,7 +290,7 @@ func dataSizeBits(t reflect.Type) int {
 	case reflect.Int16, reflect.Uint16:
 		return 16
 
-	case reflect.Int32, reflect.Uint32:
+	case reflect.Int32, reflect.Uint32, reflect.Float32:
 		return 32
 
 	case reflect.Int64, reflect.Uint64:
