@@ -40,6 +40,7 @@ func (e *encoder) Encode(v any, sections []int) []byte {
 }
 
 // encodeRoot encodes the struct v with some additional logic to handle v as the root struct.
+// If sections is nil then the entire struct is encoded.
 func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
 	if v.Kind() != reflect.Struct {
 		panic("encode non-struct type " + v.Kind().String())
@@ -48,11 +49,19 @@ func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
 	e.root = v
 	info := getStructLayout(e.root)
 
-	for _, sectionIndex := range sections {
-		section := info.sections[sectionIndex]
+	if sections == nil {
+		for _, section := range info.sections {
+			for _, fieldIndex := range section.fields {
+				e.encode(v.Field(fieldIndex))
+			}
+		}
+	} else {
+		for _, sectionIndex := range sections {
+			section := info.sections[sectionIndex]
 
-		for _, fieldIndex := range section.fields {
-			e.encode(v.Field(fieldIndex))
+			for _, fieldIndex := range section.fields {
+				e.encode(v.Field(fieldIndex))
+			}
 		}
 	}
 }
