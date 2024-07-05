@@ -43,7 +43,7 @@ func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
 	}
 
 	e.root = v
-	info := getStructInfo(e.root)
+	info := getStructLayout(e.root)
 
 	for _, sectionIndex := range sections {
 		section := info.sections[sectionIndex]
@@ -199,23 +199,26 @@ type structSection struct {
 	size int
 }
 
-type structInfo struct {
+type structLayout struct {
 	// TODO
 	sections []structSection
+
+	// size is the total number of blocks.
+	size int
 }
 
-var structInfoMap sync.Map // map[reflect.Type]*structInfo
+var structLayoutMap sync.Map // map[reflect.Type]*structLayout
 
-func getStructInfo(v reflect.Value) *structInfo {
-	if info, ok := structInfoMap.Load(v.Type()); ok {
-		return info.(*structInfo)
+func getStructLayout(v reflect.Value) *structLayout {
+	if info, ok := structLayoutMap.Load(v.Type()); ok {
+		return info.(*structLayout)
 	}
 
 	var currentSection structSection
 
 	t := v.Type()
 	numField := t.NumField()
-	info := &structInfo{}
+	info := &structLayout{}
 	bitSize := 0
 	block := 0
 
@@ -255,7 +258,8 @@ func getStructInfo(v reflect.Value) *structInfo {
 		addBlock()
 	}
 
-	structInfoMap.Store(t, info)
+	info.size = block
+	structLayoutMap.Store(t, info)
 
 	return info
 }
