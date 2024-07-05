@@ -13,6 +13,9 @@ import (
 const (
 	// The number of bits in one block
 	blockSizeBits = 32
+
+	tagName   = "value"
+	endMarker = "END"
 )
 
 type encoder struct {
