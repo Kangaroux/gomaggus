@@ -208,6 +208,9 @@ type structLayout struct {
 
 	// size is the total number of blocks.
 	size int
+
+	// nameToSection maps a field name to the section index it belongs to.
+	nameToSection map[string]int
 }
 
 var structLayoutMap sync.Map // map[reflect.Type]*structLayout
@@ -221,7 +224,9 @@ func getStructLayout(v reflect.Value) *structLayout {
 
 	t := v.Type()
 	numField := t.NumField()
-	info := &structLayout{}
+	info := &structLayout{
+		nameToSection: make(map[string]int),
+	}
 	bitSize := 0
 	block := 0
 
@@ -255,6 +260,7 @@ func getStructLayout(v reflect.Value) *structLayout {
 		// they are large enough, but the field list for the section will be empty.
 		if f.Name != "_" {
 			currentSection.fields = append(currentSection.fields, i)
+			info.nameToSection[f.Name] = len(info.sections)
 		}
 
 		if bitSize >= blockSizeBits {
