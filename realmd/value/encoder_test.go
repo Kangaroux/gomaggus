@@ -13,36 +13,33 @@ type PlayerData struct {
 	DuelArbiter realmd.Guid
 
 	// flags
-	GroupLeader bool // 0x1
-	AFK         bool // 0x2
-	DND         bool // 0x4
-	GM          bool // 0x8
-	Ghost       bool // 0x10
-	Resting     bool // 0x20
-	VoiceChat   bool // 0x40
-	FFAPVP      bool // 0x80
-
-	ContestedPVP   bool // 0x100
-	InPVP          bool // 0x200
-	HideHelm       bool // 0x400
-	HideCloak      bool // 0x800
-	PlayedLongTime bool // 0x1000
-	PlayedTooLong  bool // 0x2000
-	OutOfBounds    bool // 0x4000
-	Developer      bool // 0x8000
-
-	_                  bool // 0x10000
-	TaxiBenchmark      bool // 0x20000
-	PVPTimer           bool // 0x40000
-	Uber               bool // 0x80000
-	_                  bool // 0x100000
-	_                  bool // 0x200000
-	Commentator        bool // 0x400000
-	OnlyAllowAbilities bool // 0x800000
-
-	StopMeleeOnTab   bool    // 0x10000
-	NoExperienceGain bool    // 0x20000
-	_                [6]bool // 0x40000 ... 0x800000
+	GroupLeader        bool    // 0x1
+	AFK                bool    // 0x2
+	DND                bool    // 0x4
+	GM                 bool    // 0x8
+	Ghost              bool    // 0x10
+	Resting            bool    // 0x20
+	VoiceChat          bool    // 0x40
+	FFAPVP             bool    // 0x80
+	ContestedPVP       bool    // 0x100
+	InPVP              bool    // 0x200
+	HideHelm           bool    // 0x400
+	HideCloak          bool    // 0x800
+	PlayedLongTime     bool    // 0x1000
+	PlayedTooLong      bool    // 0x2000
+	OutOfBounds        bool    // 0x4000
+	Developer          bool    // 0x8000
+	_                  bool    // 0x10000
+	TaxiBenchmark      bool    // 0x20000
+	PVPTimer           bool    // 0x40000
+	Uber               bool    // 0x80000
+	_                  bool    // 0x100000
+	_                  bool    // 0x200000
+	Commentator        bool    // 0x400000
+	OnlyAllowAbilities bool    // 0x800000
+	StopMeleeOnTab     bool    // 0x1000000
+	NoExperienceGain   bool    // 0x2000000
+	_                  [6]bool // 0x4000000 ... 0x80000000
 
 	GuildID   uint32
 	GuildRank uint32
