@@ -10,6 +10,11 @@ import (
 	"github.com/phuslu/log"
 )
 
+const (
+	// The number of bits in one block
+	blockSizeBits = 32
+)
+
 type encoder struct {
 	buf   bytes.Buffer
 	block uint32
@@ -150,7 +155,7 @@ func (e *encoder) align(n int) {
 	}
 
 	// Block can't fit n bits
-	if e.cursor+n > 32 {
+	if e.cursor+n > blockSizeBits {
 		e.flush()
 	}
 }
@@ -166,7 +171,7 @@ func (e *encoder) writeN(val uint32, n int) {
 func (e *encoder) writeBit(b bool) {
 	var v uint32
 
-	if e.cursor == 32 {
+	if e.cursor == blockSizeBits {
 		e.flush()
 	}
 
@@ -184,6 +189,9 @@ func (e *encoder) writeBit(b bool) {
 // one or more blocks. Fields which are structs or slices cannot be split up and
 // are considered a single section.
 type structSection struct {
+	// blockStart is the block within the struct this section starts at.
+	blockStart int
+
 	// fields is a list of field indexes in this section. Padding fields are not included.
 	fields []int
 
@@ -209,6 +217,18 @@ func getStructInfo(v reflect.Value) *structInfo {
 	numField := t.NumField()
 	info := &structInfo{}
 	bitSize := 0
+	block := 0
+
+	addBlock := func() {
+		currentSection.blockStart = block
+		currentSection.size = bitSize / blockSizeBits
+
+		block += currentSection.size
+		bitSize = 0
+
+		info.sections = append(info.sections, currentSection)
+		currentSection = structSection{}
+	}
 
 	for i := 0; i < numField; i++ {
 		f := t.Field(i)
@@ -226,17 +246,13 @@ func getStructInfo(v reflect.Value) *structInfo {
 			currentSection.fields = append(currentSection.fields, i)
 		}
 
-		if bitSize >= 32 {
-			currentSection.size = bitSize / 8
-			bitSize = 0
-			info.sections = append(info.sections, currentSection)
-			currentSection = structSection{}
+		if bitSize >= blockSizeBits {
+			addBlock()
 		}
 	}
 
 	if bitSize > 0 {
-		currentSection.size = bitSize / 8
-		info.sections = append(info.sections, currentSection)
+		addBlock()
 	}
 
 	structInfoMap.Store(t, info)
