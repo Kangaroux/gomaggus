@@ -243,7 +243,12 @@ func getStructLayout(v reflect.Value) *structLayout {
 			break
 		}
 
-		bitSize += dataSizeBits(f.Type)
+		size := dataSizeBits(f.Type)
+		if size == -1 {
+			panic("invalid field type " + f.Type.Kind().String())
+		}
+
+		bitSize += size
 
 		// Padding fields are not included in the section list to avoid encoding them, however
 		// their size is taken into account. Padding fields can also be their own section if
