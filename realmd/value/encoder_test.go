@@ -1,6 +1,7 @@
 package value
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -152,7 +153,10 @@ type PlayerData struct {
 
 func TestV2(t *testing.T) {
 	e := &encoder{}
-	e.Encode(&PlayerData{}, nil)
+	data := &PlayerData{
+		DuelArbiter: ^0,
+	}
+	fmt.Println(e.Encode(data, []int{0}))
 }
 
 func BenchmarkDeez(b *testing.B) {

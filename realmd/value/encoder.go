@@ -39,14 +39,13 @@ func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
 
 	e.root = v
 	info := getStructInfo(e.root)
-	numField := v.NumField()
 
-	for i := 0; i < numField; i++ {
-		if i == info.endIndex {
-			return
+	for _, sectionIndex := range sections {
+		section := info.sections[sectionIndex]
+
+		for _, fieldIndex := range section.fields {
+			e.encode(v.Field(fieldIndex))
 		}
-
-		e.encode(v.Field(i))
 	}
 }
 
@@ -181,24 +180,18 @@ func (e *encoder) writeBit(b bool) {
 	e.cursor++
 }
 
-// structSession represents a section or collection or fields in a values struct.
-// Fields are added to sections until the section size is at least 4 bytes.
-// Slices or structs cannot be split up, so it's possible for a section to only
-// contain one field but be hundreds of bytes long.
+// structSection represents a section of blocks in a struct. Each section contains
+// one or more blocks. Fields which are structs or slices cannot be split up and
+// are considered a single section.
 type structSection struct {
-	// fields is a list of field indexes in this section.
+	// fields is a list of field indexes in this section. Padding fields are not included.
 	fields []int
 
-	// size is the number of 4 byte blocks in this section.
+	// size is the number of blocks in this section.
 	size int
 }
 
 type structInfo struct {
-	// endIndex is the index of the field that marks where encoding should stop.
-	// This enables storing additional metadata inside the struct without it being encoded.
-	// If the struct has no end field, endIndex is -1.
-	endIndex int
-
 	// TODO
 	sections []structSection
 }
@@ -214,32 +207,30 @@ func getStructInfo(v reflect.Value) *structInfo {
 
 	t := v.Type()
 	numField := t.NumField()
-	info := &structInfo{endIndex: -1}
+	info := &structInfo{}
 	bitSize := 0
 
 	for i := 0; i < numField; i++ {
 		f := t.Field(i)
 
 		if f.Tag.Get(tagName) == endMarker {
-			info.endIndex = i
 			break
 		}
 
 		bitSize += dataSizeBits(f.Type)
 
-		// Padding fields are not included in the section field list because they are never encoded.
-		// However, their size should be taken into consideration.
-		if f.Name == "_" {
-			continue
+		// Padding fields are not included in the section list to avoid encoding them, however
+		// their size is taken into account. Padding fields can also be their own section if
+		// they are large enough, but the field list for the section will be empty.
+		if f.Name != "_" {
+			currentSection.fields = append(currentSection.fields, i)
 		}
-
-		currentSection.fields = append(currentSection.fields, i)
 
 		if bitSize >= 32 {
 			currentSection.size = bitSize / 8
 			bitSize = 0
 			info.sections = append(info.sections, currentSection)
-			currentSection.fields = currentSection.fields[:0]
+			currentSection = structSection{}
 		}
 	}
 
