@@ -141,28 +141,22 @@ func (e *encoder) align(n int) {
 	if byteBits := e.cursor % 8; byteBits != 0 {
 		e.cursor += 8 - byteBits
 
-		log.Warn().Func(
-			func(entry *log.Entry) {
-				entry.
-					Int("count", 8-byteBits).
-					Int("near", e.buf.Len()).
-					Str("type", e.root.Type().Name()).
-					Msg("missing bit padding")
-			})
+		log.Panic().
+			Int("count", 8-byteBits).
+			Int("near", e.buf.Len()).
+			Str("type", e.root.Type().Name()).
+			Msg("missing bit padding")
 	}
 
 	// Align to n bits
 	if blockBits := e.cursor % n; blockBits != 0 {
 		e.cursor += n - blockBits
 
-		log.Warn().Func(
-			func(entry *log.Entry) {
-				entry.
-					Int("count", n-blockBits).
-					Int("near", e.buf.Len()).
-					Str("type", e.root.Type().Name()).
-					Msg("missing byte padding")
-			})
+		log.Panic().
+			Int("count", n-blockBits).
+			Int("near", e.buf.Len()).
+			Str("type", e.root.Type().Name()).
+			Msg("missing byte padding")
 	}
 
 	// Block can't fit n bits
