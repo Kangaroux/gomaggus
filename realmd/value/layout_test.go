@@ -99,3 +99,13 @@ func TestPlayerDataLayout(t *testing.T) {
 		assert.Equal(t, expected[i].size, m.sections[i].size)
 	}
 }
+
+func TestFieldNotMultipleOfBlockSize(t *testing.T) {
+	type foo struct {
+		_ [33]bool
+	}
+
+	assert.Panics(t, func() {
+		getStructLayout(reflect.ValueOf(foo{}))
+	})
+}
