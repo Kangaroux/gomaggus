@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"math"
 	"reflect"
+	"sort"
 
 	"github.com/phuslu/log"
 )
@@ -55,6 +56,8 @@ func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
 			}
 		}
 	} else {
+		sort.Slice(sections, func(i, j int) bool { return sections[i] < sections[j] })
+
 		for _, sectionIndex := range sections {
 			section := info.sections[sectionIndex]
 
