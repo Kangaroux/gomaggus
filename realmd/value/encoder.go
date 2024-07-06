@@ -192,3 +192,15 @@ func (e *encoder) writeBit(b bool) {
 	e.block |= v << uint32(e.cursor)
 	e.cursor++
 }
+
+func marshalValues(v any, onlyDirty bool, dirty *dirtyValues) []byte {
+	enc := &encoder{}
+
+	if !onlyDirty {
+		return enc.Encode(v, nil)
+	}
+
+	ret := enc.Encode(v, dirty.Sections())
+	dirty.Clear()
+	return ret
+}

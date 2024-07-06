@@ -25,15 +25,7 @@ func NewObject() *Object {
 }
 
 func (o *Object) Marshal(onlyDirty bool) []byte {
-	enc := &encoder{}
-
-	if !onlyDirty {
-		return enc.Encode(o, nil)
-	}
-
-	ret := enc.Encode(o, o.dirty.Sections())
-	o.dirty.Clear()
-	return ret
+	return marshalValues(o, onlyDirty, o.dirty)
 }
 
 func (o *Object) GUID() realmd.Guid {
