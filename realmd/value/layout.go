@@ -3,6 +3,8 @@ package value
 import (
 	"reflect"
 	"sync"
+
+	"github.com/phuslu/log"
 )
 
 // structSection represents a section of blocks in a struct. Each section contains
@@ -50,6 +52,14 @@ func getStructLayout(v reflect.Value) *structLayout {
 	addBlock := func() {
 		currentSection.blockStart = block
 		currentSection.size = bitSize / blockSizeBits
+
+		if bitSize%blockSizeBits != 0 {
+			log.Panic().
+				Int("block", block*4).
+				Int("spill", bitSize%blockSizeBits).
+				Int("blockSize", blockSizeBits).
+				Msg("array or struct field is not an even multiple of block size")
+		}
 
 		block += currentSection.size
 		bitSize = 0
