@@ -225,7 +225,7 @@ func (p *PlayerData) SetDND(val bool) {
 	p.dirty.Flag("dnd")
 }
 
-func (p *PlayerData) Gm() bool {
+func (p *PlayerData) GM() bool {
 	return p.gm
 }
 
