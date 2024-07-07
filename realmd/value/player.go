@@ -2,6 +2,27 @@ package value
 
 import "github.com/kangaroux/gomaggus/realmd"
 
+type questLogEntry struct {
+	ID    uint32
+	State uint32
+	Count uint64
+	Time  uint32
+}
+
+type visibleItem struct {
+	ID          uint32
+	Enchantment uint32
+}
+
+type skillEntry struct {
+	ID             uint16
+	Step           uint16
+	SkillLevel     uint16
+	SkillCap       uint16
+	TempBonus      uint16
+	PermanentBonus uint16
+}
+
 // Adapted from Gophercraft with some modifications
 // https://github.com/Gophercraft/core/blob/master/packet/update/d12340/descriptor.go
 type Player struct {
@@ -60,43 +81,28 @@ type Player struct {
 	DuelTeam       uint32
 	GuildTimestamp uint32
 
-	QuestLog [25]struct {
-		ID    uint32
-		State uint32
-		Count uint64
-		Time  uint32
-	}
+	QuestLog [25]questLogEntry
 
-	VisibleItems [19]struct {
-		ID          uint32
-		Enchantment uint32
-	}
+	VisibleItems [19]visibleItem
 
 	ChosenTitle     uint32
 	FakeInebriation uint32
 
 	_ uint32
 
-	InventorySlots     [23]uint64
-	PackSlots          [16]uint64 // ??
-	BankSlots          [28]uint64
-	BankBagSlots       [7]uint64
-	VendorBuybackSlots [12]uint64
-	KeyringSlots       [32]uint64
-	CurrencyTokenSlots [32]uint64
-	FarSight           uint64
-	KnownTitles        [6]uint32
-	KnownCurrencies    [2]uint32
-	XP                 uint32
-	NextLevelXP        uint32
-	Skills             [128]struct {
-		ID             uint16
-		Step           uint16
-		SkillLevel     uint16
-		SkillCap       uint16
-		TempBonus      uint16
-		PermanentBonus uint16
-	}
+	InventorySlots              [23]uint64
+	PackSlots                   [16]uint64 // ??
+	BankSlots                   [28]uint64
+	BankBagSlots                [7]uint64
+	VendorBuybackSlots          [12]uint64
+	KeyringSlots                [32]uint64
+	CurrencyTokenSlots          [32]uint64
+	FarSight                    uint64
+	KnownTitles                 [6]uint32
+	KnownCurrencies             [2]uint32
+	XP                          uint32
+	NextLevelXP                 uint32
+	Skills                      [128]skillEntry
 	CharacterPoints             [2]uint32
 	TrackCreatures              uint32
 	TrackResources              uint32
