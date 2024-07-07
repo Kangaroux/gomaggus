@@ -1,11 +1,38 @@
 package value
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestObjectDataLayout(t *testing.T) {
+	m := getStructLayout(reflect.ValueOf(ObjectData{}))
+	assert.Equal(t, 6, m.size)
+	assert.Equal(t, 5, len(m.sections))
+
+	expected := []struct {
+		blockStart int
+		size       int
+	}{
+		{0, 2},
+		{2, 1},
+		{3, 1},
+		{4, 1},
+		{5, 1},
+	}
+
+	assert.Equal(t, len(m.sections), len(expected))
+
+	for i := 0; i < len(expected); i++ {
+		t.Run(fmt.Sprintf("block-%d", i), func(t *testing.T) {
+			assert.Equal(t, expected[i].blockStart, m.sections[i].blockStart)
+			assert.Equal(t, expected[i].size, m.sections[i].size)
+		})
+	}
+}
 
 func TestPlayerDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(PlayerData{}))
@@ -94,9 +121,13 @@ func TestPlayerDataLayout(t *testing.T) {
 		{1177, 1},
 	}
 
+	assert.Equal(t, len(m.sections), len(expected))
+
 	for i := 0; i < len(expected); i++ {
-		assert.Equal(t, expected[i].blockStart, m.sections[i].blockStart)
-		assert.Equal(t, expected[i].size, m.sections[i].size)
+		t.Run(fmt.Sprintf("block-%d", i), func(t *testing.T) {
+			assert.Equal(t, expected[i].blockStart, m.sections[i].blockStart)
+			assert.Equal(t, expected[i].size, m.sections[i].size)
+		})
 	}
 }
 
