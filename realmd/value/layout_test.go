@@ -8,7 +8,7 @@ import (
 )
 
 func TestPlayerDataLayout(t *testing.T) {
-	m := getStructLayout(reflect.ValueOf(Player{}))
+	m := getStructLayout(reflect.ValueOf(PlayerData{}))
 	assert.Equal(t, 1178, m.size)
 	assert.Equal(t, 76, len(m.sections))
 

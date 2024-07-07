@@ -9,7 +9,7 @@ import (
 )
 
 func TestObjectMarshal(t *testing.T) {
-	o := NewObject()
+	o := NewObjectData()
 
 	assert.Equal(t, 0, len(o.Marshal(true)))
 	assert.Equal(t, 20, len(o.Marshal(false)))

@@ -7,7 +7,7 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
-type Object struct {
+type ObjectData struct {
 	guid    realmd.Guid
 	objType uint32
 	entry   uint32
@@ -18,48 +18,48 @@ type Object struct {
 	sync.RWMutex
 }
 
-func NewObject() *Object {
-	return &Object{
-		dirty: newDirtyValues(getStructLayout(reflect.ValueOf(Object{}))),
+func NewObjectData() *ObjectData {
+	return &ObjectData{
+		dirty: newDirtyValues(getStructLayout(reflect.ValueOf(ObjectData{}))),
 	}
 }
 
-func (o *Object) Marshal(onlyDirty bool) []byte {
+func (o *ObjectData) Marshal(onlyDirty bool) []byte {
 	return marshalValues(o, onlyDirty, o.dirty)
 }
 
-func (o *Object) GUID() realmd.Guid {
+func (o *ObjectData) GUID() realmd.Guid {
 	return o.guid
 }
 
-func (o *Object) SetGUID(val realmd.Guid) {
+func (o *ObjectData) SetGUID(val realmd.Guid) {
 	o.guid = val
 	o.dirty.Flag("guid")
 }
 
-func (o *Object) Type() uint32 {
+func (o *ObjectData) Type() uint32 {
 	return o.objType
 }
 
-func (o *Object) SetType(val uint32) {
+func (o *ObjectData) SetType(val uint32) {
 	o.objType = val
 	o.dirty.Flag("objType")
 }
 
-func (o *Object) Entry() uint32 {
+func (o *ObjectData) Entry() uint32 {
 	return o.entry
 }
 
-func (o *Object) SetEntry(val uint32) {
+func (o *ObjectData) SetEntry(val uint32) {
 	o.entry = val
 	o.dirty.Flag("entry")
 }
 
-func (o *Object) ScaleX() float32 {
+func (o *ObjectData) ScaleX() float32 {
 	return o.scaleX
 }
 
-func (o *Object) SetScaleX(val float32) {
+func (o *ObjectData) SetScaleX(val float32) {
 	o.scaleX = val
 	o.dirty.Flag("scaleX")
 }

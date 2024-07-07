@@ -6,19 +6,19 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
-type questLogEntry struct {
+type QuestLogEntry struct {
 	ID    uint32
 	State uint32
 	Count uint64
 	Time  uint32
 }
 
-type visibleItem struct {
+type VisibleItem struct {
 	ID          uint32
 	Enchantment uint32
 }
 
-type skillEntry struct {
+type SkillEntry struct {
 	ID             uint16
 	Step           uint16
 	SkillLevel     uint16
@@ -29,7 +29,7 @@ type skillEntry struct {
 
 // Adapted from Gophercraft with some modifications
 // https://github.com/Gophercraft/core/blob/master/packet/update/d12340/descriptor.go
-type Player struct {
+type PlayerData struct {
 	duelArbiter realmd.Guid
 
 	// flags
@@ -85,9 +85,9 @@ type Player struct {
 	duelTeam       uint32
 	guildTimestamp uint32
 
-	questLog [25]questLogEntry
+	questLog [25]QuestLogEntry
 
-	visibleItems [19]visibleItem
+	visibleItems [19]VisibleItem
 
 	chosenTitle     uint32
 	fakeInebriation uint32
@@ -106,7 +106,7 @@ type Player struct {
 	knownCurrencies           [2]uint32
 	xp                        uint32
 	nextLevelXP               uint32
-	skills                    [128]skillEntry
+	skills                    [128]SkillEntry
 	characterPoints           [2]uint32
 	trackCreatures            uint32
 	trackResources            uint32
@@ -177,1020 +177,1020 @@ type Player struct {
 	dirty *dirtyValues `value:"END"`
 }
 
-func NewPlayer() *Player {
-	return &Player{
-		dirty: newDirtyValues(getStructLayout(reflect.ValueOf(Player{}))),
+func NewPlayerData() *PlayerData {
+	return &PlayerData{
+		dirty: newDirtyValues(getStructLayout(reflect.ValueOf(PlayerData{}))),
 	}
 }
 
-func (p *Player) Marshal(onlyDirty bool) []byte {
+func (p *PlayerData) Marshal(onlyDirty bool) []byte {
 	return marshalValues(p, onlyDirty, p.dirty)
 }
 
-func (p *Player) DuelArbiter() realmd.Guid {
+func (p *PlayerData) DuelArbiter() realmd.Guid {
 	return p.duelArbiter
 }
 
-func (p *Player) SetDuelArbiter(val realmd.Guid) {
+func (p *PlayerData) SetDuelArbiter(val realmd.Guid) {
 	p.duelArbiter = val
 	p.dirty.Flag("duelArbiter")
 }
 
-func (p *Player) GroupLeader() bool {
+func (p *PlayerData) GroupLeader() bool {
 	return p.groupLeader
 }
 
-func (p *Player) SetGroupLeader(val bool) {
+func (p *PlayerData) SetGroupLeader(val bool) {
 	p.groupLeader = val
 	p.dirty.Flag("groupLeader")
 }
 
-func (p *Player) AFK() bool {
+func (p *PlayerData) AFK() bool {
 	return p.afk
 }
 
-func (p *Player) SetAFK(val bool) {
+func (p *PlayerData) SetAFK(val bool) {
 	p.afk = val
 	p.dirty.Flag("afk")
 }
 
-func (p *Player) DND() bool {
+func (p *PlayerData) DND() bool {
 	return p.dnd
 }
 
-func (p *Player) SetDND(val bool) {
+func (p *PlayerData) SetDND(val bool) {
 	p.dnd = val
 	p.dirty.Flag("dnd")
 }
 
-func (p *Player) Gm() bool {
+func (p *PlayerData) Gm() bool {
 	return p.gm
 }
 
-func (p *Player) SetGM(val bool) {
+func (p *PlayerData) SetGM(val bool) {
 	p.gm = val
 	p.dirty.Flag("gm")
 }
 
-func (p *Player) Ghost() bool {
+func (p *PlayerData) Ghost() bool {
 	return p.ghost
 }
 
-func (p *Player) SetGhost(val bool) {
+func (p *PlayerData) SetGhost(val bool) {
 	p.ghost = val
 	p.dirty.Flag("ghost")
 }
 
-func (p *Player) Resting() bool {
+func (p *PlayerData) Resting() bool {
 	return p.resting
 }
 
-func (p *Player) SetResting(val bool) {
+func (p *PlayerData) SetResting(val bool) {
 	p.resting = val
 	p.dirty.Flag("resting")
 }
 
-func (p *Player) VoiceChat() bool {
+func (p *PlayerData) VoiceChat() bool {
 	return p.voiceChat
 }
 
-func (p *Player) SetVoiceChat(val bool) {
+func (p *PlayerData) SetVoiceChat(val bool) {
 	p.voiceChat = val
 	p.dirty.Flag("voiceChat")
 }
 
-func (p *Player) FFAPVP() bool {
+func (p *PlayerData) FFAPVP() bool {
 	return p.ffapvp
 }
 
-func (p *Player) SetFFAPVP(val bool) {
+func (p *PlayerData) SetFFAPVP(val bool) {
 	p.ffapvp = val
 	p.dirty.Flag("ffapvp")
 }
 
-func (p *Player) ContestedPVP() bool {
+func (p *PlayerData) ContestedPVP() bool {
 	return p.contestedPVP
 }
 
-func (p *Player) SetContestedPVP(val bool) {
+func (p *PlayerData) SetContestedPVP(val bool) {
 	p.contestedPVP = val
 	p.dirty.Flag("contestedPVP")
 }
 
-func (p *Player) InPVP() bool {
+func (p *PlayerData) InPVP() bool {
 	return p.inPVP
 }
 
-func (p *Player) SetInPVP(val bool) {
+func (p *PlayerData) SetInPVP(val bool) {
 	p.inPVP = val
 	p.dirty.Flag("inPVP")
 }
 
-func (p *Player) HideHelm() bool {
+func (p *PlayerData) HideHelm() bool {
 	return p.hideHelm
 }
 
-func (p *Player) SetHideHelm(val bool) {
+func (p *PlayerData) SetHideHelm(val bool) {
 	p.hideHelm = val
 	p.dirty.Flag("hideHelm")
 }
 
-func (p *Player) HideCloak() bool {
+func (p *PlayerData) HideCloak() bool {
 	return p.hideCloak
 }
 
-func (p *Player) SetHideCloak(val bool) {
+func (p *PlayerData) SetHideCloak(val bool) {
 	p.hideCloak = val
 	p.dirty.Flag("hideCloak")
 }
 
-func (p *Player) PlayedLongTime() bool {
+func (p *PlayerData) PlayedLongTime() bool {
 	return p.playedLongTime
 }
 
-func (p *Player) SetPlayedLongTime(val bool) {
+func (p *PlayerData) SetPlayedLongTime(val bool) {
 	p.playedLongTime = val
 	p.dirty.Flag("playedLongTime")
 }
 
-func (p *Player) PlayedTooLong() bool {
+func (p *PlayerData) PlayedTooLong() bool {
 	return p.playedTooLong
 }
 
-func (p *Player) SetPlayedTooLong(val bool) {
+func (p *PlayerData) SetPlayedTooLong(val bool) {
 	p.playedTooLong = val
 	p.dirty.Flag("playedTooLong")
 }
 
-func (p *Player) OutOfBounds() bool {
+func (p *PlayerData) OutOfBounds() bool {
 	return p.outOfBounds
 }
 
-func (p *Player) SetOutOfBounds(val bool) {
+func (p *PlayerData) SetOutOfBounds(val bool) {
 	p.outOfBounds = val
 	p.dirty.Flag("outOfBounds")
 }
 
-func (p *Player) Developer() bool {
+func (p *PlayerData) Developer() bool {
 	return p.developer
 }
 
-func (p *Player) SetDeveloper(val bool) {
+func (p *PlayerData) SetDeveloper(val bool) {
 	p.developer = val
 	p.dirty.Flag("developer")
 }
 
-func (p *Player) TaxiBenchmark() bool {
+func (p *PlayerData) TaxiBenchmark() bool {
 	return p.taxiBenchmark
 }
 
-func (p *Player) SetTaxiBenchmark(val bool) {
+func (p *PlayerData) SetTaxiBenchmark(val bool) {
 	p.taxiBenchmark = val
 	p.dirty.Flag("taxiBenchmark")
 }
 
-func (p *Player) PVPTimer() bool {
+func (p *PlayerData) PVPTimer() bool {
 	return p.pvpTimer
 }
 
-func (p *Player) SetPVPTimer(val bool) {
+func (p *PlayerData) SetPVPTimer(val bool) {
 	p.pvpTimer = val
 	p.dirty.Flag("pvpTimer")
 }
 
-func (p *Player) Uber() bool {
+func (p *PlayerData) Uber() bool {
 	return p.uber
 }
 
-func (p *Player) SetUber(val bool) {
+func (p *PlayerData) SetUber(val bool) {
 	p.uber = val
 	p.dirty.Flag("uber")
 }
 
-func (p *Player) Commentator() bool {
+func (p *PlayerData) Commentator() bool {
 	return p.commentator
 }
 
-func (p *Player) SetCommentator(val bool) {
+func (p *PlayerData) SetCommentator(val bool) {
 	p.commentator = val
 	p.dirty.Flag("commentator")
 }
 
-func (p *Player) OnlyAllowAbilities() bool {
+func (p *PlayerData) OnlyAllowAbilities() bool {
 	return p.onlyAllowAbilities
 }
 
-func (p *Player) SetOnlyAllowAbilities(val bool) {
+func (p *PlayerData) SetOnlyAllowAbilities(val bool) {
 	p.onlyAllowAbilities = val
 	p.dirty.Flag("onlyAllowAbilities")
 }
 
-func (p *Player) StopMeleeOnTab() bool {
+func (p *PlayerData) StopMeleeOnTab() bool {
 	return p.stopMeleeOnTab
 }
 
-func (p *Player) SetStopMeleeOnTab(val bool) {
+func (p *PlayerData) SetStopMeleeOnTab(val bool) {
 	p.stopMeleeOnTab = val
 	p.dirty.Flag("stopMeleeOnTab")
 }
 
-func (p *Player) NoExperienceGain() bool {
+func (p *PlayerData) NoExperienceGain() bool {
 	return p.noExperienceGain
 }
 
-func (p *Player) SetNoExperienceGain(val bool) {
+func (p *PlayerData) SetNoExperienceGain(val bool) {
 	p.noExperienceGain = val
 	p.dirty.Flag("noExperienceGain")
 }
 
-func (p *Player) GuildID() uint32 {
+func (p *PlayerData) GuildID() uint32 {
 	return p.guildID
 }
 
-func (p *Player) SetGuildID(val uint32) {
+func (p *PlayerData) SetGuildID(val uint32) {
 	p.guildID = val
 	p.dirty.Flag("guildID")
 }
 
-func (p *Player) GuildRank() uint32 {
+func (p *PlayerData) GuildRank() uint32 {
 	return p.guildRank
 }
 
-func (p *Player) SetGuildRank(val uint32) {
+func (p *PlayerData) SetGuildRank(val uint32) {
 	p.guildRank = val
 	p.dirty.Flag("guildRank")
 }
 
-func (p *Player) Skin() uint8 {
+func (p *PlayerData) Skin() uint8 {
 	return p.skin
 }
 
-func (p *Player) SetSkin(val uint8) {
+func (p *PlayerData) SetSkin(val uint8) {
 	p.skin = val
 	p.dirty.Flag("skin")
 }
 
-func (p *Player) Face() uint8 {
+func (p *PlayerData) Face() uint8 {
 	return p.face
 }
 
-func (p *Player) SetFace(val uint8) {
+func (p *PlayerData) SetFace(val uint8) {
 	p.face = val
 	p.dirty.Flag("face")
 }
 
-func (p *Player) HairStyle() uint8 {
+func (p *PlayerData) HairStyle() uint8 {
 	return p.hairStyle
 }
 
-func (p *Player) SetHairStyle(val uint8) {
+func (p *PlayerData) SetHairStyle(val uint8) {
 	p.hairStyle = val
 	p.dirty.Flag("hairStyle")
 }
 
-func (p *Player) HairColor() uint8 {
+func (p *PlayerData) HairColor() uint8 {
 	return p.hairColor
 }
 
-func (p *Player) SetHairColor(val uint8) {
+func (p *PlayerData) SetHairColor(val uint8) {
 	p.hairColor = val
 	p.dirty.Flag("hairColor")
 }
 
-func (p *Player) FacialHair() uint8 {
+func (p *PlayerData) FacialHair() uint8 {
 	return p.facialHair
 }
 
-func (p *Player) SetFacialHair(val uint8) {
+func (p *PlayerData) SetFacialHair(val uint8) {
 	p.facialHair = val
 	p.dirty.Flag("facialHair")
 }
 
-func (p *Player) RestBits() uint8 {
+func (p *PlayerData) RestBits() uint8 {
 	return p.restBits
 }
 
-func (p *Player) SetRestBits(val uint8) {
+func (p *PlayerData) SetRestBits(val uint8) {
 	p.restBits = val
 	p.dirty.Flag("restBits")
 }
 
-func (p *Player) BankBagSlotCount() uint8 {
+func (p *PlayerData) BankBagSlotCount() uint8 {
 	return p.bankBagSlotCount
 }
 
-func (p *Player) SetBankBagSlotCount(val uint8) {
+func (p *PlayerData) SetBankBagSlotCount(val uint8) {
 	p.bankBagSlotCount = val
 	p.dirty.Flag("bankBagSlotCount")
 }
 
-func (p *Player) RestState() uint8 {
+func (p *PlayerData) RestState() uint8 {
 	return p.restState
 }
 
-func (p *Player) SetRestState(val uint8) {
+func (p *PlayerData) SetRestState(val uint8) {
 	p.restState = val
 	p.dirty.Flag("restState")
 }
 
-func (p *Player) PlayerGender() uint8 {
+func (p *PlayerData) PlayerGender() uint8 {
 	return p.playerGender
 }
 
-func (p *Player) SetPlayerGender(val uint8) {
+func (p *PlayerData) SetPlayerGender(val uint8) {
 	p.playerGender = val
 	p.dirty.Flag("playerGender")
 }
 
-func (p *Player) GenderUnk() uint8 {
+func (p *PlayerData) GenderUnk() uint8 {
 	return p.genderUnk
 }
 
-func (p *Player) SetGenderUnk(val uint8) {
+func (p *PlayerData) SetGenderUnk(val uint8) {
 	p.genderUnk = val
 	p.dirty.Flag("genderUnk")
 }
 
-func (p *Player) Drunkness() uint8 {
+func (p *PlayerData) Drunkness() uint8 {
 	return p.drunkness
 }
 
-func (p *Player) SetDrunkness(val uint8) {
+func (p *PlayerData) SetDrunkness(val uint8) {
 	p.drunkness = val
 	p.dirty.Flag("drunkness")
 }
 
-func (p *Player) PVPRank() uint8 {
+func (p *PlayerData) PVPRank() uint8 {
 	return p.pVPRank
 }
 
-func (p *Player) SetPVPRank(val uint8) {
+func (p *PlayerData) SetPVPRank(val uint8) {
 	p.pVPRank = val
 	p.dirty.Flag("pVPRank")
 }
 
-func (p *Player) DuelTeam() uint32 {
+func (p *PlayerData) DuelTeam() uint32 {
 	return p.duelTeam
 }
 
-func (p *Player) SetDuelTeam(val uint32) {
+func (p *PlayerData) SetDuelTeam(val uint32) {
 	p.duelTeam = val
 	p.dirty.Flag("duelTeam")
 }
 
-func (p *Player) GuildTimestamp() uint32 {
+func (p *PlayerData) GuildTimestamp() uint32 {
 	return p.guildTimestamp
 }
 
-func (p *Player) SetGuildTimestamp(val uint32) {
+func (p *PlayerData) SetGuildTimestamp(val uint32) {
 	p.guildTimestamp = val
 	p.dirty.Flag("guildTimestamp")
 }
 
-func (p *Player) QuestLog() [25]questLogEntry {
+func (p *PlayerData) QuestLog() [25]QuestLogEntry {
 	return p.questLog
 }
 
-func (p *Player) SetQuestLog(val [25]questLogEntry) {
+func (p *PlayerData) SetQuestLog(val [25]QuestLogEntry) {
 	p.questLog = val
 	p.dirty.Flag("questLog")
 }
 
-func (p *Player) VisibleItems() [19]visibleItem {
+func (p *PlayerData) VisibleItems() [19]VisibleItem {
 	return p.visibleItems
 }
 
-func (p *Player) SetVisibleItems(val [19]visibleItem) {
+func (p *PlayerData) SetVisibleItems(val [19]VisibleItem) {
 	p.visibleItems = val
 	p.dirty.Flag("visibleItems")
 }
 
-func (p *Player) ChosenTitle() uint32 {
+func (p *PlayerData) ChosenTitle() uint32 {
 	return p.chosenTitle
 }
 
-func (p *Player) SetChosenTitle(val uint32) {
+func (p *PlayerData) SetChosenTitle(val uint32) {
 	p.chosenTitle = val
 	p.dirty.Flag("chosenTitle")
 }
 
-func (p *Player) FakeInebriation() uint32 {
+func (p *PlayerData) FakeInebriation() uint32 {
 	return p.fakeInebriation
 }
 
-func (p *Player) SetFakeInebriation(val uint32) {
+func (p *PlayerData) SetFakeInebriation(val uint32) {
 	p.fakeInebriation = val
 	p.dirty.Flag("fakeInebriation")
 }
 
-func (p *Player) InventorySlots() [23]uint64 {
+func (p *PlayerData) InventorySlots() [23]uint64 {
 	return p.inventorySlots
 }
 
-func (p *Player) SetInventorySlots(val [23]uint64) {
+func (p *PlayerData) SetInventorySlots(val [23]uint64) {
 	p.inventorySlots = val
 	p.dirty.Flag("inventorySlots")
 }
 
-func (p *Player) PackSlots() [16]uint64 {
+func (p *PlayerData) PackSlots() [16]uint64 {
 	return p.packSlots
 }
 
-func (p *Player) SetPackSlots(val [16]uint64) {
+func (p *PlayerData) SetPackSlots(val [16]uint64) {
 	p.packSlots = val
 	p.dirty.Flag("packSlots")
 }
 
-func (p *Player) BankSlots() [28]uint64 {
+func (p *PlayerData) BankSlots() [28]uint64 {
 	return p.bankSlots
 }
 
-func (p *Player) SetBankSlots(val [28]uint64) {
+func (p *PlayerData) SetBankSlots(val [28]uint64) {
 	p.bankSlots = val
 	p.dirty.Flag("bankSlots")
 }
 
-func (p *Player) BankBagSlots() [7]uint64 {
+func (p *PlayerData) BankBagSlots() [7]uint64 {
 	return p.bankBagSlots
 }
 
-func (p *Player) SetBankBagSlots(val [7]uint64) {
+func (p *PlayerData) SetBankBagSlots(val [7]uint64) {
 	p.bankBagSlots = val
 	p.dirty.Flag("bankBagSlots")
 }
 
-func (p *Player) VendorBuybackSlots() [12]uint64 {
+func (p *PlayerData) VendorBuybackSlots() [12]uint64 {
 	return p.vendorBuybackSlots
 }
 
-func (p *Player) SetVendorBuybackSlots(val [12]uint64) {
+func (p *PlayerData) SetVendorBuybackSlots(val [12]uint64) {
 	p.vendorBuybackSlots = val
 	p.dirty.Flag("vendorBuybackSlots")
 }
 
-func (p *Player) KeyringSlots() [32]uint64 {
+func (p *PlayerData) KeyringSlots() [32]uint64 {
 	return p.keyringSlots
 }
 
-func (p *Player) SetKeyringSlots(val [32]uint64) {
+func (p *PlayerData) SetKeyringSlots(val [32]uint64) {
 	p.keyringSlots = val
 	p.dirty.Flag("keyringSlots")
 }
 
-func (p *Player) CurrencyTokenSlots() [32]uint64 {
+func (p *PlayerData) CurrencyTokenSlots() [32]uint64 {
 	return p.currencyTokenSlots
 }
 
-func (p *Player) SetCurrencyTokenSlots(val [32]uint64) {
+func (p *PlayerData) SetCurrencyTokenSlots(val [32]uint64) {
 	p.currencyTokenSlots = val
 	p.dirty.Flag("currencyTokenSlots")
 }
 
-func (p *Player) FarSight() uint64 {
+func (p *PlayerData) FarSight() uint64 {
 	return p.farSight
 }
 
-func (p *Player) SetFarSight(val uint64) {
+func (p *PlayerData) SetFarSight(val uint64) {
 	p.farSight = val
 	p.dirty.Flag("farSight")
 }
 
-func (p *Player) KnownTitles() [6]uint32 {
+func (p *PlayerData) KnownTitles() [6]uint32 {
 	return p.knownTitles
 }
 
-func (p *Player) SetKnownTitles(val [6]uint32) {
+func (p *PlayerData) SetKnownTitles(val [6]uint32) {
 	p.knownTitles = val
 	p.dirty.Flag("knownTitles")
 }
 
-func (p *Player) KnownCurrencies() [2]uint32 {
+func (p *PlayerData) KnownCurrencies() [2]uint32 {
 	return p.knownCurrencies
 }
 
-func (p *Player) SetKnownCurrencies(val [2]uint32) {
+func (p *PlayerData) SetKnownCurrencies(val [2]uint32) {
 	p.knownCurrencies = val
 	p.dirty.Flag("knownCurrencies")
 }
 
-func (p *Player) Xp() uint32 {
+func (p *PlayerData) Xp() uint32 {
 	return p.xp
 }
 
-func (p *Player) SetXp(val uint32) {
+func (p *PlayerData) SetXp(val uint32) {
 	p.xp = val
 	p.dirty.Flag("xp")
 }
 
-func (p *Player) NextLevelXP() uint32 {
+func (p *PlayerData) NextLevelXP() uint32 {
 	return p.nextLevelXP
 }
 
-func (p *Player) SetNextLevelXP(val uint32) {
+func (p *PlayerData) SetNextLevelXP(val uint32) {
 	p.nextLevelXP = val
 	p.dirty.Flag("nextLevelXP")
 }
 
-func (p *Player) Skills() [128]skillEntry {
+func (p *PlayerData) Skills() [128]SkillEntry {
 	return p.skills
 }
 
-func (p *Player) SetSkills(val [128]skillEntry) {
+func (p *PlayerData) SetSkills(val [128]SkillEntry) {
 	p.skills = val
 	p.dirty.Flag("skills")
 }
 
-func (p *Player) CharacterPoints() [2]uint32 {
+func (p *PlayerData) CharacterPoints() [2]uint32 {
 	return p.characterPoints
 }
 
-func (p *Player) SetCharacterPoints(val [2]uint32) {
+func (p *PlayerData) SetCharacterPoints(val [2]uint32) {
 	p.characterPoints = val
 	p.dirty.Flag("characterPoints")
 }
 
-func (p *Player) TrackCreatures() uint32 {
+func (p *PlayerData) TrackCreatures() uint32 {
 	return p.trackCreatures
 }
 
-func (p *Player) SetTrackCreatures(val uint32) {
+func (p *PlayerData) SetTrackCreatures(val uint32) {
 	p.trackCreatures = val
 	p.dirty.Flag("trackCreatures")
 }
 
-func (p *Player) TrackResources() uint32 {
+func (p *PlayerData) TrackResources() uint32 {
 	return p.trackResources
 }
 
-func (p *Player) SetTrackResources(val uint32) {
+func (p *PlayerData) SetTrackResources(val uint32) {
 	p.trackResources = val
 	p.dirty.Flag("trackResources")
 }
 
-func (p *Player) BlockPercentage() float32 {
+func (p *PlayerData) BlockPercentage() float32 {
 	return p.blockPercentage
 }
 
-func (p *Player) SetBlockPercentage(val float32) {
+func (p *PlayerData) SetBlockPercentage(val float32) {
 	p.blockPercentage = val
 	p.dirty.Flag("blockPercentage")
 }
 
-func (p *Player) DodgePercentage() float32 {
+func (p *PlayerData) DodgePercentage() float32 {
 	return p.dodgePercentage
 }
 
-func (p *Player) SetDodgePercentage(val float32) {
+func (p *PlayerData) SetDodgePercentage(val float32) {
 	p.dodgePercentage = val
 	p.dirty.Flag("dodgePercentage")
 }
 
-func (p *Player) ParryPercentage() float32 {
+func (p *PlayerData) ParryPercentage() float32 {
 	return p.parryPercentage
 }
 
-func (p *Player) SetParryPercentage(val float32) {
+func (p *PlayerData) SetParryPercentage(val float32) {
 	p.parryPercentage = val
 	p.dirty.Flag("parryPercentage")
 }
 
-func (p *Player) Expertise() uint32 {
+func (p *PlayerData) Expertise() uint32 {
 	return p.expertise
 }
 
-func (p *Player) SetExpertise(val uint32) {
+func (p *PlayerData) SetExpertise(val uint32) {
 	p.expertise = val
 	p.dirty.Flag("expertise")
 }
 
-func (p *Player) OffhandExpertise() uint32 {
+func (p *PlayerData) OffhandExpertise() uint32 {
 	return p.offhandExpertise
 }
 
-func (p *Player) SetOffhandExpertise(val uint32) {
+func (p *PlayerData) SetOffhandExpertise(val uint32) {
 	p.offhandExpertise = val
 	p.dirty.Flag("offhandExpertise")
 }
 
-func (p *Player) CritPercentage() float32 {
+func (p *PlayerData) CritPercentage() float32 {
 	return p.critPercentage
 }
 
-func (p *Player) SetCritPercentage(val float32) {
+func (p *PlayerData) SetCritPercentage(val float32) {
 	p.critPercentage = val
 	p.dirty.Flag("critPercentage")
 }
 
-func (p *Player) RangedCritPercentage() float32 {
+func (p *PlayerData) RangedCritPercentage() float32 {
 	return p.rangedCritPercentage
 }
 
-func (p *Player) SetRangedCritPercentage(val float32) {
+func (p *PlayerData) SetRangedCritPercentage(val float32) {
 	p.rangedCritPercentage = val
 	p.dirty.Flag("rangedCritPercentage")
 }
 
-func (p *Player) OffhandCritPercentage() float32 {
+func (p *PlayerData) OffhandCritPercentage() float32 {
 	return p.offhandCritPercentage
 }
 
-func (p *Player) SetOffhandCritPercentage(val float32) {
+func (p *PlayerData) SetOffhandCritPercentage(val float32) {
 	p.offhandCritPercentage = val
 	p.dirty.Flag("offhandCritPercentage")
 }
 
-func (p *Player) SpellCritPercentage() [7]float32 {
+func (p *PlayerData) SpellCritPercentage() [7]float32 {
 	return p.spellCritPercentage
 }
 
-func (p *Player) SetSpellCritPercentage(val [7]float32) {
+func (p *PlayerData) SetSpellCritPercentage(val [7]float32) {
 	p.spellCritPercentage = val
 	p.dirty.Flag("spellCritPercentage")
 }
 
-func (p *Player) ShieldBlock() uint32 {
+func (p *PlayerData) ShieldBlock() uint32 {
 	return p.shieldBlock
 }
 
-func (p *Player) SetShieldBlock(val uint32) {
+func (p *PlayerData) SetShieldBlock(val uint32) {
 	p.shieldBlock = val
 	p.dirty.Flag("shieldBlock")
 }
 
-func (p *Player) ShieldBlockCritPercentage() float32 {
+func (p *PlayerData) ShieldBlockCritPercentage() float32 {
 	return p.shieldBlockCritPercentage
 }
 
-func (p *Player) SetShieldBlockCritPercentage(val float32) {
+func (p *PlayerData) SetShieldBlockCritPercentage(val float32) {
 	p.shieldBlockCritPercentage = val
 	p.dirty.Flag("shieldBlockCritPercentage")
 }
 
-func (p *Player) ExploredZones() [128]uint32 {
+func (p *PlayerData) ExploredZones() [128]uint32 {
 	return p.exploredZones
 }
 
-func (p *Player) SetExploredZones(val [128]uint32) {
+func (p *PlayerData) SetExploredZones(val [128]uint32) {
 	p.exploredZones = val
 	p.dirty.Flag("exploredZones")
 }
 
-func (p *Player) RestStateExperience() uint32 {
+func (p *PlayerData) RestStateExperience() uint32 {
 	return p.restStateExperience
 }
 
-func (p *Player) SetRestStateExperience(val uint32) {
+func (p *PlayerData) SetRestStateExperience(val uint32) {
 	p.restStateExperience = val
 	p.dirty.Flag("restStateExperience")
 }
 
-func (p *Player) Wealth() int32 {
+func (p *PlayerData) Wealth() int32 {
 	return p.wealth
 }
 
-func (p *Player) SetWealth(val int32) {
+func (p *PlayerData) SetWealth(val int32) {
 	p.wealth = val
 	p.dirty.Flag("wealth")
 }
 
-func (p *Player) ModDamageDonePositive() [7]uint32 {
+func (p *PlayerData) ModDamageDonePositive() [7]uint32 {
 	return p.modDamageDonePositive
 }
 
-func (p *Player) SetModDamageDonePositive(val [7]uint32) {
+func (p *PlayerData) SetModDamageDonePositive(val [7]uint32) {
 	p.modDamageDonePositive = val
 	p.dirty.Flag("modDamageDonePositive")
 }
 
-func (p *Player) ModDamageDoneNegative() [7]uint32 {
+func (p *PlayerData) ModDamageDoneNegative() [7]uint32 {
 	return p.modDamageDoneNegative
 }
 
-func (p *Player) SetModDamageDoneNegative(val [7]uint32) {
+func (p *PlayerData) SetModDamageDoneNegative(val [7]uint32) {
 	p.modDamageDoneNegative = val
 	p.dirty.Flag("modDamageDoneNegative")
 }
 
-func (p *Player) ModDamageDonePercentage() [7]float32 {
+func (p *PlayerData) ModDamageDonePercentage() [7]float32 {
 	return p.modDamageDonePercentage
 }
 
-func (p *Player) SetModDamageDonePercentage(val [7]float32) {
+func (p *PlayerData) SetModDamageDonePercentage(val [7]float32) {
 	p.modDamageDonePercentage = val
 	p.dirty.Flag("modDamageDonePercentage")
 }
 
-func (p *Player) ModHealingDonePos() uint32 {
+func (p *PlayerData) ModHealingDonePos() uint32 {
 	return p.modHealingDonePos
 }
 
-func (p *Player) SetModHealingDonePos(val uint32) {
+func (p *PlayerData) SetModHealingDonePos(val uint32) {
 	p.modHealingDonePos = val
 	p.dirty.Flag("modHealingDonePos")
 }
 
-func (p *Player) ModHealingPercentage() float32 {
+func (p *PlayerData) ModHealingPercentage() float32 {
 	return p.modHealingPercentage
 }
 
-func (p *Player) SetModHealingPercentage(val float32) {
+func (p *PlayerData) SetModHealingPercentage(val float32) {
 	p.modHealingPercentage = val
 	p.dirty.Flag("modHealingPercentage")
 }
 
-func (p *Player) ModHealingDonePercentage() float32 {
+func (p *PlayerData) ModHealingDonePercentage() float32 {
 	return p.modHealingDonePercentage
 }
 
-func (p *Player) SetModHealingDonePercentage(val float32) {
+func (p *PlayerData) SetModHealingDonePercentage(val float32) {
 	p.modHealingDonePercentage = val
 	p.dirty.Flag("modHealingDonePercentage")
 }
 
-func (p *Player) ModTarResistance() uint32 {
+func (p *PlayerData) ModTarResistance() uint32 {
 	return p.modTarResistance
 }
 
-func (p *Player) SetModTarResistance(val uint32) {
+func (p *PlayerData) SetModTarResistance(val uint32) {
 	p.modTarResistance = val
 	p.dirty.Flag("modTarResistance")
 }
 
-func (p *Player) ModTarPhysicalResistance() uint32 {
+func (p *PlayerData) ModTarPhysicalResistance() uint32 {
 	return p.modTarPhysicalResistance
 }
 
-func (p *Player) SetModTarPhysicalResistance(val uint32) {
+func (p *PlayerData) SetModTarPhysicalResistance(val uint32) {
 	p.modTarPhysicalResistance = val
 	p.dirty.Flag("modTarPhysicalResistance")
 }
 
-func (p *Player) TrackStealthed() bool {
+func (p *PlayerData) TrackStealthed() bool {
 	return p.trackStealthed
 }
 
-func (p *Player) SetTrackStealthed(val bool) {
+func (p *PlayerData) SetTrackStealthed(val bool) {
 	p.trackStealthed = val
 	p.dirty.Flag("trackStealthed")
 }
 
-func (p *Player) DisplaySpiritAutoReleaSetImer() bool {
+func (p *PlayerData) DisplaySpiritAutoReleaSetImer() bool {
 	return p.displaySpiritAutoReleaSetImer
 }
 
-func (p *Player) SetDisplaySpiritAutoReleaSetImer(val bool) {
+func (p *PlayerData) SetDisplaySpiritAutoReleaSetImer(val bool) {
 	p.displaySpiritAutoReleaSetImer = val
 	p.dirty.Flag("displaySpiritAutoReleaSetImer")
 }
 
-func (p *Player) HideSpiritReleaseWindow() bool {
+func (p *PlayerData) HideSpiritReleaseWindow() bool {
 	return p.hideSpiritReleaseWindow
 }
 
-func (p *Player) SetHideSpiritReleaseWindow(val bool) {
+func (p *PlayerData) SetHideSpiritReleaseWindow(val bool) {
 	p.hideSpiritReleaseWindow = val
 	p.dirty.Flag("hideSpiritReleaseWindow")
 }
 
-func (p *Player) ReferAFriendGrantableLevel() uint8 {
+func (p *PlayerData) ReferAFriendGrantableLevel() uint8 {
 	return p.referAFriendGrantableLevel
 }
 
-func (p *Player) SetReferAFriendGrantableLevel(val uint8) {
+func (p *PlayerData) SetReferAFriendGrantableLevel(val uint8) {
 	p.referAFriendGrantableLevel = val
 	p.dirty.Flag("referAFriendGrantableLevel")
 }
 
-func (p *Player) ActionBarToggles() uint8 {
+func (p *PlayerData) ActionBarToggles() uint8 {
 	return p.actionBarToggles
 }
 
-func (p *Player) SetActionBarToggles(val uint8) {
+func (p *PlayerData) SetActionBarToggles(val uint8) {
 	p.actionBarToggles = val
 	p.dirty.Flag("actionBarToggles")
 }
 
-func (p *Player) LifetimeMaxPVPRank() uint8 {
+func (p *PlayerData) LifetimeMaxPVPRank() uint8 {
 	return p.lifetimeMaxPVPRank
 }
 
-func (p *Player) SetLifetimeMaxPVPRank(val uint8) {
+func (p *PlayerData) SetLifetimeMaxPVPRank(val uint8) {
 	p.lifetimeMaxPVPRank = val
 	p.dirty.Flag("lifetimeMaxPVPRank")
 }
 
-func (p *Player) AmmoID() uint32 {
+func (p *PlayerData) AmmoID() uint32 {
 	return p.ammoID
 }
 
-func (p *Player) SetAmmoID(val uint32) {
+func (p *PlayerData) SetAmmoID(val uint32) {
 	p.ammoID = val
 	p.dirty.Flag("ammoID")
 }
 
-func (p *Player) SelfResSpell() uint32 {
+func (p *PlayerData) SelfResSpell() uint32 {
 	return p.selfResSpell
 }
 
-func (p *Player) SetSelfResSpell(val uint32) {
+func (p *PlayerData) SetSelfResSpell(val uint32) {
 	p.selfResSpell = val
 	p.dirty.Flag("selfResSpell")
 }
 
-func (p *Player) PVPMedals() uint32 {
+func (p *PlayerData) PVPMedals() uint32 {
 	return p.pVPMedals
 }
 
-func (p *Player) SetPVPMedals(val uint32) {
+func (p *PlayerData) SetPVPMedals(val uint32) {
 	p.pVPMedals = val
 	p.dirty.Flag("pVPMedals")
 }
 
-func (p *Player) BuybackPrices() [12]uint32 {
+func (p *PlayerData) BuybackPrices() [12]uint32 {
 	return p.buybackPrices
 }
 
-func (p *Player) SetBuybackPrices(val [12]uint32) {
+func (p *PlayerData) SetBuybackPrices(val [12]uint32) {
 	p.buybackPrices = val
 	p.dirty.Flag("buybackPrices")
 }
 
-func (p *Player) BuybackTimestamps() [12]uint32 {
+func (p *PlayerData) BuybackTimestamps() [12]uint32 {
 	return p.buybackTimestamps
 }
 
-func (p *Player) SetBuybackTimestamps(val [12]uint32) {
+func (p *PlayerData) SetBuybackTimestamps(val [12]uint32) {
 	p.buybackTimestamps = val
 	p.dirty.Flag("buybackTimestamps")
 }
 
-func (p *Player) Kills() uint32 {
+func (p *PlayerData) Kills() uint32 {
 	return p.kills
 }
 
-func (p *Player) SetKills(val uint32) {
+func (p *PlayerData) SetKills(val uint32) {
 	p.kills = val
 	p.dirty.Flag("kills")
 }
 
-func (p *Player) TodayKills() uint32 {
+func (p *PlayerData) TodayKills() uint32 {
 	return p.todayKills
 }
 
-func (p *Player) SetTodayKills(val uint32) {
+func (p *PlayerData) SetTodayKills(val uint32) {
 	p.todayKills = val
 	p.dirty.Flag("todayKills")
 }
 
-func (p *Player) YesterdayKills() uint32 {
+func (p *PlayerData) YesterdayKills() uint32 {
 	return p.yesterdayKills
 }
 
-func (p *Player) SetYesterdayKills(val uint32) {
+func (p *PlayerData) SetYesterdayKills(val uint32) {
 	p.yesterdayKills = val
 	p.dirty.Flag("yesterdayKills")
 }
 
-func (p *Player) LifetimeHonorableKills() uint32 {
+func (p *PlayerData) LifetimeHonorableKills() uint32 {
 	return p.lifetimeHonorableKills
 }
 
-func (p *Player) SetLifetimeHonorableKills(val uint32) {
+func (p *PlayerData) SetLifetimeHonorableKills(val uint32) {
 	p.lifetimeHonorableKills = val
 	p.dirty.Flag("lifetimeHonorableKills")
 }
 
-func (p *Player) IgnorePowerRegenPredictionMask() uint8 {
+func (p *PlayerData) IgnorePowerRegenPredictionMask() uint8 {
 	return p.ignorePowerRegenPredictionMask
 }
 
-func (p *Player) SetIgnorePowerRegenPredictionMask(val uint8) {
+func (p *PlayerData) SetIgnorePowerRegenPredictionMask(val uint8) {
 	p.ignorePowerRegenPredictionMask = val
 	p.dirty.Flag("ignorePowerRegenPredictionMask")
 }
 
-func (p *Player) OverrideSpellsID() uint16 {
+func (p *PlayerData) OverrideSpellsID() uint16 {
 	return p.overrideSpellsID
 }
 
-func (p *Player) SetOverrideSpellsID(val uint16) {
+func (p *PlayerData) SetOverrideSpellsID(val uint16) {
 	p.overrideSpellsID = val
 	p.dirty.Flag("overrideSpellsID")
 }
 
-func (p *Player) WatchedFactionIndex() int32 {
+func (p *PlayerData) WatchedFactionIndex() int32 {
 	return p.watchedFactionIndex
 }
 
-func (p *Player) SetWatchedFactionIndex(val int32) {
+func (p *PlayerData) SetWatchedFactionIndex(val int32) {
 	p.watchedFactionIndex = val
 	p.dirty.Flag("watchedFactionIndex")
 }
 
-func (p *Player) CombatRatings() [25]uint32 {
+func (p *PlayerData) CombatRatings() [25]uint32 {
 	return p.combatRatings
 }
 
-func (p *Player) SetCombatRatings(val [25]uint32) {
+func (p *PlayerData) SetCombatRatings(val [25]uint32) {
 	p.combatRatings = val
 	p.dirty.Flag("combatRatings")
 }
 
-func (p *Player) ArenaTeamInfo() [21]uint32 {
+func (p *PlayerData) ArenaTeamInfo() [21]uint32 {
 	return p.arenaTeamInfo
 }
 
-func (p *Player) SetArenaTeamInfo(val [21]uint32) {
+func (p *PlayerData) SetArenaTeamInfo(val [21]uint32) {
 	p.arenaTeamInfo = val
 	p.dirty.Flag("arenaTeamInfo")
 }
 
-func (p *Player) HonorCurrency() uint32 {
+func (p *PlayerData) HonorCurrency() uint32 {
 	return p.honorCurrency
 }
 
-func (p *Player) SetHonorCurrency(val uint32) {
+func (p *PlayerData) SetHonorCurrency(val uint32) {
 	p.honorCurrency = val
 	p.dirty.Flag("honorCurrency")
 }
 
-func (p *Player) ArenaCurrency() uint32 {
+func (p *PlayerData) ArenaCurrency() uint32 {
 	return p.arenaCurrency
 }
 
-func (p *Player) SetArenaCurrency(val uint32) {
+func (p *PlayerData) SetArenaCurrency(val uint32) {
 	p.arenaCurrency = val
 	p.dirty.Flag("arenaCurrency")
 }
 
-func (p *Player) MaxLevel() uint32 {
+func (p *PlayerData) MaxLevel() uint32 {
 	return p.maxLevel
 }
 
-func (p *Player) SetMaxLevel(val uint32) {
+func (p *PlayerData) SetMaxLevel(val uint32) {
 	p.maxLevel = val
 	p.dirty.Flag("maxLevel")
 }
 
-func (p *Player) DailyQuests() [25]uint32 {
+func (p *PlayerData) DailyQuests() [25]uint32 {
 	return p.dailyQuests
 }
 
-func (p *Player) SetDailyQuests(val [25]uint32) {
+func (p *PlayerData) SetDailyQuests(val [25]uint32) {
 	p.dailyQuests = val
 	p.dirty.Flag("dailyQuests")
 }
 
-func (p *Player) RuneRegen() [4]float32 {
+func (p *PlayerData) RuneRegen() [4]float32 {
 	return p.runeRegen
 }
 
-func (p *Player) SetRuneRegen(val [4]float32) {
+func (p *PlayerData) SetRuneRegen(val [4]float32) {
 	p.runeRegen = val
 	p.dirty.Flag("runeRegen")
 }
 
-func (p *Player) NoReagentCost() [3]uint32 {
+func (p *PlayerData) NoReagentCost() [3]uint32 {
 	return p.noReagentCost
 }
 
-func (p *Player) SetNoReagentCost(val [3]uint32) {
+func (p *PlayerData) SetNoReagentCost(val [3]uint32) {
 	p.noReagentCost = val
 	p.dirty.Flag("noReagentCost")
 }
 
-func (p *Player) GlyphSlots() [6]uint32 {
+func (p *PlayerData) GlyphSlots() [6]uint32 {
 	return p.glyphSlots
 }
 
-func (p *Player) SetGlyphSlots(val [6]uint32) {
+func (p *PlayerData) SetGlyphSlots(val [6]uint32) {
 	p.glyphSlots = val
 	p.dirty.Flag("glyphSlots")
 }
 
-func (p *Player) Glyphs() [6]uint32 {
+func (p *PlayerData) Glyphs() [6]uint32 {
 	return p.glyphs
 }
 
-func (p *Player) SetGlyphs(val [6]uint32) {
+func (p *PlayerData) SetGlyphs(val [6]uint32) {
 	p.glyphs = val
 	p.dirty.Flag("glyphs")
 }
 
-func (p *Player) GlyphsEnabled() uint32 {
+func (p *PlayerData) GlyphsEnabled() uint32 {
 	return p.glyphsEnabled
 }
 
-func (p *Player) SetGlyphsEnabled(val uint32) {
+func (p *PlayerData) SetGlyphsEnabled(val uint32) {
 	p.glyphsEnabled = val
 	p.dirty.Flag("glyphsEnabled")
 }
 
-func (p *Player) PetSpellPower() uint32 {
+func (p *PlayerData) PetSpellPower() uint32 {
 	return p.petSpellPower
 }
 
-func (p *Player) SetPetSpellPower(val uint32) {
+func (p *PlayerData) SetPetSpellPower(val uint32) {
 	p.petSpellPower = val
 	p.dirty.Flag("petSpellPower")
 }
