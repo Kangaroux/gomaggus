@@ -1,7 +1,6 @@
 package value
 
 import (
-	"bytes"
 	"encoding/binary"
 	"math"
 	"reflect"
@@ -18,7 +17,9 @@ const (
 )
 
 type encoder struct {
-	buf   bytes.Buffer
+	buf       []byte
+	bufOffset int
+
 	block uint32
 
 	// cursor keeps track of how many bits have been written into the block.
@@ -30,12 +31,23 @@ type encoder struct {
 }
 
 func (e *encoder) Encode(v any, sections []structSection) []byte {
-	e.buf.Reset()
+	var totalSize int
+
+	for _, s := range sections {
+		totalSize += s.size
+	}
+
+	if totalSize == 0 {
+		return nil
+	}
+
+	e.buf = make([]byte, totalSize*4)
+	e.bufOffset = 0
 
 	e.encodeRoot(reflect.Indirect(reflect.ValueOf(v)), sections)
 	e.flush()
 
-	return bytes.Clone(e.buf.Bytes())
+	return e.buf
 }
 
 // encodeRoot encodes the struct v with some additional logic to handle v as the root struct.
@@ -103,13 +115,12 @@ func (e *encoder) encode(v reflect.Value) {
 
 // flush writes the block to the buffer if it's non-empty.
 func (e *encoder) flush() {
-	var data [4]byte
-
 	if e.cursor > 0 {
-		binary.LittleEndian.PutUint32(data[:], e.block)
-		e.buf.Write(data[:])
-		e.cursor = 0
+		binary.LittleEndian.PutUint32(e.buf[e.bufOffset:], e.block)
+
 		e.block = 0
+		e.bufOffset += 4 // Advance the buffer 4 bytes
+		e.cursor = 0
 	}
 }
 
@@ -131,7 +142,7 @@ func (e *encoder) align(n int) {
 
 		log.Panic().
 			Int("count", 8-byteBits).
-			Int("near", e.buf.Len()).
+			Int("near", e.bufOffset).
 			Str("type", e.root.Type().Name()).
 			Msg("missing bit padding")
 	}
@@ -142,7 +153,7 @@ func (e *encoder) align(n int) {
 
 		log.Panic().
 			Int("count", n-blockBits).
-			Int("near", e.buf.Len()).
+			Int("near", e.bufOffset).
 			Str("type", e.root.Type().Name()).
 			Msg("missing byte padding")
 	}
