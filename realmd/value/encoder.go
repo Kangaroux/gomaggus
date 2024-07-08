@@ -4,8 +4,6 @@ import (
 	"encoding/binary"
 	"math"
 	"reflect"
-
-	"github.com/phuslu/log"
 )
 
 const (
@@ -139,23 +137,11 @@ func (e *encoder) align(n int) {
 	// Start a new byte
 	if byteBits := e.cursor % 8; byteBits != 0 {
 		e.cursor += 8 - byteBits
-
-		log.Panic().
-			Int("count", 8-byteBits).
-			Int("near", e.bufOffset).
-			Str("type", e.root.Type().Name()).
-			Msg("missing bit padding")
 	}
 
 	// Align to n bits
 	if blockBits := e.cursor % n; blockBits != 0 {
 		e.cursor += n - blockBits
-
-		log.Panic().
-			Int("count", n-blockBits).
-			Int("near", e.bufOffset).
-			Str("type", e.root.Type().Name()).
-			Msg("missing byte padding")
 	}
 
 	// Block can't fit n bits
