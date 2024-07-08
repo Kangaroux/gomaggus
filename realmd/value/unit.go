@@ -1,6 +1,10 @@
 package value
 
-import "github.com/kangaroux/gomaggus/realmd"
+import (
+	"reflect"
+
+	"github.com/kangaroux/gomaggus/realmd"
+)
 
 const (
 	UnitDataSize = 142
@@ -178,6 +182,16 @@ type UnitData struct {
 	_                              uint32
 
 	dirty *dirtyValues `value:"END"`
+}
+
+func NewUnitData() *UnitData {
+	return &UnitData{
+		dirty: newDirtyValues(getStructLayout(reflect.ValueOf(UnitData{}))),
+	}
+}
+
+func (u *UnitData) Marshal(onlyDirty bool) ([]byte, []structSection) {
+	return marshalValues(u, onlyDirty, u.dirty)
 }
 
 func (u *UnitData) Charm() realmd.Guid {
