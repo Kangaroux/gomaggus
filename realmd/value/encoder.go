@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"math"
 	"reflect"
-	"sort"
 
 	"github.com/phuslu/log"
 )
@@ -30,7 +29,7 @@ type encoder struct {
 	root reflect.Value
 }
 
-func (e *encoder) Encode(v any, sections []int) []byte {
+func (e *encoder) Encode(v any, sections []structSection) []byte {
 	e.buf.Reset()
 
 	e.encodeRoot(reflect.Indirect(reflect.ValueOf(v)), sections)
@@ -40,30 +39,16 @@ func (e *encoder) Encode(v any, sections []int) []byte {
 }
 
 // encodeRoot encodes the struct v with some additional logic to handle v as the root struct.
-// If sections is nil then the entire struct is encoded.
-func (e *encoder) encodeRoot(v reflect.Value, sections []int) {
+func (e *encoder) encodeRoot(v reflect.Value, sections []structSection) {
 	if v.Kind() != reflect.Struct {
 		panic("encode non-struct type " + v.Kind().String())
 	}
 
 	e.root = v
-	info := getStructLayout(e.root)
 
-	if sections == nil {
-		for _, section := range info.sections {
-			for _, fieldIndex := range section.fields {
-				e.encode(v.Field(fieldIndex))
-			}
-		}
-	} else {
-		sort.Slice(sections, func(i, j int) bool { return sections[i] < sections[j] })
-
-		for _, sectionIndex := range sections {
-			section := info.sections[sectionIndex]
-
-			for _, fieldIndex := range section.fields {
-				e.encode(v.Field(fieldIndex))
-			}
+	for _, section := range sections {
+		for _, fieldIndex := range section.fields {
+			e.encode(v.Field(fieldIndex))
 		}
 	}
 }
@@ -193,14 +178,18 @@ func (e *encoder) writeBit(b bool) {
 	e.cursor++
 }
 
-func marshalValues(v any, onlyDirty bool, dirty *dirtyValues) []byte {
+func marshalValues(v any, onlyDirty bool, dirty *dirtyValues) ([]byte, []structSection) {
+	var sections []structSection
 	enc := &encoder{}
 
-	if !onlyDirty {
-		return enc.Encode(v, nil)
+	if onlyDirty {
+		sections = dirty.Sections()
+	} else {
+		sections = dirty.layout.sections
 	}
 
-	ret := enc.Encode(v, dirty.Sections())
+	ret := enc.Encode(v, sections)
 	dirty.Clear()
-	return ret
+
+	return ret, sections
 }

@@ -28,7 +28,7 @@ func NewObjectData() *ObjectData {
 	}
 }
 
-func (o *ObjectData) Marshal(onlyDirty bool) []byte {
+func (o *ObjectData) Marshal(onlyDirty bool) ([]byte, []structSection) {
 	return marshalValues(o, onlyDirty, o.dirty)
 }
 

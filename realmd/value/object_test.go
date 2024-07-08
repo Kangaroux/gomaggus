@@ -9,15 +9,21 @@ import (
 )
 
 func TestObjectMarshal(t *testing.T) {
+	var data []byte
+
 	o := NewObjectData()
 
-	assert.Equal(t, 0, len(o.Marshal(true)))
-	assert.Equal(t, 20, len(o.Marshal(false)))
+	data, _ = o.Marshal(true)
+	assert.Equal(t, 0, len(data))
+
+	data, _ = o.Marshal(false)
+	assert.Equal(t, 20, len(data))
 
 	o.SetGUID(0x1122334455667788)
 	o.SetEntry(0x12345678)
 	o.SetType(0x87654321)
 	o.SetScaleX(math.Float32frombits(0xEFBEADDE))
 
-	assert.Equal(t, internal.MustDecodeHex("88776655443322112143658778563412DEADBEEF"), o.Marshal(true))
+	data, _ = o.Marshal(true)
+	assert.Equal(t, internal.MustDecodeHex("88776655443322112143658778563412DEADBEEF"), data)
 }

@@ -189,7 +189,7 @@ func NewPlayerData() *PlayerData {
 	}
 }
 
-func (p *PlayerData) Marshal(onlyDirty bool) []byte {
+func (p *PlayerData) Marshal(onlyDirty bool) ([]byte, []structSection) {
 	return marshalValues(p, onlyDirty, p.dirty)
 }
 
