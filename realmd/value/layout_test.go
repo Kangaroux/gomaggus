@@ -11,7 +11,7 @@ import (
 func TestObjectDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(ObjectData{}))
 	assert.Equal(t, ObjectDataSize, m.size)
-	assert.Equal(t, 5, len(m.sections))
+	assert.Equal(t, 4, len(m.sections))
 
 	expected := []struct {
 		blockStart int
@@ -21,7 +21,7 @@ func TestObjectDataLayout(t *testing.T) {
 		{2, 1},
 		{3, 1},
 		{4, 1},
-		{5, 1},
+		// {5, 1}, padding
 	}
 
 	assert.Equal(t, len(m.sections), len(expected))
@@ -37,7 +37,7 @@ func TestObjectDataLayout(t *testing.T) {
 func TestUnitDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(UnitData{}))
 	assert.Equal(t, UnitDataSize, m.size)
-	assert.Equal(t, 78, len(m.sections))
+	assert.Equal(t, 77, len(m.sections))
 
 	expected := []struct {
 		blockStart int
@@ -120,7 +120,7 @@ func TestUnitDataLayout(t *testing.T) {
 		{132, 7},
 		{139, 1},
 		{140, 1},
-		{141, 1},
+		// {141, 1}, padding
 	}
 
 	assert.Equal(t, len(m.sections), len(expected))
@@ -136,7 +136,7 @@ func TestUnitDataLayout(t *testing.T) {
 func TestPlayerDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(PlayerData{}))
 	assert.Equal(t, PlayerDataSize, m.size)
-	assert.Equal(t, 76, len(m.sections))
+	assert.Equal(t, 75, len(m.sections))
 
 	expected := []struct {
 		blockStart int
@@ -155,7 +155,7 @@ func TestPlayerDataLayout(t *testing.T) {
 		{135, 38},
 		{173, 1},
 		{174, 1},
-		{175, 1},
+		// {175, 1}, padding
 		{176, 46},
 		{222, 32},
 		{254, 56},

@@ -64,7 +64,11 @@ func getStructLayout(v reflect.Value) *structLayout {
 		block += currentSection.size
 		bitSize = 0
 
-		info.sections = append(info.sections, currentSection)
+		// Sections that only contain padding will not have any fields
+		if len(currentSection.fields) > 0 {
+			info.sections = append(info.sections, currentSection)
+		}
+
 		currentSection = structSection{}
 	}
 
@@ -82,9 +86,7 @@ func getStructLayout(v reflect.Value) *structLayout {
 
 		bitSize += size
 
-		// Padding fields are not included in the section list to avoid encoding them, however
-		// their size is taken into account. Padding fields can also be their own section if
-		// they are large enough, but the field list for the section will be empty.
+		// Padding fields are not included in the section list to avoid encoding them.
 		if f.Name != "_" {
 			currentSection.fields = append(currentSection.fields, i)
 			info.nameToSection[f.Name] = len(info.sections)
