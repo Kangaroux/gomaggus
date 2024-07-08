@@ -2,6 +2,10 @@ package value
 
 import "github.com/kangaroux/gomaggus/realmd"
 
+const (
+	UnitDataSize = 142
+)
+
 // Adapted from Gophercraft with some modifications
 // https://github.com/Gophercraft/core/blob/master/packet/update/d12340/descriptor.go
 type UnitData struct {

@@ -34,6 +34,105 @@ func TestObjectDataLayout(t *testing.T) {
 	}
 }
 
+func TestUnitDataLayout(t *testing.T) {
+	m := getStructLayout(reflect.ValueOf(UnitData{}))
+	assert.Equal(t, UnitDataSize, m.size)
+	assert.Equal(t, 78, len(m.sections))
+
+	expected := []struct {
+		blockStart int
+		size       int
+	}{
+		{0, 2},
+		{2, 2},
+		{4, 2},
+		{6, 2},
+		{8, 2},
+		{10, 2},
+		{12, 2},
+		{14, 2},
+		{16, 1},
+		{17, 1},
+		{18, 1},
+		{19, 1},
+		{20, 1},
+		{21, 1},
+		{22, 1},
+		{23, 1},
+		{24, 1},
+		{25, 1},
+		{26, 1},
+		{27, 1},
+		{28, 1},
+		{29, 1},
+		{30, 1},
+		{31, 1},
+		{32, 1},
+		{33, 1},
+		{34, 7},
+		{41, 7},
+		{48, 1},
+		{49, 1},
+		{50, 3},
+		{53, 1},
+		{54, 1},
+		{55, 1},
+		{56, 1},
+		{57, 1},
+		{58, 1},
+		{59, 1},
+		{60, 1},
+		{61, 1},
+		{62, 1},
+		{63, 1},
+		{64, 1},
+		{65, 1},
+		{66, 1},
+		{67, 1},
+		{68, 1},
+		{69, 1},
+		{70, 1},
+		{71, 1},
+		{72, 1},
+		{73, 1},
+		{74, 1},
+		{75, 1},
+		{76, 1},
+		{77, 1},
+		{78, 5},
+		{83, 5},
+		{88, 5},
+		{93, 7},
+		{100, 7},
+		{107, 7},
+		{114, 1},
+		{115, 1},
+		{116, 1},
+		{117, 1},
+		{118, 1},
+		{119, 1},
+		{120, 1},
+		{121, 1},
+		{122, 1},
+		{123, 1},
+		{124, 1},
+		{125, 7},
+		{132, 7},
+		{139, 1},
+		{140, 1},
+		{141, 1},
+	}
+
+	assert.Equal(t, len(m.sections), len(expected))
+
+	for i := 0; i < len(expected); i++ {
+		t.Run(fmt.Sprintf("block-%d", i), func(t *testing.T) {
+			assert.Equal(t, expected[i].blockStart, m.sections[i].blockStart)
+			assert.Equal(t, expected[i].size, m.sections[i].size)
+		})
+	}
+}
+
 func TestPlayerDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(PlayerData{}))
 	assert.Equal(t, PlayerDataSize, m.size)
