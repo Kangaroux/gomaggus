@@ -7,6 +7,10 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+const (
+	ObjectDataSize = 6
+)
+
 type ObjectData struct {
 	guid    realmd.Guid
 	objType uint32

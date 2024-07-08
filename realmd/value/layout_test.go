@@ -10,7 +10,7 @@ import (
 
 func TestObjectDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(ObjectData{}))
-	assert.Equal(t, 6, m.size)
+	assert.Equal(t, ObjectDataSize, m.size)
 	assert.Equal(t, 5, len(m.sections))
 
 	expected := []struct {
@@ -36,7 +36,7 @@ func TestObjectDataLayout(t *testing.T) {
 
 func TestPlayerDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(PlayerData{}))
-	assert.Equal(t, 1178, m.size)
+	assert.Equal(t, PlayerDataSize, m.size)
 	assert.Equal(t, 76, len(m.sections))
 
 	expected := []struct {

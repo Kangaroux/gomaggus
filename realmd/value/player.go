@@ -7,6 +7,10 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
+const (
+	PlayerDataSize = 1178
+)
+
 type QuestLogEntry struct {
 	ID    uint32
 	State uint32
