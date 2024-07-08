@@ -22,7 +22,7 @@ type structSection struct {
 }
 
 type structLayout struct {
-	// TODO
+	// sections is a list of the non-empty sections in the struct.
 	sections []structSection
 
 	// size is the total number of blocks.
