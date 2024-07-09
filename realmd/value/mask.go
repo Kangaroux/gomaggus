@@ -14,7 +14,7 @@ type valueMask struct {
 	largestIndex int
 }
 
-func (m *valueMask) Add(sections []structSection, offset int) {
+func (m *valueMask) Update(sections []structSection, offset int) {
 	var index int
 	var bitIndex int
 

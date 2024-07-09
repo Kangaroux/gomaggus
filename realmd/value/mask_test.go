@@ -65,7 +65,7 @@ func TestMask(t *testing.T) {
 	for i, testCase := range testCases {
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
 			m := valueMask{}
-			m.Add(testCase.sections, testCase.offset)
+			m.Update(testCase.sections, testCase.offset)
 			assert.Equal(t, testCase.expected, m.Mask())
 		})
 	}
@@ -75,10 +75,10 @@ func TestMaskMaxBlock(t *testing.T) {
 	m := valueMask{}
 
 	assert.NotPanics(t, func() {
-		m.Add([]structSection{{blockStart: maskSize*32 - 1, size: 1}}, 0)
+		m.Update([]structSection{{blockStart: maskSize*32 - 1, size: 1}}, 0)
 	})
 
 	assert.Panics(t, func() {
-		m.Add([]structSection{{blockStart: maskSize * 32, size: 1}}, 0)
+		m.Update([]structSection{{blockStart: maskSize * 32, size: 1}}, 0)
 	})
 }
