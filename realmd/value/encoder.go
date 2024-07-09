@@ -14,7 +14,7 @@ const (
 	endMarker = "END"
 )
 
-type encoder struct {
+type valueEncoder struct {
 	buf       []byte
 	bufOffset int
 
@@ -28,7 +28,7 @@ type encoder struct {
 	root reflect.Value
 }
 
-func (e *encoder) Encode(v any, sections []structSection) []byte {
+func (e *valueEncoder) Encode(v any, sections []structSection) []byte {
 	var totalSize int
 
 	for _, s := range sections {
@@ -49,7 +49,7 @@ func (e *encoder) Encode(v any, sections []structSection) []byte {
 }
 
 // encodeRoot encodes the struct v with some additional logic to handle v as the root struct.
-func (e *encoder) encodeRoot(v reflect.Value, sections []structSection) {
+func (e *valueEncoder) encodeRoot(v reflect.Value, sections []structSection) {
 	if v.Kind() != reflect.Struct {
 		panic("encode non-struct type " + v.Kind().String())
 	}
@@ -64,7 +64,7 @@ func (e *encoder) encodeRoot(v reflect.Value, sections []structSection) {
 }
 
 // encode writes v to the buffer as uint32 blocks.
-func (e *encoder) encode(v reflect.Value) {
+func (e *valueEncoder) encode(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Struct:
 		numField := v.NumField()
@@ -112,7 +112,7 @@ func (e *encoder) encode(v reflect.Value) {
 }
 
 // flush writes the block to the buffer if it's non-empty.
-func (e *encoder) flush() {
+func (e *valueEncoder) flush() {
 	if e.cursor > 0 {
 		binary.LittleEndian.PutUint32(e.buf[e.bufOffset:], e.block)
 
@@ -125,7 +125,7 @@ func (e *encoder) flush() {
 // align makes room for n bytes inside the block and aligns the cursor to be a multiple of n.
 // The block is automatically flushed if it can't fit n bytes.
 // align panics if n is not 1, 2, or 4.
-func (e *encoder) align(n int) {
+func (e *valueEncoder) align(n int) {
 	switch n {
 	case 1, 2, 4:
 		// Convert bytes to bits
@@ -152,13 +152,13 @@ func (e *encoder) align(n int) {
 
 // writeN interprets val as an n-byte value and writes it to the block.
 // writeN panics if n is not 1, 2, or 4.
-func (e *encoder) writeN(val uint32, n int) {
+func (e *valueEncoder) writeN(val uint32, n int) {
 	e.align(n)
 	e.block |= val << uint32(e.cursor)
 	e.cursor += n * 8
 }
 
-func (e *encoder) writeBit(b bool) {
+func (e *valueEncoder) writeBit(b bool) {
 	var v uint32
 
 	if e.cursor == blockSizeBits {
@@ -177,7 +177,7 @@ func (e *encoder) writeBit(b bool) {
 
 func marshalValues(v any, onlyDirty bool, dirty *dirtyValues) ([]byte, []structSection) {
 	var sections []structSection
-	enc := &encoder{}
+	enc := &valueEncoder{}
 
 	if onlyDirty {
 		sections = dirty.Sections()
