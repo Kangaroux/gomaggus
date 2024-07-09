@@ -9,12 +9,14 @@ const (
 	maskSize = 1 + largestBit/32
 )
 
-type valueMask struct {
+type blockMask struct {
 	mask         [maskSize]uint32
 	largestIndex int
 }
 
-func (m *valueMask) Update(sections []structSection, offset int) {
+// Update sets the mask bits corresponding to the struct sections. The offset is added to
+// the blockStart of each section.
+func (m *blockMask) Update(sections []structSection, offset int) {
 	var index int
 	var bitIndex int
 
@@ -33,6 +35,8 @@ func (m *valueMask) Update(sections []structSection, offset int) {
 	}
 }
 
-func (m *valueMask) Mask() []uint32 {
+// Mask returns a slice of the block mask. The slice is the minimum possible length without
+// any trailing zeroes.
+func (m *blockMask) Mask() []uint32 {
 	return m.mask[:m.largestIndex+1]
 }
