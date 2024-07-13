@@ -2,7 +2,6 @@ package values
 
 import (
 	"reflect"
-	"sync"
 
 	"github.com/kangaroux/gomaggus/realmd"
 )
@@ -180,7 +179,6 @@ type PlayerData struct {
 	petSpellPower uint32
 
 	dirty *dirtyValues `value:"END"`
-	sync.RWMutex
 }
 
 func NewPlayerData() *PlayerData {

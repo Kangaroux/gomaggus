@@ -2,7 +2,6 @@ package values
 
 import (
 	"reflect"
-	"sync"
 
 	"github.com/kangaroux/gomaggus/realmd"
 )
@@ -19,7 +18,6 @@ type ObjectData struct {
 	_       [4]byte // padding
 
 	dirty *dirtyValues `value:"END"`
-	sync.RWMutex
 }
 
 func NewObjectData() *ObjectData {
