@@ -109,8 +109,8 @@ type PlayerData struct {
 	farSight                  uint64
 	knownTitles               [6]uint32
 	knownCurrencies           [2]uint32
-	xp                        uint32
-	nextLevelXP               uint32
+	experience                uint32
+	nextLevelExperience       uint32
 	skills                    [128]SkillEntry
 	characterPoints           [2]uint32
 	trackCreatures            uint32
@@ -678,22 +678,22 @@ func (p *PlayerData) SetKnownCurrencies(val [2]uint32) {
 	p.dirty.Flag("knownCurrencies")
 }
 
-func (p *PlayerData) Xp() uint32 {
-	return p.xp
+func (p *PlayerData) Experience() uint32 {
+	return p.experience
 }
 
-func (p *PlayerData) SetXp(val uint32) {
-	p.xp = val
-	p.dirty.Flag("xp")
+func (p *PlayerData) SetExperience(val uint32) {
+	p.experience = val
+	p.dirty.Flag("experience")
 }
 
-func (p *PlayerData) NextLevelXP() uint32 {
-	return p.nextLevelXP
+func (p *PlayerData) NextLevelExperience() uint32 {
+	return p.nextLevelExperience
 }
 
-func (p *PlayerData) SetNextLevelXP(val uint32) {
-	p.nextLevelXP = val
-	p.dirty.Flag("nextLevelXP")
+func (p *PlayerData) SetNextLevelExperience(val uint32) {
+	p.nextLevelExperience = val
+	p.dirty.Flag("nextLevelExperience")
 }
 
 func (p *PlayerData) Skills() [128]SkillEntry {
