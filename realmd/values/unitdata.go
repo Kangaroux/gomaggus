@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	UnitDataSize = 142
+	UnitDataOffset = ObjectDataSize
+	UnitDataSize   = 142
 )
 
 // Adapted from Gophercraft with some modifications

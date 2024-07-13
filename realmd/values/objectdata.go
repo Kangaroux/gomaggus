@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	ObjectDataSize = 6
+	ObjectDataOffset = 0
+	ObjectDataSize   = 6
 )
 
 type ObjectData struct {

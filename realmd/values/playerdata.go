@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	PlayerDataSize = 1178
+	PlayerDataOffset = ObjectDataSize + UnitDataSize
+	PlayerDataSize   = 1178
 )
 
 type QuestLogEntry struct {
