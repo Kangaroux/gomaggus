@@ -10,6 +10,7 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/realmd/handler/account"
 	"github.com/kangaroux/gomaggus/realmd/objupdate"
+	"github.com/kangaroux/gomaggus/realmd/values"
 	"github.com/mixcode/binarystruct"
 )
 
@@ -379,42 +380,40 @@ func sendSpawnPlayer(client *realmd.Client) error {
 
 	inner.Write(movement.Bytes())
 
-	values := objupdate.Values{}
-	obj := values.Object()
-	obj.Guid(realmd.Guid(char.Id))
-	obj.Type(objupdate.ObjectTypeObject, objupdate.ObjectTypeUnit, objupdate.ObjectTypePlayer)
-	obj.ScaleX(1)
+	v := values.NewPlayer()
+	v.SetGUID(realmd.Guid(char.Id))
+	v.SetType(values.ObjectTypeObject, values.ObjectTypeUnit, values.ObjectTypePlayer)
+	v.SetScaleX(1)
 
-	player := values.Player()
-	player.Face(char.Face)
-	player.SkinColor(char.SkinColor)
-	player.HairStyle(char.HairStyle)
-	player.HairColor(char.HairColor)
-	player.ExtraCosmetic(char.ExtraCosmetic)
-	player.BankBagSlotCount(8)
-	player.Experience(0)
-	player.ExperienceToNextLevel(100)
-	player.Wealth(0)
+	v.SetRace(char.Race)
+	v.SetClass(char.Class)
+	v.SetGender(char.Gender)
+	v.SetPowerType(realmd.PowerTypeForClass(char.Class))
+	v.SetHealth(100)
+	v.SetMaxHealth(100)
+	v.SetLevel(1)
+	v.SetFaction(uint32(char.Race))
+	v.SetDisplayID(0x4D0C)       // human female
+	v.SetNativeDisplayID(0x4D0C) // human female
+	v.SetPlayerControlled(true)
+	v.SetAurasVisible(true)
+	v.SetAgility(10)
+	v.SetIntellect(10)
+	v.SetStamina(10)
+	v.SetStrength(10)
+	v.SetSpirit(10)
 
-	unit := values.Unit()
-	unit.Race(char.Race)
-	unit.Class(char.Class)
-	unit.Gender(char.Gender)
-	unit.PowerType(realmd.PowerTypeForClass(char.Class))
-	unit.Health(100)
-	unit.MaxHealth(100)
-	unit.Level(1)
-	unit.Faction(char.Race)
-	unit.DisplayModel(0x4D0C)       // human female
-	unit.NativeDisplayModel(0x4D0C) // human female
-	unit.Flags(objupdate.PlayerControlled | objupdate.AurasVisible)
-	unit.Agility(10)
-	unit.Intellect(10)
-	unit.Stamina(10)
-	unit.Strength(10)
-	unit.Spirit(10)
+	v.SetFace(char.Face)
+	v.SetSkin(char.SkinColor)
+	v.SetHairStyle(char.HairStyle)
+	v.SetHairColor(char.HairColor)
+	v.SetExtraCosmetic(char.ExtraCosmetic)
+	v.SetBankBagSlotCount(8)
+	v.SetExperience(0)
+	v.SetNextLevelExperience(100)
+	v.SetWealth(0)
 
-	inner.Write(values.Bytes())
+	inner.Write(v.Marshal(true))
 
 	return client.SendPacketBytes(realmd.OpServerUpdateObject, inner.Bytes())
 }
