@@ -1,4 +1,4 @@
-package value
+package values
 
 import (
 	"encoding/binary"

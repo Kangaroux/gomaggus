@@ -1,4 +1,4 @@
-package value
+package values
 
 const (
 	// The field with the largest offset is player pet spell power at 0x52D (1325)
