@@ -14,7 +14,8 @@ func NewPlayer() *Player {
 	}
 }
 
-func (p *Player) Marshal(onlyDirty bool) ([]byte, *blockMask) {
+// Marshal returns the player values and mask as a little endian byte array.
+func (p *Player) Marshal(onlyDirty bool) []byte {
 	var mask blockMask
 	var data, d []byte
 	var s []structSection
@@ -31,5 +32,5 @@ func (p *Player) Marshal(onlyDirty bool) ([]byte, *blockMask) {
 	data = append(data, d...)
 	mask.Update(s, PlayerDataOffset)
 
-	return data, &mask
+	return append(mask.Bytes(), data...)
 }
