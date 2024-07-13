@@ -26,10 +26,10 @@ type UnitData struct {
 	channelSpell  uint32
 
 	// Bytes0
-	race   model.Race
-	class  model.Class
-	gender model.Gender
-	power  realmd.PowerType
+	race      model.Race
+	class     model.Class
+	gender    model.Gender
+	powerType realmd.PowerType
 
 	health                            uint32
 	mana                              uint32
@@ -50,7 +50,7 @@ type UnitData struct {
 	powerRegenFlatModifier            [7]float32
 	powerRegenInterruptedFlatModifier [7]float32
 	level                             uint32
-	factionTemplate                   uint32
+	faction                           uint32
 	virtualItemSlotIDs                [3]uint32
 
 	// Flags 1
@@ -157,7 +157,11 @@ type UnitData struct {
 	_              [17]bool
 
 	nPCEmoteState                  uint32
-	stats                          [5]uint32
+	strength                       uint32
+	agility                        uint32
+	stamina                        uint32
+	intellect                      uint32
+	spirit                         uint32
 	unitPosStats                   [5]uint32
 	unitNegStats                   [5]uint32
 	resistances                    [7]uint32
@@ -304,13 +308,13 @@ func (u *UnitData) SetGender(val model.Gender) {
 	u.dirty.Flag("gender")
 }
 
-func (u *UnitData) Power() realmd.PowerType {
-	return u.power
+func (u *UnitData) PowerType() realmd.PowerType {
+	return u.powerType
 }
 
-func (u *UnitData) SetPower(val realmd.PowerType) {
-	u.power = val
-	u.dirty.Flag("power")
+func (u *UnitData) SetPowerType(val realmd.PowerType) {
+	u.powerType = val
+	u.dirty.Flag("powerType")
 }
 
 func (u *UnitData) Health() uint32 {
@@ -484,13 +488,13 @@ func (u *UnitData) SetLevel(val uint32) {
 	u.dirty.Flag("level")
 }
 
-func (u *UnitData) FactionTemplate() uint32 {
-	return u.factionTemplate
+func (u *UnitData) Faction() uint32 {
+	return u.faction
 }
 
-func (u *UnitData) SetFactionTemplate(val uint32) {
-	u.factionTemplate = val
-	u.dirty.Flag("factionTemplate")
+func (u *UnitData) SetFaction(val uint32) {
+	u.faction = val
+	u.dirty.Flag("faction")
 }
 
 func (u *UnitData) VirtualItemSlotIDs() [3]uint32 {
@@ -1348,13 +1352,49 @@ func (u *UnitData) SetNPCEmoteState(val uint32) {
 	u.dirty.Flag("nPCEmoteState")
 }
 
-func (u *UnitData) Stats() [5]uint32 {
-	return u.stats
+func (u *UnitData) Strength() uint32 {
+	return u.strength
 }
 
-func (u *UnitData) SetStats(val [5]uint32) {
-	u.stats = val
-	u.dirty.Flag("stats")
+func (u *UnitData) SetStrength(val uint32) {
+	u.strength = val
+	u.dirty.Flag("strength")
+}
+
+func (u *UnitData) Agility() uint32 {
+	return u.agility
+}
+
+func (u *UnitData) SetAgility(val uint32) {
+	u.agility = val
+	u.dirty.Flag("agility")
+}
+
+func (u *UnitData) Stamina() uint32 {
+	return u.stamina
+}
+
+func (u *UnitData) SetStamina(val uint32) {
+	u.stamina = val
+	u.dirty.Flag("stamina")
+}
+
+func (u *UnitData) Intellect() uint32 {
+	return u.intellect
+}
+
+func (u *UnitData) SetIntellect(val uint32) {
+	u.intellect = val
+	u.dirty.Flag("intellect")
+}
+
+func (u *UnitData) Spirit() uint32 {
+	return u.spirit
+}
+
+func (u *UnitData) SetSpirit(val uint32) {
+	u.spirit = val
+	u.dirty.Flag("spirit")
 }
 
 func (u *UnitData) UnitPosStats() [5]uint32 {

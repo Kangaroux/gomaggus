@@ -37,7 +37,7 @@ func TestObjectDataLayout(t *testing.T) {
 func TestUnitDataLayout(t *testing.T) {
 	m := getStructLayout(reflect.ValueOf(UnitData{}))
 	assert.Equal(t, UnitDataSize, m.size)
-	assert.Equal(t, 77, len(m.sections))
+	assert.Equal(t, 81, len(m.sections))
 
 	expected := []struct {
 		blockStart int
@@ -99,7 +99,11 @@ func TestUnitDataLayout(t *testing.T) {
 		{75, 1},
 		{76, 1},
 		{77, 1},
-		{78, 5},
+		{78, 1},
+		{79, 1},
+		{80, 1},
+		{81, 1},
+		{82, 1},
 		{83, 5},
 		{88, 5},
 		{93, 7},
