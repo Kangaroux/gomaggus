@@ -21,9 +21,9 @@ func TestObjectMarshal(t *testing.T) {
 
 	o.SetGUID(0x1122334455667788)
 	o.SetEntry(0x12345678)
-	o.SetType(0x87654321)
+	o.SetType(ObjectTypeObject, ObjectTypeUnit, ObjectTypePlayer)
 	o.SetScaleX(math.Float32frombits(0xEFBEADDE))
 
 	data, _ = o.Marshal(true)
-	assert.Equal(t, internal.MustDecodeHex("88776655443322112143658778563412DEADBEEF"), data)
+	assert.Equal(t, internal.MustDecodeHex("88776655443322111900000078563412DEADBEEF"), data)
 }

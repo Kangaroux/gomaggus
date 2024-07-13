@@ -3,6 +3,7 @@ package values
 import (
 	"reflect"
 
+	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
@@ -25,10 +26,10 @@ type UnitData struct {
 	channelSpell  uint32
 
 	// Bytes0
-	race   uint8
-	class  uint8
-	gender uint8
-	power  uint8
+	race   model.Race
+	class  model.Class
+	gender model.Gender
+	power  realmd.PowerType
 
 	health                            uint32
 	mana                              uint32
@@ -276,38 +277,38 @@ func (u *UnitData) SetChannelSpell(val uint32) {
 	u.dirty.Flag("channelSpell")
 }
 
-func (u *UnitData) Race() uint8 {
+func (u *UnitData) Race() model.Race {
 	return u.race
 }
 
-func (u *UnitData) SetRace(val uint8) {
+func (u *UnitData) SetRace(val model.Race) {
 	u.race = val
 	u.dirty.Flag("race")
 }
 
-func (u *UnitData) Class() uint8 {
+func (u *UnitData) Class() model.Class {
 	return u.class
 }
 
-func (u *UnitData) SetClass(val uint8) {
+func (u *UnitData) SetClass(val model.Class) {
 	u.class = val
 	u.dirty.Flag("class")
 }
 
-func (u *UnitData) Gender() uint8 {
+func (u *UnitData) Gender() model.Gender {
 	return u.gender
 }
 
-func (u *UnitData) SetGender(val uint8) {
+func (u *UnitData) SetGender(val model.Gender) {
 	u.gender = val
 	u.dirty.Flag("gender")
 }
 
-func (u *UnitData) Power() uint8 {
+func (u *UnitData) Power() realmd.PowerType {
 	return u.power
 }
 
-func (u *UnitData) SetPower(val uint8) {
+func (u *UnitData) SetPower(val realmd.PowerType) {
 	u.power = val
 	u.dirty.Flag("power")
 }

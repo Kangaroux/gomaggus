@@ -76,7 +76,7 @@ type PlayerData struct {
 	hairColor uint8
 
 	// bytes2
-	facialHair       uint8
+	extraCosmetic    uint8
 	restBits         uint8
 	bankBagSlotCount uint8
 	restState        uint8
@@ -462,13 +462,13 @@ func (p *PlayerData) SetHairColor(val uint8) {
 	p.dirty.Flag("hairColor")
 }
 
-func (p *PlayerData) FacialHair() uint8 {
-	return p.facialHair
+func (p *PlayerData) ExtraCosmetic() uint8 {
+	return p.extraCosmetic
 }
 
-func (p *PlayerData) SetFacialHair(val uint8) {
-	p.facialHair = val
-	p.dirty.Flag("facialHair")
+func (p *PlayerData) SetExtraCosmetic(val uint8) {
+	p.extraCosmetic = val
+	p.dirty.Flag("extraCosmetic")
 }
 
 func (p *PlayerData) RestBits() uint8 {

@@ -1,9 +1,17 @@
 package values
 
 type Player struct {
-	ObjectData
-	UnitData
-	PlayerData
+	*ObjectData
+	*UnitData
+	*PlayerData
+}
+
+func NewPlayer() *Player {
+	return &Player{
+		ObjectData: NewObjectData(),
+		UnitData:   NewUnitData(),
+		PlayerData: NewPlayerData(),
+	}
 }
 
 func (p *Player) Marshal(onlyDirty bool) ([]byte, *blockMask) {
