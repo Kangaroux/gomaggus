@@ -40,6 +40,10 @@ func (m *blockMask) Update(sections []structSection, offset int) {
 // Mask returns a slice of the block mask. The slice is the minimum possible length without
 // any trailing zeroes.
 func (m *blockMask) Mask() []uint32 {
+	if m.largestIndex == 0 && m.mask[0] == 0 {
+		return []uint32(nil)
+	}
+
 	return m.mask[:m.largestIndex+1]
 }
 
