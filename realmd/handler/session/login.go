@@ -9,7 +9,6 @@ import (
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/realmd/handler/account"
-	"github.com/kangaroux/gomaggus/realmd/objupdate"
 	"github.com/kangaroux/gomaggus/realmd/values"
 	"github.com/mixcode/binarystruct"
 )
@@ -350,15 +349,15 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	inner.Write([]byte{1, 0, 0, 0}) // number of objects
 
 	// nested object start
-	inner.WriteByte(byte(objupdate.UpdateTypeCreateObject))
+	inner.WriteByte(byte(values.UpdateTypeCreateObject))
 	inner.Write(realmd.PackGuid(uint64(char.Id)))
-	inner.WriteByte(byte(objupdate.ObjectTypePlayer))
+	inner.WriteByte(byte(values.ObjectTypePlayer))
 
-	movement := objupdate.MovementValues{}
+	movement := values.MovementValues{}
 	movement.Self()
 
 	living := movement.Living()
-	living.Data(&objupdate.LivingData{
+	living.Data(&values.LivingData{
 		Timestamp: uint32(time.Now().UnixMilli()),
 		PositionRotation: realmd.Vector4{
 			X:        float32(-8949.95),
