@@ -46,10 +46,14 @@ func (m *blockMask) Mask() []uint32 {
 // Bytes returns the mask as a little endian byte array.
 func (m *blockMask) Bytes() []byte {
 	mask := m.Mask()
-	data := make([]byte, len(mask)*4)
+	length := len(mask)
 
-	for i := 0; i < len(mask); i++ {
-		binary.LittleEndian.PutUint32(data[i*4:], mask[i])
+	// Add one to make space for the size byte
+	data := make([]byte, length*4+1)
+	data[0] = byte(length)
+
+	for i := 0; i < length; i++ {
+		binary.LittleEndian.PutUint32(data[i*4+1:], mask[i])
 	}
 
 	return data
