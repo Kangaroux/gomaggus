@@ -33,6 +33,7 @@ const (
 	OpServerFactionReputation     ServerOpcode = 0x122 // SMSG_INITIALIZE_FACTIONS
 	OpServerGetPlayerNameResponse ServerOpcode = 0x51
 	OpServerTime                  ServerOpcode = 0x1CF // SMSG_QUERY_TIME_RESPONSE
+	OpServerPlayedTime            ServerOpcode = 0x1CD // SMSG_PLAYED_TIME
 )
 
 type ClientOpcode uint32
