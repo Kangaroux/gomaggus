@@ -69,6 +69,8 @@ const (
 	OpClientSetVoiceEnabled          ClientOpcode = 0x3AF // TODO CMSG_VOICE_SESSION_ENABLE
 	OpClientEnteredZone              ClientOpcode = 0x1F4 // TODO CMSG_ZONEUPDATE
 	OpClientSetVoiceChannel          ClientOpcode = 0x3D3 // TODO CMSG_SET_ACTIVE_VOICE_CHANNEL
+	OpClientListBattlegrounds        ClientOpcode = 0x23C // TODO CMSG_BATTLEFIELD_LIST
+	OpClientCancelTrade              ClientOpcode = 0x11C // TODO CMSG_CANCEL_TRADE
 )
 
 type ResponseCode byte
