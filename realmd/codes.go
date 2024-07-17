@@ -32,6 +32,7 @@ const (
 	OpServerInitialWorldStates    ServerOpcode = 0x2C2
 	OpServerFactionReputation     ServerOpcode = 0x122 // SMSG_INITIALIZE_FACTIONS
 	OpServerGetPlayerNameResponse ServerOpcode = 0x51
+	OpServerTime                  ServerOpcode = 0x1CF // SMSG_QUERY_TIME_RESPONSE
 )
 
 type ClientOpcode uint32
@@ -58,7 +59,7 @@ const (
 	OpClientSetActionBarToggles      ClientOpcode = 0x2BF // TODO
 	OpClientGetRaidInfo              ClientOpcode = 0x2CD // TODO
 	OpClientGetTicketStatus          ClientOpcode = 0x211 // TODO CMSG_GMTICKET_GETTICKET
-	OpClientGetTime                  ClientOpcode = 0x1CE // TODO
+	OpClientGetTime                  ClientOpcode = 0x1CE
 	OpClientGetItemInfo              ClientOpcode = 0x56  // TODO
 	OpClientGetNextMailArrival       ClientOpcode = 0x284 // TODO
 	OpClientGetBattlefieldStatus     ClientOpcode = 0x2D3 // TODO

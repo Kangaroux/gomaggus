@@ -226,6 +226,9 @@ func (s *Server) handlePacket(c *realmd.Client, header *realmd.ClientHeader, dat
 	case realmd.OpClientGetUITime:
 		return world.UITimeHandler(c)
 
+	case realmd.OpClientGetTime:
+		return world.ServerTimeHandler(c)
+
 	case realmd.OpClientStandStateChange:
 		return player.StandStateHandler(c, data)
 
