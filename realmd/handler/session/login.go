@@ -390,7 +390,7 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	v.SetPowerType(realmd.PowerTypeForClass(char.Class))
 	v.SetHealth(100)
 	v.SetMaxHealth(100)
-	v.SetLevel(1)
+	v.SetLevel(60)
 	v.SetFaction(uint32(char.Race))
 	v.SetDisplayID(0x4D0C)       // human female
 	v.SetNativeDisplayID(0x4D0C) // human female
@@ -411,6 +411,19 @@ func sendSpawnPlayer(client *realmd.Client) error {
 	v.SetExperience(0)
 	v.SetNextLevelExperience(100)
 	v.SetWealth(0)
+
+	var skills [128]values.SkillEntry
+	skills[0] = values.SkillEntry{
+		ID:         98, // Language (Common)
+		SkillLevel: 300,
+		SkillCap:   300,
+	}
+	skills[1] = values.SkillEntry{
+		ID:         109, // Language (Orcish)
+		SkillLevel: 300,
+		SkillCap:   300,
+	}
+	v.SetSkills(skills)
 
 	inner.Write(v.Marshal(true))
 
