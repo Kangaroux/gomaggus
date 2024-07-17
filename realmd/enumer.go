@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-const _ClientOpcodeName = "ClientCharCreateClientCharListClientCharDeleteClientPlayerLoginClientLogoutForceClientLogoutRequestClientLogoutCancelClientGetPlayerNameClientGetItemInfoClientStandStateChangeClientCancelTradeClientGetPlayedTimeClientGetTimeClientPingClientAuthSessionClientEnteredZoneClientGetStorageClientPutStorageClientGetTicketStatusClientListBattlegroundsClientSetActiveMoverClientGetNextMailArrivalClientGetLFGStatusClientSetActionBarTogglesClientGetRaidInfoClientGetBattlefieldStatusClientGetLFGDungeonListClientRealmSplitClientSetVoiceEnabledClientSetVoiceChannelClientGetGuildBankMoneyClientGetNumPendingEventsClientGetUnixTimeClientReadyForAccountDataTimes"
-const _ClientOpcodeLowerName = "clientcharcreateclientcharlistclientchardeleteclientplayerloginclientlogoutforceclientlogoutrequestclientlogoutcancelclientgetplayernameclientgetiteminfoclientstandstatechangeclientcanceltradeclientgetplayedtimeclientgettimeclientpingclientauthsessioncliententeredzoneclientgetstorageclientputstorageclientgetticketstatusclientlistbattlegroundsclientsetactivemoverclientgetnextmailarrivalclientgetlfgstatusclientsetactionbartogglesclientgetraidinfoclientgetbattlefieldstatusclientgetlfgdungeonlistclientrealmsplitclientsetvoiceenabledclientsetvoicechannelclientgetguildbankmoneyclientgetnumpendingeventsclientgetunixtimeclientreadyforaccountdatatimes"
+const _ClientOpcodeName = "ClientCharCreateClientCharListClientCharDeleteClientPlayerLoginClientLogoutForceClientLogoutRequestClientLogoutCancelClientGetPlayerNameClientGetItemInfoClientStandStateChangeClientCancelTradeClientGetPlayedTimeClientGetTimeClientPingClientAuthSessionClientEnteredZoneClientGetStorageClientPutStorageClientGetTicketStatusClientListBattlegroundsClientSetActiveMoverClientGetNextMailArrivalClientGetLFGStatusClientSetActionBarTogglesClientGetRaidInfoClientGetBattlefieldStatusClientGetLFGDungeonListClientRealmSplitClientSetVoiceEnabledClientSetVoiceChannelClientGetGuildBankMoneyClientGetNumPendingEventsClientGetUITimeClientReadyForAccountDataTimes"
+const _ClientOpcodeLowerName = "clientcharcreateclientcharlistclientchardeleteclientplayerloginclientlogoutforceclientlogoutrequestclientlogoutcancelclientgetplayernameclientgetiteminfoclientstandstatechangeclientcanceltradeclientgetplayedtimeclientgettimeclientpingclientauthsessioncliententeredzoneclientgetstorageclientputstorageclientgetticketstatusclientlistbattlegroundsclientsetactivemoverclientgetnextmailarrivalclientgetlfgstatusclientsetactionbartogglesclientgetraidinfoclientgetbattlefieldstatusclientgetlfgdungeonlistclientrealmsplitclientsetvoiceenabledclientsetvoicechannelclientgetguildbankmoneyclientgetnumpendingeventsclientgetuitimeclientreadyforaccountdatatimes"
 
 var _ClientOpcodeMap = map[ClientOpcode]string{
 	54:   _ClientOpcodeName[0:16],
@@ -43,8 +43,8 @@ var _ClientOpcodeMap = map[ClientOpcode]string{
 	979:  _ClientOpcodeName[534:555],
 	1022: _ClientOpcodeName[555:578],
 	1095: _ClientOpcodeName[578:603],
-	1270: _ClientOpcodeName[603:620],
-	1279: _ClientOpcodeName[620:650],
+	1270: _ClientOpcodeName[603:618],
+	1279: _ClientOpcodeName[618:648],
 }
 
 func (i ClientOpcode) String() string {
@@ -90,11 +90,11 @@ func _ClientOpcodeNoOp() {
 	_ = x[OpClientSetVoiceChannel-(979)]
 	_ = x[OpClientGetGuildBankMoney-(1022)]
 	_ = x[OpClientGetNumPendingEvents-(1095)]
-	_ = x[OpClientGetUnixTime-(1270)]
+	_ = x[OpClientGetUITime-(1270)]
 	_ = x[OpClientReadyForAccountDataTimes-(1279)]
 }
 
-var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogoutForce, OpClientLogoutRequest, OpClientLogoutCancel, OpClientGetPlayerName, OpClientGetItemInfo, OpClientStandStateChange, OpClientCancelTrade, OpClientGetPlayedTime, OpClientGetTime, OpClientPing, OpClientAuthSession, OpClientEnteredZone, OpClientGetStorage, OpClientPutStorage, OpClientGetTicketStatus, OpClientListBattlegrounds, OpClientSetActiveMover, OpClientGetNextMailArrival, OpClientGetLFGStatus, OpClientSetActionBarToggles, OpClientGetRaidInfo, OpClientGetBattlefieldStatus, OpClientGetLFGDungeonList, OpClientRealmSplit, OpClientSetVoiceEnabled, OpClientSetVoiceChannel, OpClientGetGuildBankMoney, OpClientGetNumPendingEvents, OpClientGetUnixTime, OpClientReadyForAccountDataTimes}
+var _ClientOpcodeValues = []ClientOpcode{OpClientCharCreate, OpClientCharList, OpClientCharDelete, OpClientPlayerLogin, OpClientLogoutForce, OpClientLogoutRequest, OpClientLogoutCancel, OpClientGetPlayerName, OpClientGetItemInfo, OpClientStandStateChange, OpClientCancelTrade, OpClientGetPlayedTime, OpClientGetTime, OpClientPing, OpClientAuthSession, OpClientEnteredZone, OpClientGetStorage, OpClientPutStorage, OpClientGetTicketStatus, OpClientListBattlegrounds, OpClientSetActiveMover, OpClientGetNextMailArrival, OpClientGetLFGStatus, OpClientSetActionBarToggles, OpClientGetRaidInfo, OpClientGetBattlefieldStatus, OpClientGetLFGDungeonList, OpClientRealmSplit, OpClientSetVoiceEnabled, OpClientSetVoiceChannel, OpClientGetGuildBankMoney, OpClientGetNumPendingEvents, OpClientGetUITime, OpClientReadyForAccountDataTimes}
 
 var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeName[0:16]:         OpClientCharCreate,
@@ -161,10 +161,10 @@ var _ClientOpcodeNameToValueMap = map[string]ClientOpcode{
 	_ClientOpcodeLowerName[555:578]: OpClientGetGuildBankMoney,
 	_ClientOpcodeName[578:603]:      OpClientGetNumPendingEvents,
 	_ClientOpcodeLowerName[578:603]: OpClientGetNumPendingEvents,
-	_ClientOpcodeName[603:620]:      OpClientGetUnixTime,
-	_ClientOpcodeLowerName[603:620]: OpClientGetUnixTime,
-	_ClientOpcodeName[620:650]:      OpClientReadyForAccountDataTimes,
-	_ClientOpcodeLowerName[620:650]: OpClientReadyForAccountDataTimes,
+	_ClientOpcodeName[603:618]:      OpClientGetUITime,
+	_ClientOpcodeLowerName[603:618]: OpClientGetUITime,
+	_ClientOpcodeName[618:648]:      OpClientReadyForAccountDataTimes,
+	_ClientOpcodeLowerName[618:648]: OpClientReadyForAccountDataTimes,
 }
 
 var _ClientOpcodeNames = []string{
@@ -200,8 +200,8 @@ var _ClientOpcodeNames = []string{
 	_ClientOpcodeName[534:555],
 	_ClientOpcodeName[555:578],
 	_ClientOpcodeName[578:603],
-	_ClientOpcodeName[603:620],
-	_ClientOpcodeName[620:650],
+	_ClientOpcodeName[603:618],
+	_ClientOpcodeName[618:648],
 }
 
 // ClientOpcodeString retrieves an enum value from the enum constants string name.
@@ -235,8 +235,8 @@ func (i ClientOpcode) IsAClientOpcode() bool {
 	return ok
 }
 
-const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerSetTimeSpeedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerGetPlayerNameResponseServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerFactionReputationServerActionButtonsServerInitialSpellsServerHearthLocationServerPongServerAuthChallengeServerAuthResponseServerClientStorageTimesServerGetStorageServerCharLoginVerifyWorldServerStandStateServerInitialWorldStatesServerMOTDServerRealmSplitServerSystemFeaturesServerPutStorageOKServerUnixTime"
-const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserversettimespeedserverlogoutserverlogoutcompleteserverlogoutcancelackservergetplayernameresponseserverupdateobjectserverplaycinematicservertutorialflagsserverfactionreputationserveractionbuttonsserverinitialspellsserverhearthlocationserverpongserverauthchallengeserverauthresponseserverclientstoragetimesservergetstorageservercharloginverifyworldserverstandstateserverinitialworldstatesservermotdserverrealmsplitserversystemfeaturesserverputstorageokserverunixtime"
+const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerSetTimeSpeedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerGetPlayerNameResponseServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerFactionReputationServerActionButtonsServerInitialSpellsServerHearthLocationServerPongServerAuthChallengeServerAuthResponseServerClientStorageTimesServerGetStorageServerCharLoginVerifyWorldServerStandStateServerInitialWorldStatesServerMOTDServerRealmSplitServerSystemFeaturesServerPutStorageOKServerUITime"
+const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserversettimespeedserverlogoutserverlogoutcompleteserverlogoutcancelackservergetplayernameresponseserverupdateobjectserverplaycinematicservertutorialflagsserverfactionreputationserveractionbuttonsserverinitialspellsserverhearthlocationserverpongserverauthchallengeserverauthresponseserverclientstoragetimesservergetstorageservercharloginverifyworldserverstandstateserverinitialworldstatesservermotdserverrealmsplitserversystemfeaturesserverputstorageokserveruitime"
 
 var _ServerOpcodeMap = map[ServerOpcode]string{
 	58:   _ServerOpcodeName[0:16],
@@ -267,7 +267,7 @@ var _ServerOpcodeMap = map[ServerOpcode]string{
 	907:  _ServerOpcodeName[465:481],
 	969:  _ServerOpcodeName[481:501],
 	1123: _ServerOpcodeName[501:519],
-	1271: _ServerOpcodeName[519:533],
+	1271: _ServerOpcodeName[519:531],
 }
 
 func (i ServerOpcode) String() string {
@@ -309,10 +309,10 @@ func _ServerOpcodeNoOp() {
 	_ = x[OpServerRealmSplit-(907)]
 	_ = x[OpServerSystemFeatures-(969)]
 	_ = x[OpServerPutStorageOK-(1123)]
-	_ = x[OpServerUnixTime-(1271)]
+	_ = x[OpServerUITime-(1271)]
 }
 
-var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerSetTimeSpeed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerGetPlayerNameResponse, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerFactionReputation, OpServerActionButtons, OpServerInitialSpells, OpServerHearthLocation, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerClientStorageTimes, OpServerGetStorage, OpServerCharLoginVerifyWorld, OpServerStandState, OpServerInitialWorldStates, OpServerMOTD, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK, OpServerUnixTime}
+var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerSetTimeSpeed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerGetPlayerNameResponse, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerFactionReputation, OpServerActionButtons, OpServerInitialSpells, OpServerHearthLocation, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerClientStorageTimes, OpServerGetStorage, OpServerCharLoginVerifyWorld, OpServerStandState, OpServerInitialWorldStates, OpServerMOTD, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK, OpServerUITime}
 
 var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeName[0:16]:         OpServerCharCreate,
@@ -371,8 +371,8 @@ var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeLowerName[481:501]: OpServerSystemFeatures,
 	_ServerOpcodeName[501:519]:      OpServerPutStorageOK,
 	_ServerOpcodeLowerName[501:519]: OpServerPutStorageOK,
-	_ServerOpcodeName[519:533]:      OpServerUnixTime,
-	_ServerOpcodeLowerName[519:533]: OpServerUnixTime,
+	_ServerOpcodeName[519:531]:      OpServerUITime,
+	_ServerOpcodeLowerName[519:531]: OpServerUITime,
 }
 
 var _ServerOpcodeNames = []string{
@@ -404,7 +404,7 @@ var _ServerOpcodeNames = []string{
 	_ServerOpcodeName[465:481],
 	_ServerOpcodeName[481:501],
 	_ServerOpcodeName[501:519],
-	_ServerOpcodeName[519:533],
+	_ServerOpcodeName[519:531],
 }
 
 // ServerOpcodeString retrieves an enum value from the enum constants string name.

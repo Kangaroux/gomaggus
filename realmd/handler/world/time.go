@@ -6,11 +6,11 @@ import (
 	"github.com/kangaroux/gomaggus/realmd"
 )
 
-type unixTimeResponse struct {
+type uiTimeResponse struct {
 	Time uint32
 }
 
-func UnixTimeHandler(client *realmd.Client) error {
-	resp := unixTimeResponse{Time: uint32(time.Now().Unix())}
-	return client.SendPacket(realmd.OpServerUnixTime, &resp)
+func UITimeHandler(client *realmd.Client) error {
+	resp := uiTimeResponse{Time: uint32(time.Now().Unix())}
+	return client.SendPacket(realmd.OpServerUITime, &resp)
 }
