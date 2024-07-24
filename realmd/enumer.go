@@ -235,8 +235,8 @@ func (i ClientOpcode) IsAClientOpcode() bool {
 	return ok
 }
 
-const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerSetTimeSpeedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerGetPlayerNameResponseServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerFactionReputationServerActionButtonsServerInitialSpellsServerHearthLocationServerPlayedTimeServerTimeServerPongServerAuthChallengeServerAuthResponseServerClientStorageTimesServerGetStorageServerCharLoginVerifyWorldServerStandStateServerInitialWorldStatesServerMOTDServerRealmSplitServerSystemFeaturesServerPutStorageOKServerUITime"
-const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserversettimespeedserverlogoutserverlogoutcompleteserverlogoutcancelackservergetplayernameresponseserverupdateobjectserverplaycinematicservertutorialflagsserverfactionreputationserveractionbuttonsserverinitialspellsserverhearthlocationserverplayedtimeservertimeserverpongserverauthchallengeserverauthresponseserverclientstoragetimesservergetstorageservercharloginverifyworldserverstandstateserverinitialworldstatesservermotdserverrealmsplitserversystemfeaturesserverputstorageokserveruitime"
+const _ServerOpcodeName = "ServerCharCreateServerCharListServerCharDeleteServerCharLoginFailedServerSetTimeSpeedServerLogoutServerLogoutCompleteServerLogoutCancelACKServerGetPlayerNameResponseServerUpdateObjectServerPlayCinematicServerTutorialFlagsServerFactionReputationServerActionButtonsServerInitialSpellsServerHearthLocationServerPlayedTimeServerTimeServerPongServerAuthChallengeServerAuthResponseServerClientStorageTimesServerGetStorageServerCharLoginVerifyWorldServerStandStateServerInitialWorldStatesServerMOTDServerRealmSplitServerSystemFeaturesServerPutStorageOKServerPlayerTalentsServerUITime"
+const _ServerOpcodeLowerName = "servercharcreateservercharlistserverchardeleteservercharloginfailedserversettimespeedserverlogoutserverlogoutcompleteserverlogoutcancelackservergetplayernameresponseserverupdateobjectserverplaycinematicservertutorialflagsserverfactionreputationserveractionbuttonsserverinitialspellsserverhearthlocationserverplayedtimeservertimeserverpongserverauthchallengeserverauthresponseserverclientstoragetimesservergetstorageservercharloginverifyworldserverstandstateserverinitialworldstatesservermotdserverrealmsplitserversystemfeaturesserverputstorageokserverplayertalentsserveruitime"
 
 var _ServerOpcodeMap = map[ServerOpcode]string{
 	58:   _ServerOpcodeName[0:16],
@@ -269,7 +269,8 @@ var _ServerOpcodeMap = map[ServerOpcode]string{
 	907:  _ServerOpcodeName[491:507],
 	969:  _ServerOpcodeName[507:527],
 	1123: _ServerOpcodeName[527:545],
-	1271: _ServerOpcodeName[545:557],
+	1216: _ServerOpcodeName[545:564],
+	1271: _ServerOpcodeName[564:576],
 }
 
 func (i ServerOpcode) String() string {
@@ -313,10 +314,11 @@ func _ServerOpcodeNoOp() {
 	_ = x[OpServerRealmSplit-(907)]
 	_ = x[OpServerSystemFeatures-(969)]
 	_ = x[OpServerPutStorageOK-(1123)]
+	_ = x[OpServerPlayerTalents-(1216)]
 	_ = x[OpServerUITime-(1271)]
 }
 
-var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerSetTimeSpeed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerGetPlayerNameResponse, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerFactionReputation, OpServerActionButtons, OpServerInitialSpells, OpServerHearthLocation, OpServerPlayedTime, OpServerTime, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerClientStorageTimes, OpServerGetStorage, OpServerCharLoginVerifyWorld, OpServerStandState, OpServerInitialWorldStates, OpServerMOTD, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK, OpServerUITime}
+var _ServerOpcodeValues = []ServerOpcode{OpServerCharCreate, OpServerCharList, OpServerCharDelete, OpServerCharLoginFailed, OpServerSetTimeSpeed, OpServerLogout, OpServerLogoutComplete, OpServerLogoutCancelACK, OpServerGetPlayerNameResponse, OpServerUpdateObject, OpServerPlayCinematic, OpServerTutorialFlags, OpServerFactionReputation, OpServerActionButtons, OpServerInitialSpells, OpServerHearthLocation, OpServerPlayedTime, OpServerTime, OpServerPong, OpServerAuthChallenge, OpServerAuthResponse, OpServerClientStorageTimes, OpServerGetStorage, OpServerCharLoginVerifyWorld, OpServerStandState, OpServerInitialWorldStates, OpServerMOTD, OpServerRealmSplit, OpServerSystemFeatures, OpServerPutStorageOK, OpServerPlayerTalents, OpServerUITime}
 
 var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeName[0:16]:         OpServerCharCreate,
@@ -379,8 +381,10 @@ var _ServerOpcodeNameToValueMap = map[string]ServerOpcode{
 	_ServerOpcodeLowerName[507:527]: OpServerSystemFeatures,
 	_ServerOpcodeName[527:545]:      OpServerPutStorageOK,
 	_ServerOpcodeLowerName[527:545]: OpServerPutStorageOK,
-	_ServerOpcodeName[545:557]:      OpServerUITime,
-	_ServerOpcodeLowerName[545:557]: OpServerUITime,
+	_ServerOpcodeName[545:564]:      OpServerPlayerTalents,
+	_ServerOpcodeLowerName[545:564]: OpServerPlayerTalents,
+	_ServerOpcodeName[564:576]:      OpServerUITime,
+	_ServerOpcodeLowerName[564:576]: OpServerUITime,
 }
 
 var _ServerOpcodeNames = []string{
@@ -414,7 +418,8 @@ var _ServerOpcodeNames = []string{
 	_ServerOpcodeName[491:507],
 	_ServerOpcodeName[507:527],
 	_ServerOpcodeName[527:545],
-	_ServerOpcodeName[545:557],
+	_ServerOpcodeName[545:564],
+	_ServerOpcodeName[564:576],
 }
 
 // ServerOpcodeString retrieves an enum value from the enum constants string name.

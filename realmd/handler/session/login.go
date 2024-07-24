@@ -9,6 +9,7 @@ import (
 	"github.com/kangaroux/gomaggus/model"
 	"github.com/kangaroux/gomaggus/realmd"
 	"github.com/kangaroux/gomaggus/realmd/handler/account"
+	"github.com/kangaroux/gomaggus/realmd/talent"
 	"github.com/kangaroux/gomaggus/realmd/values"
 	"github.com/mixcode/binarystruct"
 )
@@ -69,6 +70,9 @@ func LoginHandler(svc *realmd.Service, client *realmd.Client, data []byte) error
 		return err
 	}
 	if err := sendIntroCinematic(client); err != nil {
+		return err
+	}
+	if err := sendTalents(client); err != nil {
 		return err
 	}
 	if err := sendInitialSpells(client); err != nil {
@@ -210,6 +214,41 @@ func sendIntroCinematic(client *realmd.Client) error {
 
 	resp := playCinematic{CinematicId: 81} // 81 = human
 	return client.SendPacket(realmd.OpServerPlayCinematic, &resp)
+}
+
+type talentInfo struct {
+	ID      talent.Talent
+	MaxRank uint8
+}
+
+type talentSpec struct {
+	TalentCount uint8
+	Talents     []talentInfo `binary:"[TalentCount]Any"`
+	GlyphCount  uint8
+	Glyphs      []uint16 `binary:"[GlyphCount]uint16"`
+}
+
+type playerTalentsResponse struct {
+	TalentType    uint8
+	UnspentPoints uint32
+	SpecCount     uint8
+	ActiveSpec    uint8
+	Specs         []talentSpec `binary:"[SpecCount]Any"`
+}
+
+func sendTalents(client *realmd.Client) error {
+	resp := playerTalentsResponse{
+		TalentType:    0, // player=0, pet=1
+		UnspentPoints: 0,
+		SpecCount:     1,
+		ActiveSpec:    0,
+		Specs: []talentSpec{{
+			TalentCount: 0,
+			GlyphCount:  0,
+		}},
+	}
+
+	return client.SendPacket(realmd.OpServerPlayerTalents, &resp)
 }
 
 type spell struct {

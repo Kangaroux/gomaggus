@@ -34,6 +34,7 @@ const (
 	OpServerGetPlayerNameResponse ServerOpcode = 0x51
 	OpServerTime                  ServerOpcode = 0x1CF // SMSG_QUERY_TIME_RESPONSE
 	OpServerPlayedTime            ServerOpcode = 0x1CD // SMSG_PLAYED_TIME
+	OpServerPlayerTalents         ServerOpcode = 0x4C0 // SMSG_TALENTS_INFO
 )
 
 type ClientOpcode uint32
